@@ -1,0 +1,37 @@
+# Dev local: docker compose up  ->  API en :8000, Postgres en :5432
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: plomada
+      POSTGRES_PASSWORD: plomada
+      POSTGRES_DB: plomada
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plomada"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: { context: ., dockerfile: api/Dockerfile }
+    environment:
+      DATABASE_URL: postgresql+psycopg://plomada:plomada@db:5432/plomada
+      CORS_ORIGINS: http://localhost:3000
+    ports: ["8000:8000"]
+    depends_on:
+      db: { condition: service_healthy }
+
+  # Perfil aparte: no arranca con 'up', se invoca explicitamente.
+  #   docker compose run --rm pipeline python pipeline/ingest.py
+  pipeline:
+    build: { context: ., dockerfile: pipeline/Dockerfile }
+    volumes: ["./data:/app/data", "./out:/app/out"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://plomada:plomada@db:5432/plomada
+    profiles: ["tools"]
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  pgdata:

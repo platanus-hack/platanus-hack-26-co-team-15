@@ -141,11 +141,98 @@ acumula 6 puntos. Umbral explícito, no escondido en un modelo.
 - **Falta la línea de precios unitarios**, que es lo que convertiría el riesgo en
   una cifra de sobrecosto en pesos.
 
+## Grafo de personas (Pilar 1)
+
+Los contratos no son filas: son aristas de una red de personas. El grafo es
+pequeño — **6.361 proveedores conectados, 13.254 pares únicos** — así que corre
+con `networkx` en memoria. Nada de Neo4j.
+
+```
+python pipeline/build.py --steps 04 05 --no-export   # nodos y aristas
+python pipeline/grafo.py                              # comunidades
+python pipeline/build.py --steps 06 --no-export       # banderas de red
+```
+
+| Nodo | Cantidad |
+|---|---|
+| Proveedores | 28.811 |
+| Personas (cédulas) | 20.081 |
+| Entidades | 2.530 |
+
+**Una cédula es un nodo, no tres.** La misma persona puede ser ordenador del gasto
+en una entidad y supervisor en otra: hay **1.723 personas multi-rol**, y un modelo
+de un nodo por rol las habría perdido.
+
+Aristas proveedor–proveedor por llaves que deberían ser únicas: **9.793** por
+domicilio, **5.497** por representante legal, **219** por cuenta bancaria. De los
+13.254 pares únicos, **9 están unidos por las tres llaves a la vez** y 2.237 por
+dos — esos son los indicios fuertes.
+
+Resultado: **1.858 comunidades, la mayor de 50 proveedores**.
+
+### Hallazgos del grafo
+
+- **766 proveedores hacen obra e interventoría a la vez.** `CONSORCIO INTEGRAL MLF`
+  tiene 29 obras y 21 interventorías; `CONSORCIO RT`, 7 y 7.
+- **517 interventorías** donde el interventor también construyó en la misma entidad.
+- El clúster más grande concentra **91 obras y 60 interventorías** entre 50
+  proveedores, $369,9 mil millones.
+- **1.072 contratos marcados por las dos capas a la vez** (trámite y red). Esos son
+  los primeros de la fila.
+- `PEDRO JOSE CORREDOR BECERRA` figura como representante legal de **24 empresas**
+  proveedoras.
+
+### Decisión metodológica 10: el placeholder que se traga el grafo
+
+`domicilio_replegal` está poblado al 100%, pero el **63% es la cadena
+'NO DEFINIDO'**, que por sí sola liga **19.403 proveedores**. Usada como arista
+crea un único clique de 19.403 nodos y la detección de comunidades deja de
+significar nada.
+
+La regla es **generalizada, no caso por caso**: cualquier valor de llave que ligue
+más de 50 proveedores distintos entra a la lista negra, sea el que sea. Así también
+caen los placeholders que todavía no conocemos. `pipeline/grafo.py` **falla en vez
+de escribir** si algún clúster supera 200 proveedores.
+
+### Decisión metodológica 11: costumbre administrativa vs. anomalía
+
+**4.478 contratos (10,9%) tienen al mismo funcionario como ordenador del gasto y
+como supervisor** — quien autoriza el pago es quien certifica que la obra se hizo.
+Está repartido en **617 entidades**, así que es sistémico.
+
+Pero dentro de algunas entidades es el 92–100% de todo lo que firman (EDUNA: 180 de
+180; Piedecuesta: 240 de 260). Eso es una **costumbre de digitación institucional**,
+no 240 fallas individuales de control. Marcar cada contrato infla el conteo y
+distorsiona el ranking municipal.
+
+Se separó en dos indicadores:
+
+- Donde en su entidad es la **excepción** (tasa <50%) → bandera de contrato:
+  **1.773 contratos**.
+- Donde es la **norma** → hallazgo de la entidad, reportado una sola vez:
+  **33 entidades, $1,97 billones** en `entidades_autosupervision`.
+
+## Puertas de calidad
+
+`python -m pytest tests/` — **17 tests**. Cada uno existe porque el error
+correspondiente ya ocurrió en este proyecto y produjo números falsos. Fallan el PR,
+no son advertencias.
+
+## Contrato de datos entre frentes
+
+DuckDB admite **un solo escritor**: cinco personas no pueden construir contra el
+mismo `.duckdb`. El único artefacto compartido es `data/exports/base.parquet`
+(17 MB), de solo lectura. Cada frente escribe su propio archivo y su propio rango
+de numeración SQL (`04-09` grafo, `10-19` precios, `20-29` geo, `30-39` alertas,
+`90-99` serving). Los pasos `01-03` están congelados: tocarlos le cambia el piso a
+todos.
+
 ## Pendiente
 
 1. Precios unitarios de construcción → sobrecosto estimado en pesos.
-2. Grafo completo con detección de comunidades (Louvain) y captura de
-   interventoría: interventor y constructor en el mismo clúster.
+2. Emparejar obra ↔ interventoría contrato a contrato (no comparten `noticeUID`;
+   requiere cascada de referencia citada + TF-IDF, con puerta de validación de
+   100 pares etiquetados a mano antes de publicar).
 3. Verificación satelital (Sentinel-1/2) sobre `direcci_n_de_ejecuci_n_del_contrato`,
    validada contra el Registro Nacional de Obras Civiles Inconclusas.
 4. Alertas **pre-adjudicación** sobre procesos abiertos, para que la observación

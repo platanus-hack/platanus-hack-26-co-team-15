@@ -185,6 +185,48 @@ WHERE doc_proveedor IS NOT NULL
        OR proveedor LIKE '%FONDO FINANCIERO DE PROYECTOS%');
 
 -- ---------------------------------------------------------------------
+-- Tasa de autosupervision POR ENTIDAD.
+--
+-- Que el ordenador del gasto sea tambien el supervisor aparece en 4.478
+-- contratos repartidos en 617 entidades, asi que es sistemico y no un
+-- puñado de casos. Pero dentro de algunas entidades es el 92-100% de
+-- todo lo que firman (EDUNA: 180 de 180; Piedecuesta: 240 de 260): eso es
+-- una COSTUMBRE ADMINISTRATIVA, no 240 fallas individuales de control.
+--
+-- Mezclar las dos cosas infla el conteo y distorsiona el ranking
+-- municipal. Se separan:
+--   * si en su entidad es la EXCEPCION -> anomalia del contrato (bandera)
+--   * si es la NORMA -> hallazgo de la entidad, se reporta aparte y una
+--     sola vez, en `entidades_autosupervision`
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE TABLE tasa_autosupervision AS
+SELECT
+  nit_entidad,
+  count(*) FILTER (WHERE doc_ordenador = doc_supervisor) AS n_auto,
+  count(*)                                              AS n_con_ambos,
+  count(*) FILTER (WHERE doc_ordenador = doc_supervisor)::DOUBLE / count(*) AS tasa
+FROM base
+WHERE doc_ordenador IS NOT NULL AND doc_supervisor IS NOT NULL
+GROUP BY nit_entidad;
+
+-- Entidades donde autosupervisar es la practica institucional. Es una
+-- historia mas fuerte que la suma de sus contratos, y se cuenta una vez.
+CREATE OR REPLACE TABLE entidades_autosupervision AS
+SELECT
+  t.nit_entidad,
+  mode(b.entidad)        AS entidad,
+  mode(b.departamento)   AS departamento,
+  mode(b.ciudad)         AS ciudad,
+  t.n_auto,
+  t.n_con_ambos,
+  t.tasa,
+  sum(b.valor_plausible) FILTER (WHERE b.doc_ordenador = b.doc_supervisor) AS valor_auto
+FROM tasa_autosupervision t
+JOIN base b USING (nit_entidad)
+WHERE t.tasa >= 0.5 AND t.n_con_ambos >= 20
+GROUP BY t.nit_entidad, t.n_auto, t.n_con_ambos, t.tasa;
+
+-- ---------------------------------------------------------------------
 -- Tope empirico de minima cuantia POR ENTIDAD.
 -- No hardcodeamos la tabla legal en SMMLV: la deducimos del propio
 -- comportamiento de la entidad (percentil 99 de sus minimas cuantias).
@@ -278,6 +320,14 @@ SELECT
   -- B5: el ordenador del gasto ha firmado en varias entidades distintas
   -- (senal de red que se mueve con el funcionario).
   (vo.n_entidades >= 3)                                                  AS f_ordenador_itinerante,
+  -- B6: el MISMO funcionario autoriza el gasto y supervisa la ejecucion,
+  -- Y en su entidad eso es la excepcion. Quien ordena el pago es quien
+  -- certifica que la obra se hizo: falla de segregacion de funciones.
+  -- Se exige tasa < 50% en la entidad para no marcar 240 veces lo que en
+  -- realidad es una costumbre de publicacion (ver tasa_autosupervision).
+  (b.doc_ordenador IS NOT NULL
+     AND b.doc_ordenador = b.doc_supervisor
+     AND coalesce(ta.tasa, 0) < 0.5)                                     AS f_ordenador_es_supervisor,
 
   -- ===== C. EJECUCION Y DINERO =====
   -- NOTA METODOLOGICA (verificada contra los datos, no supuesta):
@@ -341,7 +391,8 @@ SELECT
   rr.n_proveedores     AS ev_empresas_por_replegal,
   fr.n_hermanos_30d    AS ev_hermanos_30d,
   v.p50                AS ev_ventana_mediana_modalidad,
-  tm.cap               AS ev_tope_minima_entidad
+  tm.cap               AS ev_tope_minima_entidad,
+  ta.tasa              AS ev_tasa_autosupervision_entidad
 FROM base b
 LEFT JOIN red_cuentas      rc USING (cuenta_key)
 LEFT JOIN proveedores_publicos pp USING (doc_proveedor)
@@ -350,5 +401,6 @@ LEFT JOIN perfil_ordenador po USING (doc_ordenador)
 LEFT JOIN vol_ordenador    vo USING (doc_ordenador)
 LEFT JOIN carga_supervisor cs USING (doc_supervisor)
 LEFT JOIN base_ventana     v  USING (modalidad)
+LEFT JOIN tasa_autosupervision ta USING (nit_entidad)
 LEFT JOIN fraccionamiento  fr USING (id_contrato)
 LEFT JOIN tope_minima      tm ON b.nit_entidad = tm.nit_entidad AND b.anio = tm.anio;

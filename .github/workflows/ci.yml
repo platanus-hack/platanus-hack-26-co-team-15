@@ -1,0 +1,23 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  calidad:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check pipeline api tests
+      # La ingesta completa tarda ~4 min y golpea datos.gov.co. En CI se
+      # corre solo en main, no en cada PR, para no maltratar la API publica.
+      - name: ingesta + build + puertas de calidad
+        if: github.ref == 'refs/heads/main'
+        run: |
+          python pipeline/ingest.py
+          python pipeline/build.py --all
+          python -m pytest tests/ -v
+      - name: puertas de calidad (sin warehouse, se saltan las que lo necesitan)
+        if: github.ref != 'refs/heads/main'
+        run: python -m pytest tests/ -v

@@ -16,6 +16,7 @@
 CREATE OR REPLACE TABLE pesos (bandera VARCHAR, peso DOUBLE, grupo VARCHAR, glosa VARCHAR);
 INSERT INTO pesos VALUES
  ('f_cuenta_compartida',      3, 'Red',         'Proveedores distintos cobrando a la misma cuenta bancaria'),
+ ('f_ordenador_es_supervisor',3, 'Red',         'El mismo funcionario autoriza el gasto y supervisa la ejecucion'),
  ('f_sobrepago',              3, 'Dinero',      'Se pago mas del valor del contrato'),
  ('f_anticipo_no_declarado',  3, 'Dinero',      'Declara no tener anticipo pero registra anticipo girado'),
  ('f_anticipo_al_tope',       2, 'Dinero',      'Agota exactamente el anticipo maximo legal del 50%'),
@@ -45,6 +46,7 @@ WITH w AS (SELECT sum(peso) AS wtot FROM pesos)
 SELECT
   f.*,
   ( 3*coalesce(f_cuenta_compartida::INT,0)
+  + 3*coalesce(f_ordenador_es_supervisor::INT,0)
   + 3*coalesce(f_sobrepago::INT,0)
   + 3*coalesce(f_anticipo_no_declarado::INT,0)
   + 2*coalesce(f_anticipo_al_tope::INT,0)
@@ -67,6 +69,7 @@ SELECT
   + 1*coalesce(f_cuenta_consorcios::INT,0)
   )                                                     AS puntos_crudos,
   ( 3*coalesce(f_cuenta_compartida::INT,0)
+  + 3*coalesce(f_ordenador_es_supervisor::INT,0)
   + 3*coalesce(f_sobrepago::INT,0)
   + 3*coalesce(f_anticipo_no_declarado::INT,0)
   + 2*coalesce(f_anticipo_al_tope::INT,0)
@@ -90,6 +93,7 @@ SELECT
   ) / w.wtot                                            AS score,
   -- numero de banderas fuertes (peso 3) encendidas
   ( coalesce(f_cuenta_compartida::INT,0)
+  + coalesce(f_ordenador_es_supervisor::INT,0)
   + coalesce(f_sobrepago::INT,0)
   + coalesce(f_anticipo_no_declarado::INT,0)
   + coalesce(f_fraccionamiento::INT,0) )                AS n_banderas_fuertes
