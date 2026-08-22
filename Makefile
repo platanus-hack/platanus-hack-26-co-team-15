@@ -26,6 +26,10 @@ abiertos: ## Snapshot de hoy de licitaciones abiertas (~1 min)
 alertas:  ## Banderas pre-adjudicacion (requiere build + abiertos)
 	python pipeline/alertas.py
 
+emparejamiento: ## Candidatos obra<->interventoria por contrato, sin validar (A4)
+	python pipeline/build.py --steps 07 --no-export
+	python pipeline/emparejamiento_interventoria.py
+
 web:      ## Exporta JSON y sirve el tablero en http://localhost:8080
 	python pipeline/export_web.py
 	cd web && python -m http.server 8080

@@ -336,3 +336,58 @@ def test_urlproceso_es_una_url_no_un_struct(con):
         "CAST(urlproceso AS VARCHAR) sobre el STRUCT(url VARCHAR) crudo "
         "en vez de usar urlproceso.url" % malformados
     )
+
+
+# ---------------------------------------------------------------------------
+# 10. Emparejamiento obra<->interventoria por contrato (candidatos, A4).
+# Son candidatos automaticos SIN VALIDAR (ver pipeline/emparejamiento_
+# interventoria.py): estos tests solo cuidan la integridad estructural del
+# emparejamiento, no afirman que los matches sean correctos.
+# ---------------------------------------------------------------------------
+def test_emparejamiento_no_duplica_interventoria(con):
+    if "emparejamiento_interventoria" not in tablas(con):
+        pytest.skip("emparejamiento_interventoria aun no se ha corrido")
+    n_filas = con.execute("SELECT count(*) FROM emparejamiento_interventoria").fetchone()[0]
+    n_interv = con.execute(
+        "SELECT count(DISTINCT id_interventoria) FROM emparejamiento_interventoria"
+    ).fetchone()[0]
+    assert n_filas == n_interv, (
+        "%d filas pero %d interventorias distintas: se duplico alguna al "
+        "emparejar" % (n_filas, n_interv)
+    )
+
+
+def test_emparejamiento_mismo_entidad(con):
+    if "emparejamiento_interventoria" not in tablas(con):
+        pytest.skip("emparejamiento_interventoria aun no se ha corrido")
+    mal = con.execute(
+        """
+        SELECT count(*) FROM emparejamiento_interventoria e
+        JOIN base o ON o.id_contrato = e.id_obra
+        WHERE e.id_obra IS NOT NULL AND o.nit_entidad != e.nit_entidad
+        """
+    ).fetchone()[0]
+    assert mal == 0, (
+        "%d emparejamientos cruzan de entidad: el candidato de obra no "
+        "puede ser de una entidad distinta a la de la interventoria" % mal
+    )
+
+
+def test_emparejamiento_metodo_valido(con):
+    if "emparejamiento_interventoria" not in tablas(con):
+        pytest.skip("emparejamiento_interventoria aun no se ha corrido")
+    mal = con.execute(
+        "SELECT count(*) FROM emparejamiento_interventoria "
+        "WHERE metodo NOT IN ('citacion_explicita', 'similitud_texto')"
+    ).fetchone()[0]
+    assert mal == 0, "%d filas con metodo fuera de las dos categorias conocidas" % mal
+
+
+def test_emparejamiento_score_en_rango(con):
+    if "emparejamiento_interventoria" not in tablas(con):
+        pytest.skip("emparejamiento_interventoria aun no se ha corrido")
+    mal = con.execute(
+        "SELECT count(*) FROM emparejamiento_interventoria "
+        "WHERE score IS NOT NULL AND (score < 0 OR score > 1)"
+    ).fetchone()[0]
+    assert mal == 0, "%d filas con score de similitud fuera de [0,1]" % mal

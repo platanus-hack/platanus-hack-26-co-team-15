@@ -195,6 +195,73 @@ Resultado: **1.858 comunidades, la mayor de 50 proveedores**.
 - `PEDRO JOSE CORREDOR BECERRA` figura como representante legal de **24 empresas**
   proveedoras.
 
+### Emparejamiento obra ↔ interventoría (candidatos, validados por muestra)
+
+Lo de arriba detecta a nivel de **proveedor** que interventor y constructor son
+la misma red. Esto va un paso más allá: **qué interventoría vigila qué obra
+específica**, contrato a contrato.
+
+```
+python pipeline/build.py --steps 07 --no-export
+python pipeline/emparejamiento_interventoria.py
+```
+
+Obra e interventoría no comparten `noticeUID` ni ningún identificador común, así
+que el emparejamiento es en dos niveles, medidos contra los **13.074** contratos
+de interventoría:
+
+1. **Citación explícita (16,9%, 2.075 casos).** Algunas interventorías citan
+   casi literal el objeto de la obra que vigilan ("...AL CONTRATO DE OBRA CUYO
+   OBJETO ES `<texto>`"). Se extrae ese texto y se compara contra los objetos
+   de obra de la misma entidad. Es una cota inferior: solo se reconoce la
+   frase exacta "cuyo objeto es"/"objeto es", así que variantes como "objeto
+   corresponde a" quedan en el nivel 2.
+2. **Similitud de texto (el resto).** Se probó primero `jaccard()` nativo de
+   DuckDB (q-gramas de caracteres) y **no sirve**: dos objetos de obra sin
+   ninguna relación puntuaban 0,69 solo por compartir vocabulario común del
+   sector ("CONSTRUCCION", "MUNICIPIO", "MEJORAMIENTO"...). Se usa en cambio
+   TF-IDF (`scikit-learn`, ya era dependencia del proyecto) fiteado sobre el
+   corpus completo de objetos de obra, restringido a candidatos de la misma
+   entidad, con coseno como score.
+
+Cobertura medida: **99,8%** de las interventorías tiene al menos un candidato
+en su propia entidad (score mediana 0,68); el 0,2% restante son entidades sin
+ninguna obra registrada en el universo de construcción.
+
+**La fecha de firma no se usa como filtro.** Se midió la brecha entre
+interventoría y obra en los matches de citación explícita con score alto
+(≥0,6): el **18% está a más de 2 años de distancia**, porque algunas entidades
+reusan el mismo objeto en contratos de mantenimiento recurrente año a año.
+Filtrar por fecha habría descartado matches legítimos; queda como columna
+informativa (`dias_diferencia_firma`), no como filtro duro.
+
+**Validación manual sobre 102 pares** (`out/muestra_validacion_interventoria.csv`,
+estratificados por método y banda de score): el **score predice el acierto
+mucho mejor que el método** (citación explícita vs. similitud de texto).
+
+| Banda de score | Precisión medida |
+|---|---|
+| bajo (&lt;0,3) | 11,8% |
+| medio (0,3–0,6) | 55,9% |
+| **alto (≥0,6)** | **88,2%** |
+
+Con texto no truncado, la citación explícita con score alto es casi siempre
+un acierto por cita verbatim. Falla sistemáticamente cuando coincide entidad +
+tipo de proyecto pero no el sitio/beneficiario específico (dos jardines
+infantiles distintos en la misma ciudad, dos veredas distintas del mismo
+municipio). La validación también encontró **contaminación real en el
+universo de obras candidatas**: algunas filas marcadas `tipo_contrato='OBRA'`
+son en realidad otras interventorías, y hay colisiones donde dos
+interventorías distintas caen en el mismo `id_obra` — pendiente de investigar
+en el dataset fuente, no es un bug del script de emparejamiento.
+
+Dado esto, **score ≥ 0,6 es un candidato razonablemente confiable (88%); por
+debajo de 0,3 el método no sirve**. Aun así no se ha promovido a una bandera
+puntuada en `06_banderas_grafo.sql` — 102 pares es una muestra chica para fijar
+un umbral de producción, y primero hay que resolver la contaminación del
+universo de obras. `pipeline/emparejamiento_interventoria.py` sigue exportando
+la muestra para poder ampliar la validación.
+
 ### Decisión metodológica 10: el placeholder que se traga el grafo
 
 `domicilio_replegal` está poblado al 100%, pero el **63% es la cadena
@@ -369,7 +436,7 @@ cualquier paso futuro del satelital (20-29) que necesite el mismo patrón de sna
 
 ## Puertas de calidad
 
-`python -m pytest tests/` — **22 tests**. Cada uno existe porque el error
+`python -m pytest tests/` — **26 tests**. Cada uno existe porque el error
 correspondiente ya ocurrió en este proyecto y produjo números falsos. Fallan el PR,
 no son advertencias.
 
@@ -385,9 +452,12 @@ todos.
 ## Pendiente
 
 1. Precios unitarios de construcción → sobrecosto estimado en pesos.
-2. Emparejar obra ↔ interventoría contrato a contrato (no comparten `noticeUID`;
-   requiere cascada de referencia citada + TF-IDF, con puerta de validación de
-   100 pares etiquetados a mano antes de publicar).
+2. Emparejamiento obra↔interventoría (ver "Grafo de personas"): la validación
+   sobre 102 pares dio 88,2% de precisión con score ≥0,6. Antes de promoverlo
+   a una bandera puntuada en `06_banderas_grafo.sql` falta (a) investigar la
+   contaminación detectada en el universo de obras candidatas (filas de
+   interventoría mezcladas ahí) y (b) ampliar la muestra validada más allá de
+   102 pares.
 3. Verificación satelital (Sentinel-1/2) sobre `direcci_n_de_ejecuci_n_del_contrato`,
    validada contra el Registro Nacional de Obras Civiles Inconclusas.
 4. Publicar el tablero en algún hosting (`deploy-url` en
@@ -398,6 +468,9 @@ todos.
    `docker-compose` ya existen, pero `api/app/` está vacío y
    `pipeline/load_postgres.py` (referenciado por `make load`) no existe
    todavía.
+6. Tablero conversacional (MCP + Claude): plan de implementación en
+   [`MCP.md`](MCP.md). Reutiliza el esqueleto de `api/` del ítem 5 en vez de
+   crear un cuarto servicio.
 
 ## Fuentes
 
