@@ -1,0 +1,5 @@
+data/raw/
+data/warehouse/
+out/*.csv
+out/*.log
+__pycache__/
