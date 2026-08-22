@@ -305,6 +305,14 @@ Guarda un snapshot fechado en `data/raw/abiertos/YYYY-MM-DD.jsonl` y nunca lo
 borra: comparar contra el de ayer es lo que permite detectar addendas que
 mueven la fecha de cierre.
 
+`.github/workflows/alertas-diarias.yml` corre este flujo una vez al día
+(cron, con `workflow_dispatch` para correrlo a mano). Como todavía no hay
+hosting configurado (`deploy-url` sin llenar), el `alertas.json` resultante
+queda como artefacto descargable del workflow, no publicado. Los snapshots
+se acumulan entre corridas vía cache de Actions (nunca se comitean: siguen
+en `.gitignore`), y el núcleo (`ingest.py` + `build.py --all`) se reconstruye
+solo una vez por semana para no golpear datos.gov.co a diario.
+
 ### Decisión metodológica 13: "abierto" no significa "accionable"
 
 Se midió la plataforma en vivo antes de asumir nada. El filtro `estado_del_procedimiento
@@ -382,8 +390,14 @@ todos.
    100 pares etiquetados a mano antes de publicar).
 3. Verificación satelital (Sentinel-1/2) sobre `direcci_n_de_ejecuci_n_del_contrato`,
    validada contra el Registro Nacional de Obras Civiles Inconclusas.
-4. Alertas **pre-adjudicación** sobre procesos abiertos, para que la observación
-   al pliego se pueda radicar mientras el término sigue corriendo.
+4. Publicar el tablero en algún hosting (`deploy-url` en
+   `platanus-hack-project.jsonc` sigue vacío) y conectar ahí el `alertas.json`
+   diario que ya genera `.github/workflows/alertas-diarias.yml`, en vez de
+   dejarlo como artefacto descargable.
+5. Capa de serving (`api/`, Postgres): el esqueleto de FastAPI y
+   `docker-compose` ya existen, pero `api/app/` está vacío y
+   `pipeline/load_postgres.py` (referenciado por `make load`) no existe
+   todavía.
 
 ## Fuentes
 

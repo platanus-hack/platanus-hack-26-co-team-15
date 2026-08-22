@@ -1,0 +1,71 @@
+name: alertas-diarias
+on:
+  schedule:
+    # 07:00 hora Colombia (UTC-5). Una vez al dia alcanza: el snapshot solo
+    # necesita compararse contra el de ayer para detectar addendas.
+    - cron: "0 12 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements-dev.txt
+
+      - name: semana en curso (para el cache del nucleo)
+        id: semana
+        run: echo "valor=$(date -u +%G-%U)" >> "$GITHUB_OUTPUT"
+
+      # El nucleo (contratos ya adjudicados + warehouse) cambia poco de un
+      # dia a otro. Se cachea por semana para no golpear datos.gov.co ni
+      # gastar los ~4 min de ingest.py en cada corrida del cron: solo se
+      # reconstruye la primera vez que corre en una semana nueva.
+      - name: cache del nucleo
+        id: cache-nucleo
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/raw/contratos
+            data/raw/procesos
+            data/warehouse
+          key: nucleo-${{ steps.semana.outputs.valor }}
+          restore-keys: |
+            nucleo-
+
+      - name: ingesta + build del nucleo (solo si no hay cache de esta semana)
+        if: steps.cache-nucleo.outputs.cache-hit != 'true'
+        run: |
+          python pipeline/ingest.py
+          python pipeline/build.py --all
+
+      # Los snapshots de abiertos se acumulan para siempre (nunca se borran:
+      # alertas.py necesita el de ayer para la bandera de addenda). Las
+      # cache keys son inmutables, asi que se guarda una nueva por corrida
+      # (run_id) y se restaura la mas reciente por prefijo.
+      - name: cache de snapshots de abiertos
+        uses: actions/cache@v4
+        with:
+          path: data/raw/abiertos
+          key: abiertos-${{ github.run_id }}
+          restore-keys: |
+            abiertos-
+
+      - name: snapshot de hoy + alertas + export
+        run: |
+          python pipeline/ingest_abiertos.py
+          python pipeline/alertas.py
+          python pipeline/export_web.py
+
+      # No hay hosting configurado todavia (deploy-url sigue sin llenar en
+      # platanus-hack-project.jsonc): el tablero se sirve local, asi que
+      # el JSON generado se deja como artefacto descargable en vez de
+      # publicarse.
+      - name: subir alertas.json como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-data-${{ steps.semana.outputs.valor }}
+          path: web/data/
+          retention-days: 14
