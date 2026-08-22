@@ -20,6 +20,12 @@ all:      ## Todos los pasos SQL en orden
 valores:  ## Tipo de obra + la cifra en pesos (pasos 10-11)
 	python pipeline/build.py --steps 10 11 --no-export
 
+abiertos: ## Snapshot de hoy de licitaciones abiertas (~1 min)
+	python pipeline/ingest_abiertos.py
+
+alertas:  ## Banderas pre-adjudicacion (requiere build + abiertos)
+	python pipeline/alertas.py
+
 web:      ## Exporta JSON y sirve el tablero en http://localhost:8080
 	python pipeline/export_web.py
 	cd web && python -m http.server 8080

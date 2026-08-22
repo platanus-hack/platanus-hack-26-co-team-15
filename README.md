@@ -289,9 +289,79 @@ superficie clara, así que lleva etiquetas directas y vista de tabla como reliev
 obligatorio. Cada gráfico tiene su gemelo en tabla, y las limitaciones viajan **con**
 los datos (`meta.json`) para que el tablero no pueda mostrar una cifra sin su salvedad.
 
+## Alertas pre-adjudicación (Pilar 4)
+
+Todo lo de arriba mira contratos ya firmados. Esto mira licitaciones que
+**todavía aceptan ofertas**: mientras siguen abiertas, una observación al
+pliego puede cambiar el resultado. Después de adjudicado, ya es tarde.
+
+```
+python pipeline/ingest_abiertos.py   # snapshot de hoy (~1 min, reanudable)
+python pipeline/alertas.py           # requiere haber corrido build.py antes
+python pipeline/export_web.py        # agrega alertas.json al tablero
+```
+
+Guarda un snapshot fechado en `data/raw/abiertos/YYYY-MM-DD.jsonl` y nunca lo
+borra: comparar contra el de ayer es lo que permite detectar addendas que
+mueven la fecha de cierre.
+
+### Decisión metodológica 13: "abierto" no significa "accionable"
+
+Se midió la plataforma en vivo antes de asumir nada. El filtro `estado_del_procedimiento
+in ('Publicado','Abierto') AND adjudicado='No'` da **31.685 procesos** en el universo de
+construcción el 2026-08-22. Pero:
+
+- **85,5%** no tiene fecha de cierre de ofertas publicada.
+- **12,9%** tiene esa fecha **ya vencida** — la entidad no actualizó el estado.
+- Solo **1,6% (508 procesos)** tiene el plazo vigente hoy: ese es el único universo donde
+  una alerta sirve para algo.
+
+Mezclar los tres grupos bajo "alertas" habría sido engañoso — el titular no puede ser
+"31.685 alertas" cuando el 98,4% no es accionable ahora mismo. Por eso `universo` es una
+columna explícita (`accionable` / `zombie_vencido` / `sin_fecha_cierre`) y el tablero
+reporta los tres números, no solo el bonito.
+
+De los 508 procesos accionables, **43 presentan al menos una alerta**.
+
+### Las banderas
+
+| Bandera | Base |
+|---|---|
+| Plazo de ofertas más corto que el usual en su modalidad | Reutiliza `base_ventana` (percentil 10 histórico), ya calculado en el paso 02 |
+| Presupuesto pegado al techo de mínima cuantía de la entidad | El año en curso casi nunca tiene muestra propia suficiente (2026 solo tenía 4 entidades con n≥20): se usa el año más reciente disponible por entidad, documentado como simplificación |
+| La entidad tiene un patrón histórico de proponente único en esa categoría | Umbral **medido**, no supuesto: sobre 1.701 grupos históricos (entidad × categoría UNSPSC) con n≥5, el percentil 90 de la tasa de proponente único es 0,818. Se marca el decil superior (≥0,80), no "tuvo un caso" |
+| Nadie ha manifestado interés y el cierre es en una semana o menos | Alerta temprana de proceso que puede quedar vacío |
+| La fecha de cierre cambió desde el snapshot anterior | Requiere dos días de historial; en la primera corrida queda en `NULL` (no en `false`, que afirmaría falsamente que no hubo cambio) |
+
+### El bug que esto destapó, y que llevaba desde el primer commit
+
+Al construir esto encontré que `urlproceso` llega de Socrata como `STRUCT(url VARCHAR)`,
+no como texto. `CAST(urlproceso AS VARCHAR)` sobre un struct da su representación Python
+literal — `"{'url': 'https://...'}"` — en vez de la URL. Eso rompía **todo enlace clicable**
+del proyecto: los CSVs de `out/`, la consola de `report.py`, y ahora iba a romper también
+la tabla de alertas. Estaba ahí desde `sql/01_stage.sql` en el primer commit.
+
+No rompía el *join* (el regex de `notice_uid` encontraba el patrón igual, embebido en el
+texto mal formado), así que ninguna cifra agregada estaba mal — pero cualquier periodista
+que intentara hacer clic en un contrato se habría encontrado con basura. Se corrigió
+extrayendo `urlproceso.url` en la fuente (`01_stage.sql` y `30_procesos_abiertos.sql`), y
+se agregó una prueba de regresión (`test_urlproceso_es_una_url_no_un_struct`) para que no
+vuelva a colarse.
+
+### Limitación de diseño en `build.py --all`
+
+`--all` corría los pasos 04-06 (grafo) confiando en que `clusters`/`clusters_perfil` ya
+existieran de una corrida manual anterior de `pipeline/grafo.py` — nunca lo invocaba él
+mismo. Y con el paso 30 nuevo, `--all` directamente reventaba porque ese archivo necesita
+que `pipeline/alertas.py` le inyecte la ruta del snapshot del día antes de ejecutarlo.
+Se agregó una guardia genérica en `build.py`: cualquier `.sql` con un placeholder
+`__ALGO__` sin resolver se **omite con un mensaje claro** en vez de fallar, cuando se corre
+como parte de un lote (`--all` o `--steps` con varios pasos). Esto protege también a
+cualquier paso futuro del satelital (20-29) que necesite el mismo patrón de snapshot fechado.
+
 ## Puertas de calidad
 
-`python -m pytest tests/` — **17 tests**. Cada uno existe porque el error
+`python -m pytest tests/` — **22 tests**. Cada uno existe porque el error
 correspondiente ya ocurrió en este proyecto y produjo números falsos. Fallan el PR,
 no son advertencias.
 

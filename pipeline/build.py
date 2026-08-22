@@ -63,11 +63,27 @@ def sql_files(prefixes=None):
     return out
 
 
-def run_sql_file(con, path):
+def run_sql_file(con, path, allow_skip=False):
     with open(path, "r", encoding="utf-8") as fh:
         sql = fh.read()
     # las rutas de los JSONL se inyectan aqui para que el SQL sea portable
     sql = sql.replace("__RAW__", RAW.replace("\\", "/"))
+    # Algunos pasos (30_procesos_abiertos.sql y cualquier futuro paso que
+    # necesite un snapshot fechado, p.ej. el satelital en 20-29) llevan un
+    # placeholder que solo su propio script de orquestacion sabe rellenar
+    # (ver pipeline/alertas.py). Si queda un __ALGO__ sin resolver, ese
+    # archivo no se puede correr como SQL suelto.
+    quedan = re.findall(r"__[A-Z_]+__", sql)
+    if quedan:
+        msg = (
+            "%s tiene placeholders sin resolver (%s): no se ejecuta asi. "
+            "Usa el script de orquestacion de ese paso (p.ej. pipeline/alertas.py)."
+            % (os.path.basename(path), ", ".join(sorted(set(quedan))))
+        )
+        if allow_skip:
+            print("   omitido: %s" % msg, flush=True)
+            return
+        sys.exit(msg)
     con.execute(sql)
 
 
@@ -114,7 +130,7 @@ def main():
     for path in steps:
         t0 = time.time()
         print("\n>> %s" % os.path.basename(path), flush=True)
-        run_sql_file(con, path)
+        run_sql_file(con, path, allow_skip=(len(steps) > 1))
         print("   ok (%.1fs)" % (time.time() - t0), flush=True)
 
     print("")

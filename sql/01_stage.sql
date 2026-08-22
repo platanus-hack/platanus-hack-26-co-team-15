@@ -31,11 +31,15 @@ SELECT
   id_contrato,
   proceso_de_compra,
   referencia_del_contrato,
-  CAST(urlproceso AS VARCHAR)                           AS urlproceso,
+  -- urlproceso llega de Socrata como STRUCT(url VARCHAR), no como texto.
+  -- CAST(... AS VARCHAR) sobre un struct da su representacion Python
+  -- "{'url': '...'}" en vez de la URL: eso rompe todo enlace clicable en
+  -- reportes, CSVs y el tablero. Se extrae el campo real.
+  urlproceso.url                                        AS urlproceso,
   -- LLAVE REAL contrato<->proceso. Los ids nativos estan en namespaces
   -- distintos (contratos usa CO1.BDOS.*, procesos usa CO1.REQ.*) y no
   -- cruzan. El unico puente comun es el noticeUID de la URL publica.
-  nullif(regexp_extract(CAST(urlproceso AS VARCHAR), 'CO1\.NTC\.[0-9]+'), '') AS notice_uid,
+  nullif(regexp_extract(urlproceso.url, 'CO1\.NTC\.[0-9]+'), '') AS notice_uid,
 
   -- entidad contratante
   norm_id(nit_entidad)                                  AS nit_entidad,
@@ -148,7 +152,7 @@ SELECT
   norm_txt(nombre_del_adjudicador)                         AS adjudicador,
   norm_id(nit_del_proveedor_adjudicado)                    AS doc_proveedor,
   norm_txt(nombre_del_proveedor)                           AS proveedor,
-  CAST(urlproceso AS VARCHAR)                              AS urlproceso,
-  nullif(regexp_extract(CAST(urlproceso AS VARCHAR), 'CO1\.NTC\.[0-9]+'), '') AS notice_uid
+  urlproceso.url                                           AS urlproceso,
+  nullif(regexp_extract(urlproceso.url, 'CO1\.NTC\.[0-9]+'), '') AS notice_uid
 FROM read_json_auto('__RAW__/procesos/*.jsonl', format='newline_delimited',
                     maximum_object_size=20000000, union_by_name=true, sample_size=-1);

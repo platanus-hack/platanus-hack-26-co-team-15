@@ -257,6 +257,36 @@ footer { color: var(--muted); font-size: 12px; margin-top: 44px; }
   <div class="tbl" id="tbl-dep"></div>
 </div>
 
+<h2>Alertas antes de que se adjudique</h2>
+<div class="card" style="margin-bottom:16px">
+  <div class="card-head">
+    <div class="card-title">Por qué esto y no solo autopsias</div>
+  </div>
+  <p class="card-sub">Todo lo de arriba mira contratos ya firmados. Esto mira licitaciones que
+     <b>todavía aceptan ofertas</b>: mientras siguen abiertas, una observación al pliego puede
+     cambiar el resultado. Después de adjudicado, ya es tarde.</p>
+  <div class="tiles" id="tiles-alertas"></div>
+</div>
+
+<div class="card" id="card-alertas">
+  <div class="card-head">
+    <div class="card-title">Procesos abiertos con indicio, ordenados por urgencia</div>
+  </div>
+  <p class="card-sub" id="alertas-sub"></p>
+  <div class="filters">
+    <div>
+      <label for="f-al-min">Mostrar</label>
+      <select id="f-al-min">
+        <option value="1">Con alguna alerta</option>
+        <option value="0">Todos los accionables</option>
+      </select>
+    </div>
+    <div class="spacer"></div>
+    <div style="color:var(--muted);font-size:12px">Clic en un proceso abre la licitación en SECOP II.</div>
+  </div>
+  <div id="tbl-alertas"></div>
+</div>
+
 <h2>Red de proveedores</h2>
 <div class="card">
   <div class="card-head">
@@ -376,14 +406,17 @@ function niceMax(v) {
 
 /* ===================================================================== */
 let D = {};
-Promise.all(["titulares", "indicios", "municipios", "departamentos", "tipo_obra",
-             "fuentes", "autosupervision", "red", "meta"]
-  .map(n => fetch(`data/${n}.json`).then(r => r.json())))
+const REQUERIDOS = ["titulares", "indicios", "municipios", "departamentos",
+                    "tipo_obra", "fuentes", "autosupervision", "red", "meta"];
+Promise.all(REQUERIDOS.map(n => fetch(`data/${n}.json`).then(r => r.json())))
   .then(res => {
-    ["titulares", "indicios", "municipios", "departamentos", "tipo_obra",
-     "fuentes", "autosupervision", "red", "meta"].forEach((n, i) => D[n] = res[i]);
-    init();
+    REQUERIDOS.forEach((n, i) => D[n] = res[i]);
+    /* alertas.json es OPCIONAL: solo existe si alguien corrio
+       pipeline/alertas.py. Los otros frentes (precios, satelital) no lo
+       generan, y el tablero debe seguir funcionando sin esa seccion. */
+    return fetch("data/alertas.json").then(r => r.ok ? r.json() : null).catch(() => null);
   })
+  .then(alertas => { D.alertas = alertas; init(); })
   .catch(e => {
     document.getElementById("hero-note").textContent =
       "No se pudieron cargar los datos. Sirve la carpeta con: python -m http.server 8080";
@@ -428,6 +461,7 @@ function init() {
   drawIndicios();
   fillFilters();
   drawTerritorio();
+  drawAlertas();
   fillClusters();
   drawRed();
 
@@ -645,7 +679,81 @@ function drawDepartamentos(data) {
 }
 
 /* =====================================================================
-   4. Red — grafo de fuerzas.
+   4. Alertas pre-adjudicacion. Es una TABLA, no un grafico: mas de 7
+   clases que importan a la vez (entidad, modalidad, plazo, tipo de
+   alerta) y el trabajo del lector es identificar UN proceso puntual para
+   hacer clic, no comparar magnitudes entre todos. Ver choosing-a-form.md:
+   "mas de ~7 clases que cargan significado -> tabla".
+   ===================================================================== */
+const GLOSA_ALERTA = {
+  f_ventana_corta: "Plazo de ofertas mas corto que el usual en su modalidad",
+  f_al_tope_minima: "Presupuesto pegado al techo de minima cuantia de la entidad",
+  f_historial_proponente_unico: "La entidad casi siempre tiene un solo oferente en esta categoría",
+  f_sin_interes_a_tiempo: "Nadie ha manifestado interés y el cierre es en una semana o menos",
+  f_cierre_movido: "La fecha de cierre cambió desde el snapshot anterior",
+};
+function drawAlertas() {
+  const host = document.getElementById("card-alertas");
+  const tilesHost = document.getElementById("tiles-alertas");
+  if (!D.alertas) {
+    tilesHost.innerHTML = `<div class="tile"><div class="label">Alertas pre-adjudicación</div>
+      <div class="value" style="font-size:16px">Aún no generadas</div>
+      <div class="note">Corre pipeline/ingest_abiertos.py y pipeline/alertas.py</div></div>`;
+    host.style.display = "none";
+    return;
+  }
+  const U = Object.fromEntries(D.alertas.resumen_universo.map(u => [u.universo, u.n]));
+  const total = (U.accionable || 0) + (U.zombie_vencido || 0) + (U.sin_fecha_cierre || 0);
+  const conAlerta = D.alertas.accionables.filter(a => a.n_banderas >= 1).length;
+  tilesHost.innerHTML = [
+    ["Procesos con cierre vigente hoy", int(U.accionable || 0), "los únicos donde se puede actuar"],
+    ["De esos, con alguna alerta", int(conAlerta), "ver tabla abajo"],
+    ["Sin fecha de cierre publicada", int(U.sin_fecha_cierre || 0),
+      pct((U.sin_fecha_cierre || 0) / total) + " del total — opacidad, no riesgo de fraude"],
+    ["Con cierre ya vencido", int(U.zombie_vencido || 0), "la entidad no actualizó el estado"],
+  ].map(([l, v, n]) => `<div class="tile"><div class="label">${l}</div>
+    <div class="value">${v}</div><div class="note">${n}</div></div>`).join("");
+
+  document.getElementById("alertas-sub").textContent =
+    `Generado ${D.alertas.generado}. De ${int(U.accionable || 0)} procesos con plazo vigente, ` +
+    `${conAlerta} presentan al menos un indicio.`;
+
+  document.getElementById("f-al-min").onchange = renderTablaAlertas;
+  renderTablaAlertas();
+}
+function renderTablaAlertas() {
+  const soloConAlerta = document.getElementById("f-al-min").value === "1";
+  let data = D.alertas.accionables.filter(a => !soloConAlerta || a.n_banderas >= 1);
+  data = data.slice(0, 200);
+  const t = document.createElement("table");
+  const cols = ["Entidad", "Ciudad", "Modalidad", "Presupuesto", "Cierra en", "Alertas"];
+  t.innerHTML = "<thead><tr>" + cols.map((c, i) =>
+    `<th${i >= 3 ? ' class="num"' : ""}>${c}</th>`).join("") + "</tr></thead>";
+  const tb = document.createElement("tbody");
+  data.forEach(a => {
+    const flags = Object.keys(GLOSA_ALERTA).filter(k => a[k] === true);
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      `<td><a href="${a.urlproceso}" target="_blank" rel="noopener" style="color:inherit">` +
+        `${titleCase(a.entidad)}</a></td>` +
+      `<td>${titleCase(a.ciudad || "—")}</td>` +
+      `<td>${titleCase((a.modalidad || "").slice(0, 34))}</td>` +
+      `<td class="num">${money(a.precio_base)}</td>` +
+      `<td class="num">${a.dias_restantes} día${a.dias_restantes === 1 ? "" : "s"}</td>` +
+      `<td class="num">${flags.length}</td>`;
+    if (flags.length) hover(tr, tipHTML(titleCase(a.entidad), flags.map(k => ["", GLOSA_ALERTA[k]])));
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  document.getElementById("tbl-alertas").replaceChildren(t);
+  if (!data.length) {
+    document.getElementById("tbl-alertas").innerHTML =
+      '<p style="color:var(--muted)">Ningún proceso cumple el filtro.</p>';
+  }
+}
+
+/* =====================================================================
+   5. Red — grafo de fuerzas.
    TRES colores categoricos (slots 1-2-3), que es el tope para formas
    "todos contra todos" como un grafo: los tres primeros slots pasan los
    gates all-pairs en ambos modos. El aqua queda bajo 3:1 en modo claro,
