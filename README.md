@@ -221,6 +221,70 @@ Se separó en dos indicadores:
 - Donde es la **norma** → hallazgo de la entidad, reportado una sola vez:
   **33 entidades, $1,97 billones** en `entidades_autosupervision`.
 
+## La cifra en pesos
+
+```
+python pipeline/build.py --steps 10 11 --no-export
+```
+
+De los **$209 billones** de obra pública analizada:
+
+| Indicio | Contratos | Valor | % del universo |
+|---|---|---|---|
+| **Sin competencia: un solo oferente** | 19.116 | **$31,2 billones** | **14,9%** |
+| Ventana de ofertas más corta de su modalidad | 11.050 | $13,3 billones | 6,4% |
+| Adjudicado al 99,5-100% del presupuesto oficial | 10.077 | $10,4 billones | 5,0% |
+| Obra adjudicada por contratación directa | 8.944 | $8,6 billones | 4,1% |
+| Grupo económico que vigila y construye | 4.793 | $4,6 billones | 2,2% |
+| Mismo funcionario ordena el gasto y supervisa | 1.773 | $3,5 billones | 1,7% |
+| Fraccionamiento: contratos hermanos en 30 días | 3.993 | $3,0 billones | 1,4% |
+
+Las filas **no se suman entre sí**: un contrato puede presentar varios indicios y se
+cuenta en cada uno. Cada línea se compara contra el total del universo.
+
+Por fuente de recursos, el SGP tiene la tasa más alta de indicios (**17,9%**), por
+encima de regalías (10,7%) y recursos propios territoriales (11,1%). Y Cundinamarca
+adjudicó **44,2%** de su obra pública sin competencia.
+
+### Decisión metodológica 12: el sobrecosto por unidad no es calculable
+
+El plan original era un modelo hedónico de costo por unidad física — costo por
+kilómetro, por m², por aula — y calcular el sobrecosto como residual. **No es posible
+con datos abiertos**: solo el **0,9%** de las 52.355 descripciones de obra declara una
+cantidad con unidad (258 mencionan km, 21 mencionan m²).
+
+Tampoco sirve el atajo de comparar contra la mediana del mismo tipo de obra: se midió
+la dispersión y el percentil 95 es **59 veces la mediana** en vías y 39 en educativo.
+Comparar totales dentro de un tipo mide **tamaño de proyecto, no sobreprecio**; un
+indicador "N veces la mediana" solo marcaría las obras grandes. Por eso no existe.
+
+Lo que sí se publica es una cifra aritmética y verificable: **cuánta plata pública pasó
+por contratos con indicios**. No cuánta se robaron — eso requiere una investigación
+judicial que este proyecto no hace ni reemplaza. La clasificación por tipo de obra
+(49,3% de cobertura) se usa **solo para segmentar**, nunca para comparar precios.
+
+La única vía a precios unitarios reales es parsear los APU de los pliegos en PDF, que
+sigue pendiente y es caro.
+
+## Tablero
+
+```
+python pipeline/export_web.py     # JSON estático a web/data/
+cd web && python -m http.server 8080
+```
+
+Un solo HTML, sin build step, sin npm, sin CDN: funciona offline. Cuatro vistas —
+la cifra líder, la plata por indicio, un **dumbbell** de tasa cruda contra tasa
+ajustada por municipio (la forma *es* el argumento metodológico: se ve el jalón hacia
+la media donde hay poca evidencia), una dispersión de departamentos, y un explorador
+de la red de proveedores con layout de fuerzas determinista.
+
+Paleta validada con el validador del sistema de diseño: los 3 slots del grafo pasan
+todos los gates *all-pairs* en modo claro y oscuro. El aqua queda en 2,74:1 sobre
+superficie clara, así que lleva etiquetas directas y vista de tabla como relieve
+obligatorio. Cada gráfico tiene su gemelo en tabla, y las limitaciones viajan **con**
+los datos (`meta.json`) para que el tablero no pueda mostrar una cifra sin su salvedad.
+
 ## Puertas de calidad
 
 `python -m pytest tests/` — **17 tests**. Cada uno existe porque el error

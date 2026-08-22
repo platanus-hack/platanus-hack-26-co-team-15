@@ -17,6 +17,13 @@ graph:    ## Solo el grafo (pasos 04-09), sin recalcular el nucleo
 all:      ## Todos los pasos SQL en orden
 	python pipeline/build.py --all
 
+valores:  ## Tipo de obra + la cifra en pesos (pasos 10-11)
+	python pipeline/build.py --steps 10 11 --no-export
+
+web:      ## Exporta JSON y sirve el tablero en http://localhost:8080
+	python pipeline/export_web.py
+	cd web && python -m http.server 8080
+
 report:   ## Rankings por consola + CSVs en out/
 	python pipeline/report.py
 
