@@ -1,4 +1,4 @@
-# Plomada
+# Plumb
 
 > La plomada es el instrumento que revela lo que está torcido.
 
