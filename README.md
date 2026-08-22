@@ -1,5 +1,9 @@
 # Plumb
 
+<img src="./project-logo.png" alt="Plomada" width="200" />
+
+**Platanus Hack 26: Bogotá · Track 🔑 Access · team-15**
+
 > La plomada es el instrumento que revela lo que está torcido.
 
 Detección de riesgo de irregularidad en la **contratación de obra pública** de
@@ -324,3 +328,11 @@ todos.
 
 Código y metodología abiertos. Los datos son públicos y de propiedad del Estado
 colombiano.
+
+## Equipo — team-15
+
+- Andres Alejandro Niño Araujo ([@anothercoolcoder](https://github.com/anothercoolcoder))
+- Santiago Reina Diaz ([@rarechimera87](https://github.com/rarechimera87))
+- Jose Luis Salamanca Lopez ([@joseslk](https://github.com/joseslk))
+- Camilo Andres Niño Amaya ([@camiloAndres11](https://github.com/camiloAndres11))
+- Diego Andrés Combariza Puerto ([@diegocombariza11](https://github.com/diegocombariza11))
