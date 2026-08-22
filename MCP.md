@@ -6,6 +6,11 @@ tablero**, en vez de solo mirando gráficos y tablas. Este documento es para
 el equipo y para quien trabaje el front — no requiere leer el resto del
 código para entender qué construir y en qué orden.
 
+**Estado: servidor MCP y proxy de chat construidos y probados localmente
+(`api/app/mcp/server.py`, `api/app/main.py`). Falta el último tramo — probar
+contra una URL pública real (túnel o deploy) — antes de conectar el front.**
+Ver "Qué se probó" más abajo para el detalle exacto.
+
 ## Por qué esta arquitectura
 
 La API de Claude (Messages API) tiene un **MCP connector** nativo: le pasas
@@ -59,45 +64,68 @@ integrar.
 
 ## Piezas a construir
 
-### 1. Servidor MCP — `api/app/mcp/`
+### 1. Servidor MCP — `api/app/mcp/server.py` (construido)
 
-SDK oficial de Python (`mcp`), transporte HTTP (Claude necesita una URL
-pública a la que llamar, no `stdio`). Revisar la documentación del SDK al
-implementar para la forma exacta de montarlo como sub-ruta de la app FastAPI
-existente — no está fijada aquí a propósito, para no prescribir una API que
-no se ha verificado contra el SDK instalado.
+SDK oficial de Python (`mcp`, versión 2.x — **exige Python ≥3.10**; el
+pipeline sigue fijado a 3.9, por eso `api/` tiene su propio entorno y sus
+propias dependencias en `api/requirements.txt`, igual que ya hacía con
+FastAPI/Postgres).
 
-Tools propuestas (cada una una consulta DuckDB acotada, con `LIMIT` explícito
-para no volcar tablas completas al contexto del modelo):
+Tools implementadas hoy (cada una una consulta DuckDB acotada a `LIMIT_DURO
+= 50` filas, para no volcar tablas completas al contexto del modelo):
 
 | Tool | Qué responde | Fuente |
 |---|---|---|
 | `resumen_indicios` | Cifras titulares (contratos atípicos, plata en riesgo) | `web/data/titulares.json`, `meta.json` |
-| `buscar_contratos_atipicos(entidad?, departamento?, tipo_contrato?, min_valor?, limit=20)` | Lista de contratos marcados, con sus banderas | `base.parquet` / `puntajes` |
-| `perfil_entidad(nit_o_nombre)` | Resumen de una entidad: contratos, valor, banderas, autosupervisión | `base.parquet`, `web/data/departamentos.json` |
-| `buscar_proveedor(nombre_o_doc)` | Red del proveedor: cluster, si hace obra e interventoría, contratos | `web/data/red.json` |
-| `alertas_preadjudicacion(entidad?, solo_con_alerta=true, limit=20)` | Procesos abiertos con banderas pre-adjudicación | `web/data/alertas.json` |
+| `buscar_contratos_atipicos(entidad?, departamento?, tipo_contrato?, valor_minimo?, limite=20)` | Lista de contratos marcados, con sus banderas | `data/exports/puntajes.parquet` |
+| `perfil_entidad(nombre_o_nit)` | Resumen de una entidad: contratos, valor, atípicos | `data/exports/puntajes.parquet` |
 
-Reparte estas tools entre los dueños de cada pilar (quien escribió
-`06_banderas_grafo.sql` sabe mejor qué exponer en `perfil_entidad`/
-`buscar_proveedor`, quien escribió `alertas.py` sabe qué exponer en
-`alertas_preadjudicacion`, etc.) — no hace falta que una sola persona
-entienda todo el warehouse para escribir su tool.
+Pendientes de agregar (mismo patrón, solo falta escribir la tool): `buscar_proveedor`
+(red, `web/data/red.json`) y `alertas_preadjudicacion` (`web/data/alertas.json`).
+Repártanlas entre los dueños de cada pilar — quien escribió `06_banderas_grafo.sql`
+sabe mejor qué exponer en `buscar_proveedor`, quien escribió `alertas.py` sabe
+qué exponer en `alertas_preadjudicacion`.
 
-### 2. Proxy de chat — extiende `api/app/main.py`
+Correr en local:
+```
+python -m venv .venv-mcp
+.venv-mcp/Scripts/pip install -r api/requirements.txt
+.venv-mcp/Scripts/python api/app/mcp/test_smoke.py           # via stdio, sin nada mas corriendo
+.venv-mcp/Scripts/python api/app/mcp/server.py --http &      # via http, puerto 8765
+.venv-mcp/Scripts/python api/app/mcp/test_smoke.py --http
+```
 
-- `POST /chat`, recibe `{mensaje, historial?}`.
+### 2. Proxy de chat — `api/app/main.py` (construido)
+
+- `POST /chat`, recibe `{mensaje, historial?}`, responde streaming (SSE).
 - Llama a la Messages API de Claude con:
+  ```python
+  client.beta.messages.stream(
+      model="claude-opus-5", max_tokens=4096,
+      betas=["mcp-client-2025-11-20"],
+      mcp_servers=[{"type": "url", "url": MCP_SERVER_URL, "name": "plomada"}],
+      tools=[{"type": "mcp_toolset", "mcp_server_name": "plomada"}],
+      messages=messages,
+  )
   ```
-  mcp_servers: [{ type: "url", url: "<url pública del propio servicio>/mcp", name: "plomada" }]
-  tools:       [{ type: "mcp_toolset", mcp_server_name: "plomada" }]
-  ```
-  más el beta header `mcp-client-2025-11-20`. Las dos partes son obligatorias:
-  mandar `mcp_servers` sin el `tools` correspondiente lo rechaza la API.
+  Las dos partes (`mcp_servers` + `tools` con `mcp_toolset`) son obligatorias
+  — mandar una sin la otra lo rechaza la API.
 - `ANTHROPIC_API_KEY` vive como variable de entorno en Render — **nunca** en
   el front ni en el repo.
-- Responde en streaming (SSE) para que el chat se sienta vivo, no que
-  aparezca todo de un bloque al final.
+- Errores (auth, rate limit, MCP inalcanzable) se devuelven como un evento
+  SSE `{"error": "..."}` en vez de tumbar la conexión — el front debe leer
+  ese caso y mostrar "el asistente no está disponible ahora".
+
+**Detalle técnico importante para quien lo toque:** `/mcp` y `/chat` viven en
+el **mismo proceso FastAPI** (necesario en Render, que solo expone un puerto
+por servicio) montando el sub-app del servidor MCP (`mcp.streamable_http_app()`)
+dentro de la app de FastAPI. Eso por sí solo **no alcanza**: Starlette no
+propaga el lifespan de un sub-app montado automáticamente, así que el
+"session manager" del MCP nunca arranca y toda request a `/mcp` revienta con
+`RuntimeError: Task group is not initialized`. Se resuelve combinando los
+lifespans a mano con `AsyncExitStack` (ver `api/app/main.py`, función
+`lifespan`) — verificado con una prueba real antes de dejarlo así, no es
+una suposición.
 
 Esto de paso le da un uso real al esqueleto `api/` que llevaba vacío desde
 antes (ver ítem 5 de "Pendiente" en el README).
@@ -119,19 +147,39 @@ Todo lo que necesita saber, sin tocar nada de lo de arriba:
   `alertas.json` cuando nadie corrió `pipeline/alertas.py` (ver
   `web/index.html`, función `drawAlertas`).
 
-## Orden de trabajo sugerido
+## Orden de trabajo — qué ya está hecho
 
-1. Servidor MCP corriendo local, probado con el inspector de MCP o con
-   Claude Code apuntando a `localhost` — sin proxy ni front todavía.
-2. **Ojo con esto:** Claude llama al MCP server desde la nube de Anthropic,
-   así que `localhost` no sirve para probar el connector remoto completo.
-   Hace falta un túnel (ngrok, Cloudflare Tunnel) o ya desplegar un ambiente
-   de prueba antes de poder probar `/chat` de punta a punta.
-3. Endpoint `/chat` en `api/`, probado con curl/Postman contra el MCP (local
-   con túnel, o ya desplegado).
-4. Deploy a Render — un solo servicio sirviendo `/chat` y `/mcp`.
-5. Widget de chat en el front, apuntando al Render ya desplegado.
-6. (Futuro, no bloqueante) migrar la fuente de datos del MCP de
+1. ✅ Servidor MCP corriendo local, probado con un cliente MCP real
+   (`api/app/mcp/test_smoke.py`) por **stdio y por HTTP**, contra datos
+   reales del warehouse.
+2. ✅ `/chat` construido en `api/app/main.py`, con `/mcp` montado en el mismo
+   proceso (verificado: arranca, `/health` responde, `/mcp` responde).
+3. ✅ **Confirmado el límite que ya preveíamos:** al probar `/chat` de
+   verdad (con una API key real, pidiéndole a Claude una pregunta), la
+   respuesta de Anthropic fue exactamente:
+   > `"Connection error while communicating with MCP server. The server may
+   > be unavailable or unresponsive."`
+
+   porque `MCP_SERVER_URL` apuntaba a `http://127.0.0.1:8000/mcp` — Claude
+   corre en la nube de Anthropic y no puede alcanzar `localhost`. Esto no es
+   un bug: es exactamente la limitación que ya estaba documentada antes de
+   escribir código. **Sin excepción, no hay forma de probar el flujo
+   completo sin una URL pública** (ni siquiera ejecutando todo en la misma
+   máquina).
+
+## Lo que falta — bloqueado en infraestructura, no en código
+
+4. **Conseguir una URL pública** para `api/` — un túnel (ngrok, Cloudflare
+   Tunnel) para probar rápido, o ya el deploy real a Render. Ninguna
+   herramienta de túnel estaba disponible en este entorno de prueba (no hay
+   `ngrok`/`cloudflared`/`npx` instalados), así que alguien del equipo con
+   acceso a instalar herramientas o a la cuenta de Render tiene que dar este
+   paso.
+5. Con la URL pública, poner `SELF_URL=https://<esa-url>` como variable de
+   entorno del servicio y repetir la prueba de `/chat` — ahí sí se prueba el
+   round-trip completo (front → proxy → Claude → MCP → datos → respuesta).
+6. Widget de chat en el front, apuntando a esa URL ya desplegada.
+7. (Futuro, no bloqueante) migrar la fuente de datos del MCP de
    parquet/JSON a Postgres, si `pipeline/load_postgres.py` llega a
    construirse.
 
