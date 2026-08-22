@@ -1,5 +1,14 @@
+# Datos: crudos, warehouse y snapshots derivados. Se regeneran con
+# `python pipeline/ingest.py` + `python pipeline/build.py`.
+# base.parquet se publica en R2/S3 versionado, no en git (26 MB).
 data/raw/
 data/warehouse/
-out/*.csv
-out/*.log
+data/exports/
+out/
 __pycache__/
+*.pyc
+.venv/
+node_modules/
+.next/
+.env
+.env.local

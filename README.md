@@ -51,11 +51,20 @@ del fraude en obra pública, y solo se ve si tienes los dos lados.
 ## Cómo correrlo
 
 ```bash
-pip install duckdb requests
-python src/ingest.py    # ~4 min, descarga a data/raw/ (reanudable)
-python src/build.py     # ~20 s, arma data/warehouse/plomada.duckdb
-python src/report.py    # reportes por consola + CSVs en out/
+pip install -r requirements-dev.txt
+
+python pipeline/ingest.py                            # ~4 min, reanudable
+python pipeline/build.py                             # ~20 s, warehouse + base.parquet
+python pipeline/build.py --steps 04 05 --no-export   # grafo: nodos y aristas
+python pipeline/grafo.py                             # comunidades
+python pipeline/build.py --steps 06 --no-export      # banderas de red
+python pipeline/report.py                            # rankings + CSVs en out/
+python -m pytest tests/                              # 17 puertas de calidad
 ```
+
+Con Docker (fija Python 3.11 para todo el equipo): `docker compose up`.
+El entorno local de Windows no tiene `make`; las recetas del `Makefile` son
+one-liners a propósito, se pueden copiar tal cual.
 
 ## Decisiones metodológicas (verificadas contra los datos, no supuestas)
 
