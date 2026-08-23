@@ -14,7 +14,7 @@ export function dibujar(contenedorSvg, contenedorTabla, contenedorLeyenda, datos
   const T = tonosViz();
   const filas = datos.slice(0, 22);
   if (!filas.length) {
-    contenedorSvg.textContent = "Sin municipios que cumplan el filtro.";
+    contenedorSvg.textContent = "Ningún municipio cae dentro de este filtro.";
     contenedorTabla.replaceChildren();
     return;
   }

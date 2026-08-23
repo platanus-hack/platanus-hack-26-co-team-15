@@ -49,6 +49,16 @@ class Config(BaseSettings):
     limite_max: int = 200
     limite_max_mcp: int = 50
 
+    # Techos del asistente /chat. BYOK protege la plata (cada usuario paga
+    # con su propia key) pero NO protege el servicio: cada stream abierto
+    # es una conexion viva con Anthropic durante minutos, y sin techo unas
+    # decenas de conexiones lentas acaparan el proceso entero -- incluida
+    # la API de datos, que comparte el mismo servidor. Ademas, sin limite
+    # por IP el proxy sirve de relay anonimo para probar keys ajenas.
+    chat_max_concurrentes: int = 8
+    chat_max_por_ip: int = 6      # peticiones por IP por ventana
+    chat_ventana_seg: int = 60
+
     @property
     def dsn(self) -> str:
         """DSN normalizado. Acepta la forma de SQLAlchemy

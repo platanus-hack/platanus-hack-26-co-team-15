@@ -96,7 +96,7 @@
         var sig = CORTES[i + 1];
         return '<i style="background:' + TONO.seq[i] + '"></i>' +
                (c * 100) + (sig ? '–' + (sig * 100) : '+') + '%';
-      }).join('<br>') + '<br><i style="background:' + TONO.sinDato + '"></i>sin datos';
+      }).join('<br>') + '<br><i style="background:' + TONO.sinDato + '"></i>sin medición';
       return d;
     };
     leyenda.addTo(mapa);

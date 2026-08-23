@@ -27,8 +27,12 @@ services:
         fromDatabase:
           name: plomada-db
           property: connectionString
+      # OJO: debe ser el host REAL del servicio (el mismo que consume el
+      # sitio en PLOMADA_API_URL, abajo). De aqui sale el allowlist de Host
+      # del transporte MCP y la URL con la que Claude alcanza /mcp: con un
+      # host equivocado, /mcp responde 421 a todo y /asistente/ muere.
       - key: SELF_URL
-        value: https://plomada-api.onrender.com
+        value: https://plumb-duy6.onrender.com
       - key: CORS_ORIGINS
         sync: false
 

@@ -24,6 +24,8 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
+from collections import defaultdict, deque
 from contextlib import AsyncExitStack, asynccontextmanager
 
 import anthropic
@@ -162,7 +164,8 @@ app.add_middleware(
 # ---------------------------------------------------------------------
 @app.exception_handler(HTTPException)
 async def _http(request: Request, exc: HTTPException):
-    codigos = {400: "parametro_invalido", 404: "no_encontrado", 503: "datos_no_disponibles"}
+    codigos = {400: "parametro_invalido", 404: "no_encontrado",
+               429: "limite_alcanzado", 503: "datos_no_disponibles"}
     return error(codigos.get(exc.status_code, "error"), str(exc.detail), exc.status_code)
 
 
@@ -217,24 +220,89 @@ class ChatRequest(BaseModel):
     historial: list[Turno] = []
 
 
+# ---------------------------------------------------------------------
+# Techos de /chat. BYOK cuida la plata del lector; esto cuida el
+# SERVICIO. Contadores en memoria del proceso: Render corre una sola
+# instancia y no vale la pena un Redis para esto. Si algun dia hay
+# varias instancias, cada una aplica su techo por separado -- degrada a
+# un limite mas laxo, no a ninguno.
+# ---------------------------------------------------------------------
+_chat_activos = 0                                  # streams vivos ahora mismo
+_chat_golpes: dict[str, deque] = defaultdict(deque)  # ip -> tiempos recientes
+
+
+def _ip_cliente(request: Request) -> str:
+    # Render pone la IP real del visitante de primera en X-Forwarded-For;
+    # sin proxy (desarrollo local) queda la del socket.
+    xff = request.headers.get("x-forwarded-for", "")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "?"
+
+
+def _dentro_del_limite(ip: str) -> bool:
+    """Ventana deslizante por IP: config.chat_max_por_ip peticiones por
+    config.chat_ventana_seg segundos. Devuelve False sin registrar el
+    golpe cuando la IP ya agoto su cupo."""
+    ahora = time.monotonic()
+    corte = ahora - config.chat_ventana_seg
+    golpes = _chat_golpes[ip]
+    while golpes and golpes[0] < corte:
+        golpes.popleft()
+    if len(golpes) >= config.chat_max_por_ip:
+        return False
+    golpes.append(ahora)
+    # Que el dict no crezca sin limite con IPs que pasaron una vez.
+    if len(_chat_golpes) > 10_000:
+        for vieja in [k for k, v in _chat_golpes.items() if not v or v[-1] < corte]:
+            del _chat_golpes[vieja]
+    return True
+
+
 @app.post(
     "/chat",
     tags=["Asistente"],
     summary="Chat con los datos (requiere tu propia API key de Anthropic)",
 )
-def chat(req: ChatRequest, x_anthropic_api_key: str = Header(alias="X-Anthropic-Api-Key")):
+async def chat(
+    req: ChatRequest,
+    request: Request,
+    x_anthropic_api_key: str = Header(alias="X-Anthropic-Api-Key"),
+):
+    # async de punta a punta a proposito: la version sincrona ocupaba un
+    # hilo del threadpool de Starlette (~40 en total, compartidos con TODA
+    # la API de datos) durante los minutos que dura un stream. Con ~40
+    # conversaciones abiertas, /v1/* entero dejaba de responder.
+    if not _dentro_del_limite(_ip_cliente(request)):
+        raise HTTPException(
+            status_code=429,
+            detail="demasiadas consultas seguidas desde esta direccion; espera un minuto",
+        )
+
     messages = [{"role": t.role, "content": t.content} for t in req.historial]
     messages.append({"role": "user", "content": req.mensaje})
-    # Cliente nuevo por request, con la key que mando el usuario -- nunca un
-    # cliente compartido con una key del servidor (no existe tal cosa aqui).
-    client = anthropic.Anthropic(api_key=x_anthropic_api_key)
 
-    def generar():
+    async def generar():
         # El front debe poder mostrar "el asistente no esta disponible" en
         # vez de que se le caiga la conexion -- mismo criterio que el
         # tablero con alertas.json opcional (ver MCP.md).
+        global _chat_activos
+        # El cupo se toma y se suelta DENTRO del generador (sin await entre
+        # ver y contar: el event loop lo hace atomico). Tomarlo en el
+        # endpoint dejaria un cupo colgado si el cliente corta antes de que
+        # el stream arranque.
+        if _chat_activos >= config.chat_max_concurrentes:
+            yield "data: %s\n\n" % json.dumps(
+                {"error": "Hay muchas conversaciones abiertas en este momento, "
+                          "intenta de nuevo en unos segundos"}, ensure_ascii=False)
+            return
+        _chat_activos += 1
+        # Cliente nuevo por request, con la key que mando el usuario --
+        # nunca un cliente compartido con una key del servidor (no existe
+        # tal cosa aqui). Se crea con el cupo ya tomado y se cierra al final.
+        client = anthropic.AsyncAnthropic(api_key=x_anthropic_api_key)
         try:
-            with client.beta.messages.stream(
+            async with client.beta.messages.stream(
                 model=MODEL,
                 max_tokens=4096,
                 system=SYSTEM_PROMPT,
@@ -243,26 +311,30 @@ def chat(req: ChatRequest, x_anthropic_api_key: str = Header(alias="X-Anthropic-
                 tools=[{"type": "mcp_toolset", "mcp_server_name": MCP_SERVER_NAME}],
                 messages=messages,
             ) as stream:
-                for text in stream.text_stream:
+                async for text in stream.text_stream:
                     yield "data: %s\n\n" % json.dumps({"delta": text}, ensure_ascii=False)
+            yield "data: %s\n\n" % json.dumps({"done": True})
         except anthropic.AuthenticationError:
             yield "data: %s\n\n" % json.dumps({"error": "Tu API key de Anthropic no es valida"})
-            return
         except anthropic.RateLimitError:
             yield "data: %s\n\n" % json.dumps({"error": "Limite de uso alcanzado, intenta mas tarde"})
-            return
         except anthropic.APIStatusError as e:
             yield "data: %s\n\n" % json.dumps({"error": "Error de la API (%s)" % e.status_code})
-            return
         except anthropic.APIConnectionError:
             yield "data: %s\n\n" % json.dumps({"error": "No se pudo conectar con el asistente"})
-            return
         except Exception:
             yield "data: %s\n\n" % json.dumps({"error": "El asistente no esta disponible ahora"})
-            return
-        yield "data: %s\n\n" % json.dumps({"done": True})
+        finally:
+            _chat_activos -= 1
+            await client.close()
 
-    return StreamingResponse(generar(), media_type="text/event-stream")
+    return StreamingResponse(
+        generar(),
+        media_type="text/event-stream",
+        # Sin esto algunos proxies (nginx y afines) acumulan el stream y lo
+        # entregan por bloques en vez de dejarlo fluir delta a delta.
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 app.mount("/mcp", mcp_app)

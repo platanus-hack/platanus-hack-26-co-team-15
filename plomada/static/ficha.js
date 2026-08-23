@@ -10,7 +10,7 @@
  * justamente las salvedades que no pueden depender de una llamada de red.
  */
 import { plata, entero, titulo, slug } from './formato.js';
-import { pedir, SinDatos } from './api.js';
+import { pedir, mensajeVacio } from './api.js';
 import { aplanar, evidencias, ORDEN_GRUPOS } from './evidencia.js';
 import { montar as montarMapa, coordsContrato } from './mapa-satelital.js';
 
@@ -216,7 +216,7 @@ function pintar(d, geocache) {
 async function cargar() {
   const id = idDesdeURL();
   if (!id) {
-    estado.textContent = 'No hay datos disponibles: la dirección no trae un contrato.';
+    estado.textContent = 'No hay nada que medir: la dirección no trae ningún contrato.';
     return;
   }
   const geocache = traerGeocache();   // en paralelo con el contrato, no en serie
@@ -232,14 +232,11 @@ async function cargar() {
     // pedir() mira el cuerpo antes que el status: el codigo que llega aqui es
     // 'no_encontrado', no '404'. Se aceptan los dos por si eso cambia.
     if (e && (e.codigo === 'no_encontrado' || e.codigo === '404')) {
-      estado.innerHTML = 'Este contrato no está disponible: no aparece en el universo ' +
+      estado.innerHTML = 'Este contrato queda fuera del corte: no aparece en el universo ' +
         'de obra pública analizado. <a href="/buscar/">Buscar otro contrato</a>.';
       return;
     }
-    estado.innerHTML = (e instanceof SinDatos
-      ? 'No hay datos disponibles: el API todavía no tiene cargada la base. '
-      : 'No hay datos disponibles: no se pudo consultar el API. ') +
-      '<a href="/buscar/">Ir al buscador</a>.';
+    estado.innerHTML = mensajeVacio(e) + ' <a href="/buscar/">Ir al buscador</a>.';
   }
 }
 

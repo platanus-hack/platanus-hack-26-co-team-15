@@ -17,7 +17,7 @@
  * esperando.
  */
 import { plata } from './formato.js';
-import { pedir, pedirCacheado, listar, listarCacheado, enParalelo, SinDatos } from './api.js';
+import { pedir, pedirCacheado, listar, listarCacheado, enParalelo, mensajeVacio } from './api.js';
 
 const PAGINA = 25;          // 25 filas => 25 detalles a hidratar (~0,4 s)
 const TOPE_EXPORTAR = 2000; // arriba de esto, exportar tarda demasiado
@@ -131,15 +131,13 @@ async function consultar({ anexar = false } = {}) {
     resumen.textContent = total
       ? COP.format(total) + ' contrato' + (total === 1 ? '' : 's') + ' marcado' +
         (total === 1 ? '' : 's') + ' · mostrando ' + COP.format(cargados.length)
-      : 'Ninguna búsqueda coincide con esos filtros.';
+      : 'Ningún contrato del universo de obra cae dentro de estos filtros.';
 
     sincronizarURL(f);
     hidratarObjetos(datos, signal).catch(() => { /* el titulo se queda con el id */ });
   } catch (e) {
     if (signal.aborted) return;   // el usuario siguio tecleando: no es un error
-    resumen.textContent = e instanceof SinDatos
-      ? 'No hay datos disponibles: el API todavía no tiene cargada la base.'
-      : 'No hay datos disponibles: no se pudo consultar el API.';
+    resumen.textContent = mensajeVacio(e);
     mas.hidden = true;
   }
 }
@@ -249,7 +247,7 @@ document.getElementById('exportar').addEventListener('click', async (ev) => {
     a.click();
     URL.revokeObjectURL(a.href);
   } catch {
-    resumen.textContent = 'No se pudo exportar: el API no respondió.';
+    resumen.textContent = 'Se cortó el hilo a media descarga: el API no respondió y el CSV quedó sin armar.';
   } finally {
     boton.disabled = false;
     boton.textContent = original;

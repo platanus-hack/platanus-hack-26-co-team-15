@@ -9,7 +9,7 @@
  * llamada.
  */
 import { plata, pct, entero, titulo, slug } from './formato.js';
-import { pedir, listarCacheado, enParalelo, SinDatos } from './api.js';
+import { pedir, listarCacheado, enParalelo, mensajeVacio } from './api.js';
 
 const PAGINA = 25;
 const raiz = document.getElementById('municipio');
@@ -105,7 +105,7 @@ async function traerPagina() {
 async function cargar() {
   const s = slugDeURL();
   if (!s) {
-    estado.textContent = 'No hay datos disponibles: la dirección no trae un municipio.';
+    estado.textContent = 'No hay nada que medir: la dirección no trae ningún municipio.';
     return;
   }
   try {
@@ -115,7 +115,8 @@ async function cargar() {
     const orden = [...muns].sort((a, b) => (b.tasa_ajustada || 0) - (a.tasa_ajustada || 0));
     const i = orden.findIndex((m) => slug(m.departamento, m.ciudad) === s);
     if (i === -1) {
-      estado.innerHTML = 'Este municipio no está disponible. <a href="/mapa/">Ver el mapa</a>.';
+      estado.innerHTML = 'Este municipio queda fuera del corte: no tiene contratos de obra ' +
+        'en el universo analizado. <a href="/mapa/">Ver el mapa</a>.';
       return;
     }
     ctx = { m: orden[i], puesto: i + 1, total: orden.length };
@@ -127,10 +128,7 @@ async function cargar() {
       .addEventListener('click', () => traerPagina().catch(() => {}));
     await traerPagina();
   } catch (e) {
-    estado.innerHTML = (e instanceof SinDatos
-      ? 'No hay datos disponibles: el API todavía no tiene cargada la base. '
-      : 'No hay datos disponibles: no se pudo consultar el API. ') +
-      '<a href="/mapa/">Ir al mapa</a>.';
+    estado.innerHTML = mensajeVacio(e) + ' <a href="/mapa/">Ir al mapa</a>.';
   }
 }
 

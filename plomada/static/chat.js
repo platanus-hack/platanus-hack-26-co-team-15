@@ -160,6 +160,11 @@ async function preguntar(mensaje, onDelta, signal) {
   if (r.status === 422) {
     throw new KeyInvalida('El API no aceptó la llave. Revísela y vuelva a guardarla.');
   }
+  // 429 = el techo por IP del servicio (no la cuota de Anthropic del
+  // lector): no es un fallo, es un "espere un momento".
+  if (r.status === 429) {
+    throw new LimiteAlcanzado('Demasiadas consultas seguidas. Espere un minuto y vuelva a intentarlo.');
+  }
   if (!r.ok) {
     throw new Error(`El asistente respondió con un error (HTTP ${r.status}).`);
   }
@@ -210,6 +215,7 @@ async function preguntar(mensaje, onDelta, signal) {
 }
 
 class KeyInvalida extends Error {}
+class LimiteAlcanzado extends Error {}
 
 /* ------------------------------------------------------------- el ciclo */
 
@@ -261,6 +267,16 @@ async function enviar(pregunta) {
       destino.closest('.burbuja').remove();
       if (burbujaPregunta) burbujaPregunta.remove();
       pedirKeyDeNuevo(e.message, texto);
+    } else if (e instanceof LimiteAlcanzado) {
+      // La pregunta vuelve al cuadro, como con la key: cuando pase el
+      // minuto, solo hay que volver a enviarla.
+      destino.closest('.burbuja').remove();
+      if (burbujaPregunta) burbujaPregunta.remove();
+      vista.entrada.value = texto;
+      if (vista.sugerencias && !vista.hilo.querySelector('.burbuja')) {
+        vista.sugerencias.hidden = false;
+      }
+      estado(e.message);
     } else {
       destino.textContent = 'El asistente no está disponible ahora. ' +
         'Puede consultar los mismos datos en el buscador o en el API.';

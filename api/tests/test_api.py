@@ -252,6 +252,70 @@ def test_ninguna_respuesta_expone_la_cuenta_bancaria(cliente, monkeypatch):
     assert "cuenta_key" not in csv and "abc123" not in csv
 
 
+def test_el_csv_neutraliza_las_formulas_de_excel(cliente, monkeypatch):
+    """Una celda de texto que empiece por = + - @ la ejecuta Excel como
+    formula al abrir el archivo (=WEBSERVICE exfiltra, DDE ejecuta). Los
+    valores vienen del SECOP II -- texto escrito por terceros -- y el
+    publico objetivo abre estos CSV en Excel: es el vector clasico contra
+    periodistas, en el producto hecho para periodistas."""
+    envenenado = dict(CONTRATO, entidad="=2+5", proveedor="@SUM(A1)")
+    monkeypatch.setattr(consultas, "buscar_contratos", lambda **k: ([envenenado], 1))
+    texto = cliente.get("/v1/contratos", params={"formato": "csv"}).text
+    fila = texto.splitlines()[1]
+    assert "'=2+5" in fila and ",=2+5" not in fila
+    assert "'@SUM(A1)" in fila and ",@SUM(A1)" not in fila
+    # y los numeros siguen siendo numeros: prefijar un valor numerico
+    # negativo lo volveria texto en Excel
+    assert "1500000000.0" in fila
+
+
+# ---------------------------------------------------------------------
+# Techos de /chat: BYOK cuida la plata del lector, esto cuida el servicio
+# ---------------------------------------------------------------------
+def test_el_chat_limita_las_peticiones_por_ip(cliente):
+    from app import main
+    from app.config import config
+
+    ip = "203.0.113.7"   # rango reservado para documentacion, no colisiona
+    for _ in range(config.chat_max_por_ip):
+        assert main._dentro_del_limite(ip)
+    assert not main._dentro_del_limite(ip)
+    # otra IP no paga el techo de la primera
+    assert main._dentro_del_limite("203.0.113.8")
+
+
+def test_el_chat_saturado_avisa_sin_tocar_a_anthropic(cliente, monkeypatch):
+    """Con el cupo de streams lleno, /chat responde un evento de error SSE
+    y termina: no crea cliente de Anthropic ni gasta la key de nadie."""
+    from app import main
+
+    monkeypatch.setattr(main, "_chat_activos", main.config.chat_max_concurrentes)
+    monkeypatch.setattr(
+        main.anthropic, "AsyncAnthropic",
+        lambda **k: (_ for _ in ()).throw(AssertionError("no debio crearse un cliente")),
+    )
+    r = cliente.post(
+        "/chat",
+        json={"mensaje": "hola"},
+        headers={"X-Anthropic-Api-Key": "sk-ant-falsa"},
+    )
+    assert r.status_code == 200
+    assert "conversaciones abiertas" in r.text
+
+
+def test_el_exceso_por_ip_da_429_con_el_formato_de_error(cliente, monkeypatch):
+    from app import main
+
+    monkeypatch.setattr(main, "_dentro_del_limite", lambda ip: False)
+    r = cliente.post(
+        "/chat",
+        json={"mensaje": "hola"},
+        headers={"X-Anthropic-Api-Key": "sk-ant-falsa"},
+    )
+    assert r.status_code == 429
+    assert r.json()["error"]["codigo"] == "limite_alcanzado"
+
+
 # ---------------------------------------------------------------------
 # JSON y CSV son el MISMO contrato
 # ---------------------------------------------------------------------

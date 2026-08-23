@@ -86,6 +86,25 @@ export class ApiError extends Error {
 /** El API respondio, pero su base no tiene datos ('datos_no_disponibles'). */
 export class SinDatos extends ApiError {}
 
+/**
+ * La frase que ve el lector cuando una consulta vuelve vacia o rota.
+ *
+ * Vive aqui y no en cada vista por lo mismo que sanear(): si cada pagina
+ * redacta su propio "no hay datos", el sitio termina hablando con tres voces
+ * distintas del mismo silencio. La imagen es la del proyecto -- una plomada
+ * que no cuelga no mide nada, y un hilo cortado no es lo mismo que una pared
+ * derecha -- pero la segunda mitad de cada frase dice en seco que paso, para
+ * que nadie tenga que descifrar la metafora para entender el estado.
+ *
+ * Devuelve texto plano sin punto final ni espacio: la vista le pega el enlace
+ * de salida que corresponda ("Ir al buscador", "Ver el mapa").
+ */
+export function mensajeVacio(e) {
+  return e instanceof SinDatos
+    ? 'La plomada todavía no cuelga: el API aún no tiene cargada la base.'
+    : 'Se cortó el hilo: no se pudo consultar el API.';
+}
+
 const TIMEOUT_PRIMERA = 60000;   // Render puede estar dormido: 30-60s
 const TIMEOUT_NORMAL = 15000;
 const REINTENTOS = 3;

@@ -19,7 +19,7 @@ export function dibujar(contenedorSvg, contenedorTabla, contenedorLeyenda, conte
   const T = tonosViz();
   const nodos = cluster.nodos, N = nodos.length;
   if (!N) {
-    contenedorSvg.textContent = "Este grupo no tiene proveedores para mostrar.";
+    contenedorSvg.textContent = "Este grupo no teje ninguna red: no hay proveedores que enlazar.";
     return;
   }
   leyenda(contenedorLeyenda, [

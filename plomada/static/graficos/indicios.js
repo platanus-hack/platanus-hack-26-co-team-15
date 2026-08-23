@@ -15,7 +15,7 @@ export function dibujar(contenedorSvg, contenedorTabla, datos, totalUniverso) {
   const T = tonosViz();
   const filas = datos.filter((d) => d.valor > 0).sort((a, b) => b.valor - a.valor);
   if (!filas.length) {
-    contenedorSvg.textContent = "Sin indicios con valor en los datos.";
+    contenedorSvg.textContent = "Ningún indicio se enciende en este corte.";
     return;
   }
   const W = 1100, L = 330, R = 130, top = 8, row = 30, ALTO_BARRA = 16;

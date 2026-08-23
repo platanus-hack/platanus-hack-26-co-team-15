@@ -14,7 +14,7 @@ export function dibujar(contenedorSvg, contenedorTabla, datos) {
   const T = tonosViz();
   const filas = datos.filter((d) => d.total > 0 && d.departamento);
   if (!filas.length) {
-    contenedorSvg.textContent = "Sin datos para el filtro.";
+    contenedorSvg.textContent = "Ningún departamento cae dentro de este filtro.";
     contenedorTabla.replaceChildren();
     return;
   }

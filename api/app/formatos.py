@@ -25,6 +25,19 @@ FORMATOS = ("json", "csv")
 # puerta de calidad test_el_snapshot_publico_no_lleva_cuentas.
 NUNCA_PUBLICAR = {"cuenta_key", "n_mero_de_cuenta", "numero_de_cuenta", "banco"}
 
+# Una celda de TEXTO que empiece por uno de estos caracteres la ejecuta
+# Excel como formula al abrir el archivo (=WEBSERVICE(...), DDE con + - @).
+# No es teorico aqui: los valores vienen del SECOP II -- texto escrito por
+# terceros (entidades, proveedores) -- y el publico objetivo de este CSV
+# abre todo en Excel. Se neutraliza con el apostrofe que Excel entiende
+# como "esto es texto". Solo aplica a str: los numeros negativos llegan
+# como int/float/Decimal y no pasan por aqui, asi que siguen siendo numeros.
+_INICIA_FORMULA = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _texto_seguro(texto):
+    return "'" + texto if texto.startswith(_INICIA_FORMULA) else texto
+
 
 def _plano(valor):
     """Aplana un valor para una celda de CSV. Mismo criterio que
@@ -38,9 +51,11 @@ def _plano(valor):
     if isinstance(valor, decimal.Decimal):
         return str(valor)
     if isinstance(valor, (list, tuple)):
-        return "|".join(str(v) for v in valor)
+        return _texto_seguro("|".join(str(v) for v in valor))
     if isinstance(valor, dict):
-        return ";".join("%s=%s" % (k, v) for k, v in valor.items())
+        return _texto_seguro(";".join("%s=%s" % (k, v) for k, v in valor.items()))
+    if isinstance(valor, str):
+        return _texto_seguro(valor)
     return valor
 
 

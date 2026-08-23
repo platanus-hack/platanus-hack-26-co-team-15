@@ -71,5 +71,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-data-${{ steps.semana.outputs.valor }}
-          path: web/data/
+          # export_web.py escribe a out_web/ desde la Tanda A de la
+          # unificacion de frontends (antes era web/data/, que quedo huerfano:
+          # el artefacto subia vacio todos los dias sin que nadie lo viera).
+          path: out_web/
           retention-days: 14
+          if-no-files-found: error

@@ -253,6 +253,16 @@ El contrato de abajo es el que `static/chat.js` implementa, y sigue vigente:
 - Cold start: Render duerme el servicio, así que si no llega el primer
   `delta` a los ~3 s hay que avisar que está despertando. `chat.js` reusa el
   umbral de `static/api.js` (`AVISO_DESPERTANDO`).
+- **Techos del servicio** (BYOK cuida la plata del lector; esto cuida el
+  servicio, ver `api/app/config.py`):
+  - Por IP: `chat_max_por_ip` peticiones por `chat_ventana_seg` segundos
+    (6/60 s por defecto). Al excederlo el servidor responde **HTTP 429**
+    con el sobre de error (`codigo: "limite_alcanzado"`); `chat.js` devuelve
+    la pregunta al cuadro de texto y pide esperar un minuto.
+  - Streams concurrentes: `chat_max_concurrentes` (8 por defecto) en todo el
+    servicio. Con el cupo lleno llega un evento SSE
+    `{"error": "Hay muchas conversaciones abiertas..."}` — sin haber creado
+    cliente de Anthropic ni gastado la key de nadie.
 
 ## Orden de trabajo — qué ya está hecho
 
