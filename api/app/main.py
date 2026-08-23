@@ -11,8 +11,12 @@ solo expone un puerto por servicio):
   - `/chat`  el proxy que el front consume, que le pasa a Claude la URL
              publica de este mismo servicio para que use `/mcp`.
 
-La API key de Anthropic vive SOLO en la variable de entorno
-ANTHROPIC_API_KEY del servicio desplegado -- nunca en el front ni en el repo.
+BYOK (bring your own key): cada usuario provee SU PROPIA API key de
+Anthropic (la saca de console.anthropic.com) en el header `X-Anthropic-Api-Key`
+de cada request. Este servicio nunca la guarda -- se usa en memoria para esa
+sola llamada y se descarta. No existe una API key "del equipo" en Render: el
+uso lo paga cada usuario, no Plomada. El front la guarda en localStorage del
+navegador; ver MCP.md para el contrato exacto.
 """
 from __future__ import annotations
 
@@ -21,7 +25,7 @@ import os
 from contextlib import AsyncExitStack, asynccontextmanager
 
 import anthropic
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -72,8 +76,6 @@ if CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-client = anthropic.Anthropic()  # ANTHROPIC_API_KEY desde el entorno
-
 
 class Turno(BaseModel):
     role: str  # "user" | "assistant"
@@ -91,9 +93,12 @@ def health():
 
 
 @app.post("/chat")
-def chat(req: ChatRequest):
+def chat(req: ChatRequest, x_anthropic_api_key: str = Header(alias="X-Anthropic-Api-Key")):
     messages = [{"role": t.role, "content": t.content} for t in req.historial]
     messages.append({"role": "user", "content": req.mensaje})
+    # Cliente nuevo por request, con la key que mando el usuario -- nunca un
+    # cliente compartido con una key del servidor (no existe tal cosa aqui).
+    client = anthropic.Anthropic(api_key=x_anthropic_api_key)
 
     def generar():
         # El front debe poder mostrar "el asistente no esta disponible" en
@@ -111,6 +116,12 @@ def chat(req: ChatRequest):
             ) as stream:
                 for text in stream.text_stream:
                     yield "data: %s\n\n" % json.dumps({"delta": text}, ensure_ascii=False)
+        except anthropic.AuthenticationError:
+            yield "data: %s\n\n" % json.dumps({"error": "Tu API key de Anthropic no es valida"})
+            return
+        except anthropic.RateLimitError:
+            yield "data: %s\n\n" % json.dumps({"error": "Limite de uso alcanzado, intenta mas tarde"})
+            return
         except anthropic.APIStatusError as e:
             yield "data: %s\n\n" % json.dumps({"error": "Error de la API (%s)" % e.status_code})
             return

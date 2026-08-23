@@ -6,12 +6,13 @@ tablero**, en vez de solo mirando gráficos y tablas. Este documento es para
 el equipo y para quien trabaje el front — no requiere leer el resto del
 código para entender qué construir y en qué orden.
 
-**Estado: servidor MCP, proxy de chat y carga a Postgres construidos
-(`api/app/mcp/server.py`, `api/app/main.py`, `pipeline/load_postgres.py`).
-Falta desplegar Postgres + `api/` en Render (no hay Postgres disponible en
-este entorno de prueba para verificar el flujo completo) y probar contra una
-URL pública real — antes de conectar el front.** Ver "Orden de trabajo" más
-abajo para el detalle exacto.
+**Estado: servidor MCP, proxy de chat (BYOK: cada usuario usa su propia API
+key, no hay ninguna key del equipo en el servidor) y carga a Postgres
+construidos (`api/app/mcp/server.py`, `api/app/main.py`,
+`pipeline/load_postgres.py`). Falta desplegar Postgres + `api/` en Render (no
+hay Postgres disponible en este entorno de prueba para verificar el flujo
+completo) y probar contra una URL pública real — antes de conectar el
+front.** Ver "Orden de trabajo" más abajo para el detalle exacto.
 
 ## Por qué esta arquitectura
 
@@ -134,11 +135,20 @@ un script de una sola corrida.
   ```
   Las dos partes (`mcp_servers` + `tools` con `mcp_toolset`) son obligatorias
   — mandar una sin la otra lo rechaza la API.
-- `ANTHROPIC_API_KEY` vive como variable de entorno en Render — **nunca** en
-  el front ni en el repo.
-- Errores (auth, rate limit, MCP inalcanzable) se devuelven como un evento
-  SSE `{"error": "..."}` en vez de tumbar la conexión — el front debe leer
-  ese caso y mostrar "el asistente no está disponible ahora".
+- **BYOK (bring your own key), no una key del equipo.** No existe
+  `ANTHROPIC_API_KEY` en el servidor. Cada request manda la key del usuario
+  en el header `X-Anthropic-Api-Key`; el servicio la usa para construir un
+  cliente de Anthropic nuevo en esa sola llamada y la descarta — nunca la
+  guarda, nunca la loguea. Investigué esto antes de construirlo: Anthropic
+  **no** ofrece un "Sign in with Claude" público para que un tercero deje a
+  sus usuarios loguearse con su cuenta de Claude.ai — la única forma real de
+  que cada usuario pague lo suyo es que provea su propia API key.
+  - Sin el header: `422` inmediato de FastAPI (probado).
+  - Header con una key inválida: evento SSE `{"error": "Tu API key de
+    Anthropic no es valida"}` (probado con una key falsa real).
+- Otros errores (rate limit, MCP inalcanzable) también se devuelven como
+  evento SSE `{"error": "..."}` en vez de tumbar la conexión — el front debe
+  leer ese caso y mostrar el mensaje.
 
 **Detalle técnico importante para quien lo toque:** `/mcp` y `/chat` viven en
 el **mismo proceso FastAPI** (necesario en Render, que solo expone un puerto
@@ -184,17 +194,26 @@ servicio `api/`:
 Todo lo que necesita saber, sin tocar nada de lo de arriba:
 
 - **Endpoint:** `POST {API_URL}/chat`
-- **Body:** `{ "mensaje": "...", "historial": [...] }` (el equipo de backend
-  define el shape exacto al implementar el proxy; esto es el contrato
-  mínimo).
+- **Header obligatorio:** `X-Anthropic-Api-Key: <key del usuario>`.
+- **Body:** `{ "mensaje": "...", "historial": [...] }`.
 - **Respuesta:** streaming de texto (SSE) — el widget debe leer un stream,
-  no esperar un JSON completo.
+  no esperar un JSON completo. Cada línea es `data: {"delta": "..."}` hasta
+  un `data: {"done": true}` final, o `data: {"error": "..."}` si algo falló.
+- **La key del usuario:**
+  - Pedirla una vez (input tipo password, con un link a
+    console.anthropic.com/settings/keys explicando de dónde sacarla) y
+    guardarla en `localStorage` — nunca en una cookie ni en el servidor.
+  - Mandarla en el header de cada `/chat`. Si el servidor responde `422`
+    (falta el header) o un evento `{"error": "Tu API key de Anthropic no es
+    valida"}`, hay que volver a pedirla — no reintentar en silencio.
+  - Plomada no gestiona billing de nadie: cada usuario ve su propio consumo
+    en su cuenta de Anthropic.
 - `API_URL` sale de una variable de entorno/config, para que el mismo front
   sirva en local y en producción sin cambiar código.
-- Si el backend no responde, degradar con un mensaje tipo "el asistente no
-  está disponible ahora" — mismo patrón que ya usa el tablero con
-  `alertas.json` cuando nadie corrió `pipeline/alertas.py` (ver
-  `web/index.html`, función `drawAlertas`).
+- Si el backend no responde (network error, no un error de key), degradar
+  con un mensaje tipo "el asistente no está disponible ahora" — mismo patrón
+  que ya usa el tablero con `alertas.json` cuando nadie corrió
+  `pipeline/alertas.py` (ver `web/index.html`, función `drawAlertas`).
 
 ## Orden de trabajo — qué ya está hecho
 
@@ -236,18 +255,23 @@ Todo lo que necesita saber, sin tocar nada de lo de arriba:
    acceso a instalar herramientas o a la cuenta de Render tiene que dar este
    paso.
 7. Con la URL pública, poner `SELF_URL=https://<esa-url>` y `DATABASE_URL`
-   como variables de entorno del servicio `api/` y repetir la prueba de
-   `/chat` — ahí sí se prueba el round-trip completo (front → proxy → Claude
-   → MCP → Postgres → respuesta).
-8. Widget de chat en el front, apuntando a esa URL ya desplegada.
+   como variables de entorno del servicio `api/` — **`ANTHROPIC_API_KEY` NO
+   va aquí, es BYOK** (ver sección 2) — y repetir la prueba de `/chat` con
+   una key real de prueba en el header — ahí sí se prueba el round-trip
+   completo (front → proxy → Claude → MCP → Postgres → respuesta).
+8. Widget de chat en el front, apuntando a esa URL ya desplegada, con el
+   input para pedir la key del usuario (ver sección 4).
 
 ## Decisiones que faltan por tomar en equipo
 
 - **Historial de conversación:** ¿vive solo en el navegador (se manda
   completo en cada request) o se guarda sesión en el servidor? Empezar por
   lo simple (solo navegador) hasta que el volumen de contexto lo justifique.
-- **Rate limiting de `/chat`:** es una API paga (Anthropic) expuesta
-  indirectamente al público a través del tablero.
+- **Rate limiting / abuso de `/chat`:** con BYOK cada usuario paga lo suyo,
+  así que ya no es un riesgo de costo para el equipo, pero sigue siendo un
+  riesgo de abuso del servidor (alguien podría usar `/chat` como proxy
+  gratis hacia Claude con SU propia key, sin que le sirva de mucho, pero
+  igual consume recursos del servicio). No urgente para un demo de hackathon.
 - **Gemini queda fuera de este plan v1.** El connector directo de MCP en la
   API de Claude no tiene un equivalente igual de simple documentado para
   Gemini; si se quiere soportar Gemini más adelante, el proxy tendría que
