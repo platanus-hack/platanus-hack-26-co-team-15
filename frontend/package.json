@@ -1,0 +1,16 @@
+{
+  "name": "plomada-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build && node scripts/manifiesto.mjs",
+    "dev": "vite build --watch"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.7"
+  }
+}

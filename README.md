@@ -345,21 +345,42 @@ sigue pendiente y es caro.
 ## Tablero
 
 ```
-python pipeline/export_web.py     # JSON estático a web/data/
-cd web && python -m http.server 8080
+python pipeline/export_web.py     # JSON estatico a out_web/ (raiz del repo)
+python3 plomada/build.py          # copia out_web/ a site/datos/ y genera el sitio
+python3 -m http.server -d plomada/site 8765
 ```
 
-Un solo HTML, sin build step, sin npm, sin CDN: funciona offline. Cuatro vistas —
-la cifra líder, la plata por indicio, un **dumbbell** de tasa cruda contra tasa
-ajustada por municipio (la forma *es* el argumento metodológico: se ve el jalón hacia
-la media donde hay poca evidencia), una dispersión de departamentos, y un explorador
-de la red de proveedores con layout de fuerzas determinista.
+(Tanda A de la unificacion de frontends: `export_web.py` ya no escribe
+directo a `web/`. `plomada/build.py` es ahora el unico que escribe el sitio
+publicado — asi `plomada/test_privacy.py` controla TODO el artefacto,
+tablero incluido, de una sola pasada.)
 
-Paleta validada con el validador del sistema de diseño: los 3 slots del grafo pasan
-todos los gates *all-pairs* en modo claro y oscuro. El aqua queda en 2,74:1 sobre
-superficie clara, así que lleva etiquetas directas y vista de tabla como relieve
-obligatorio. Cada gráfico tiene su gemelo en tabla, y las limitaciones viajan **con**
-los datos (`meta.json`) para que el tablero no pueda mostrar una cifra sin su salvedad.
+Correccion (Tanda B): esta seccion decia "sin build step, sin npm, sin CDN".
+Ya no es cierto y no lo era del todo ni antes: hay build step
+(`python3 design/construir.py` compone `plomada/static/estilo.css`) y hasta hace
+poco el tablero cargaba Leaflet desde unpkg.com. Hoy: sin npm (los modulos JS son
+ES nativos, sin bundler), Leaflet vendorizado en `plomada/static/vendor/leaflet/`
+(BSD-2, ver `design/VENDOR.md`), y el UNICO CDN que queda es Esri
+(`server.arcgisonline.com`) para las imagenes satelitales de la ficha de contrato —
+esas no se pueden vendorizar (son el mundo), asi que el mapa satelital es
+click-to-load: no le dice a Esri que coordenadas mira nadie hasta que el lector
+pulsa el boton.
+
+El tablero (`/tablero/`, generado por `plomada/build.py`, ya no un HTML aparte)
+tiene cinco vistas: la cifra lider, la plata por indicio, un **dumbbell** de tasa
+cruda contra tasa ajustada por municipio (la forma *es* el argumento metodologico:
+se ve el jalon hacia la media donde hay poca evidencia), una dispersion de
+departamentos, y un explorador de la red de proveedores.
+
+Paleta: el sistema de diseno es **Modernist** (`design/modernist/`, vendorizado,
+no se parchea), mono a proposito — un acento rojo usado con avaricia. El tablero
+no le fuerza una paleta categorica: la identidad de serie la lleva la FORMA
+(relleno solido vs. aro hueco vs. el acento para el hallazgo del proyecto), medido
+y documentado en `design/plomada/VALIDACION.md`. No hay modo oscuro en esta fase
+(decision explicita: Modernist es un sistema de banda clara, y volver a uno oscuro
+exige tokens propios re-validados, no un volteo automatico). Cada grafico conserva
+su gemelo en tabla, y las limitaciones viajan **con** los datos (`meta.json`) para
+que el tablero no pueda mostrar una cifra sin su salvedad.
 
 ## API pública
 

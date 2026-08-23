@@ -1,0 +1,124 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Extension de dataviz sobre Modernist.
+
+   POR QUE EXISTE ESTE ARCHIVO
+   Modernist es mono a proposito: un solo acento, y `--color-accent-2-*` es un
+   relleno derivado a maquina, no un segundo rol. Un tablero necesita canal de
+   color. Esta hoja resuelve esa tension SIN inventarle hues al sistema.
+
+   LA MEDICION QUE MANDA (validate_palette.js, fondo #f3f2f2, ver VALIDACION.md)
+   Los pasos neutros de Modernist reprueban el piso de croma: #2d2b2b da C=0.003
+   y #444141 da C=0.004, contra un minimo de 0.10. Es decir: un gris NO puede
+   portar identidad categorica; el ojo lo lee como "sin marcar", no como "la
+   categoria B". Y sin embargo la separacion contra el acento es enorme
+   (ΔE 39.0 normal, 22.4 protanopia). Traducido: tinta y acento se distinguen
+   perfecto, pero como *enfasis*, no como *categorias*.
+
+   LA CONSECUENCIA
+   No se le fuerza color categorico a un sistema mono. La identidad la lleva la
+   FORMA (relleno vs hueco); el acento queda reservado para el hallazgo. Eso es
+   ademas mas accesible que el color y mas fiel a Modernist, que pide usar el
+   rojo con avaricia. Ningun grafico depende del color solo: leyenda siempre
+   presente, etiqueta directa en las marcas destacadas, y gemelo en tabla.
+
+   MODO OSCURO: Modernist es un sistema de banda clara y no publica tokens
+   oscuros. El tablero anterior (web/index.html) si tenia modo oscuro; se pierde
+   en esta fase a proposito. Recuperarlo exige un set de tokens oscuros
+   *elegido* y re-validado contra la superficie oscura, no un volteo automatico.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ---- cromo del grafico: recesivo, siempre por debajo de los datos ---- */
+  --viz-superficie:   var(--color-bg);
+  --viz-rejilla:      color-mix(in srgb, var(--color-text) 10%, transparent);
+  --viz-eje:          color-mix(in srgb, var(--color-text) 25%, transparent);
+  --viz-tinta:        var(--color-text);
+  --viz-tinta-tenue:  color-mix(in srgb, var(--color-text) 55%, transparent);
+
+  /* ---- SECUENCIAL (magnitud): coropleta del mapa ----------------------
+     Cinco clases, un solo hue, claro->oscuro. Arranca en accent-500 y no
+     antes: accent-400 se queda en 1,88:1 contra el fondo y accent-100..300
+     son invisibles (1,02 / 1,11 / 1,36:1). Es el "snap al paso valido mas
+     cercano" que manda el metodo, no un recorte arbitrario.
+     Verificado: monotonia OK, saltos de L >= 0.06, extremo claro 2,83:1,
+     dispersion de hue 0 grados. TODAS LAS PRUEBAS PASAN.
+     Cortes FIJOS, no cuantiles: la escala no puede cambiar de significado
+     entre cargas o el mapa deja de ser comparable consigo mismo. */
+  --viz-seq-1: var(--color-accent-500);   /* #ff563c  2,83:1 */
+  --viz-seq-2: var(--color-accent-600);   /* #dd2b0f  4,25:1 */
+  --viz-seq-3: var(--color-accent-700);   /* #ae1800  6,41:1 */
+  --viz-seq-4: var(--color-accent-800);   /* #7c1405  9,59:1 */
+  --viz-seq-5: var(--color-accent-900);   /* #4d170e 13,01:1 */
+
+  /* Ausencia de dato NO es magnitud: sale de la rampa, y ademas lleva trama.
+     Pintar "sin dato" como el escalon mas bajo es afirmar un cero que nadie
+     midio. */
+  --viz-sin-dato: var(--color-neutral-300);
+
+  /* ---- IDENTIDAD POR FORMA (no por color) -----------------------------
+     Grafo de proveedores y dumbbell municipal. El relleno distingue; el
+     acento destaca. */
+  --viz-marca:          var(--color-neutral-900);  /* relleno: la categoria base */
+  --viz-marca-hueco:    var(--color-bg);           /* relleno del hueco */
+  --viz-marca-aro:      var(--color-neutral-900);  /* aro de la marca hueca */
+  --viz-marca-hallazgo: var(--color-accent);       /* el hallazgo, con avaricia */
+  --viz-aro-grosor:     2px;
+
+  /* Separador entre rellenos contiguos: 2px del color de la superficie, para
+     que dos barras apiladas no se fundan en una sola mancha. */
+  --viz-separador: var(--viz-superficie);
+}
+
+/* ---- marcas -------------------------------------------------------------
+   .viz-relleno  categoria base        circulo/barra solida en tinta
+   .viz-hueco    la otra categoria     aro de 2px, centro del fondo
+   .viz-hallazgo lo que el proyecto senala   solido en acento           */
+.viz-relleno  { fill: var(--viz-marca);          stroke: none; }
+.viz-hueco    { fill: var(--viz-marca-hueco);    stroke: var(--viz-marca-aro);
+                stroke-width: var(--viz-aro-grosor); }
+.viz-hallazgo { fill: var(--viz-marca-hallazgo); stroke: none; }
+
+/* Marcas que se traslapan (nodos del grafo) llevan un aro del color de la
+   superficie para que no se fundan entre si. */
+.viz-nodo { stroke: var(--viz-superficie); stroke-width: var(--viz-aro-grosor); }
+.viz-nodo.viz-hueco { stroke: var(--viz-marca-aro); }
+
+/* ---- ejes y rejilla: 1px, recesivos, nunca compiten con el dato ---- */
+.viz-rejilla { stroke: var(--viz-rejilla); stroke-width: 1; }
+.viz-eje     { stroke: var(--viz-eje);     stroke-width: 1; }
+.viz-tick    { fill: var(--viz-tinta-tenue); font-size: 11px; }
+
+/* El texto usa tokens de texto, NUNCA el color de la serie. Una marca de color
+   al lado carga la identidad; el numero se queda en tinta. */
+.viz-valor   { fill: var(--viz-tinta); font-size: 12px; }
+.viz-etiqueta{ fill: var(--viz-tinta-tenue); font-size: 11px; }
+
+/* ---- leyenda: obligatoria con 2+ series, sin excepcion ---- */
+.viz-leyenda { display: flex; flex-wrap: wrap; gap: var(--space-4);
+               margin: 0 0 var(--space-3); font-size: 12px; }
+.viz-leyenda span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.viz-leyenda i { width: 12px; height: 12px; flex: none; display: block; }
+.viz-leyenda .viz-relleno-m  { background: var(--viz-marca); }
+.viz-leyenda .viz-hueco-m    { background: var(--viz-marca-hueco);
+                               box-shadow: inset 0 0 0 var(--viz-aro-grosor) var(--viz-marca-aro); }
+.viz-leyenda .viz-hallazgo-m { background: var(--viz-marca-hallazgo); }
+
+/* ---- trama: el caso daltonico / impresion / forced-colors ----
+   45 grados. Se usa en "sin dato" y como relieve donde el contraste queda
+   en zona de advertencia. */
+.viz-trama {
+  background-image: repeating-linear-gradient(45deg,
+    var(--viz-sin-dato) 0 3px, transparent 3px 6px);
+}
+
+/* ---- tooltip ---- */
+.viz-tip {
+  position: fixed; pointer-events: none; z-index: 40;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface); color: var(--color-text);
+  border: 1px solid var(--color-divider); box-shadow: var(--shadow-md);
+  font-size: 12px; max-width: 34ch;
+}
+
+/* El area de hover es mas grande que la marca: invisible, capturable. */
+.viz-hit { fill: transparent; cursor: pointer; }

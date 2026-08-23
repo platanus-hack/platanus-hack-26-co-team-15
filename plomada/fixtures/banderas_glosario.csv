@@ -1,0 +1,23 @@
+bandera,peso,grupo,glosa
+f_cuenta_compartida,3.0,Red,Proveedores distintos cobrando a la misma cuenta bancaria
+f_ordenador_es_supervisor,3.0,Red,El mismo funcionario autoriza el gasto y supervisa la ejecucion
+f_sobrepago,3.0,Dinero,Se pago mas del valor del contrato
+f_anticipo_no_declarado,3.0,Dinero,Declara no tener anticipo pero registra anticipo girado
+f_anticipo_al_tope,2.0,Dinero,Agota exactamente el anticipo maximo legal del 50%
+f_fraccionamiento,3.0,Umbrales,"Contratos hermanos al mismo proveedor, misma categoria, en 30 dias"
+f_proponente_unico,2.0,Competencia,Un solo oferente en el proceso
+f_obra_directa,2.0,Competencia,Obra publica adjudicada por contratacion directa
+f_ratio_calcado,2.0,Competencia,"Adjudicado al 99.5-100% del presupuesto oficial, sin competencia"
+f_invitacion_vacia,2.0,Competencia,Cinco o mas invitados y un solo oferente efectivo
+f_replegal_multiempresa,2.0,Red,Representante legal compartido por 3+ empresas proveedoras
+f_ordenador_concentrado,2.0,Red,El ordenador concentra >50% de su valor en un solo proveedor
+f_al_tope_minima,2.0,Umbrales,Valor pegado al techo de la minima cuantia de la entidad
+f_ventana_corta,1.0,Competencia,Plazo de ofertas en el decil mas corto de su modalidad
+f_supervisor_sobrecargado,1.0,Red,Supervisor con 30+ contratos a cargo
+f_ordenador_itinerante,1.0,Red,El ordenador ha firmado en 3+ entidades distintas
+f_prorroga_mayor,1.0,Ejecucion,Plazo adicionado en mas del 50% del original
+f_cierre_de_periodo,1.0,Ejecucion,Firmado en la segunda quincena de diciembre del ultimo ano de gobierno
+f_datos_faltantes,1.0,Opacidad,Faltan campos de publicacion obligatoria
+f_sin_proceso,1.0,Opacidad,El contrato no tiene proceso publicado en SECOP II
+f_valor_implausible,1.0,Opacidad,Valor publicado imposible (por encima de 10 billones COP)
+f_cuenta_consorcios,1.0,Red,Consorcio comparte cuenta con su propio miembro (indicio debil)

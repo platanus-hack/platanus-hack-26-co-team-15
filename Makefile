@@ -1,6 +1,6 @@
 # El entorno local del lider (Windows) no tiene make. Los comandos son
 # one-liners a proposito: si no tienes make, copia la linea de la receta.
-.PHONY: help ingest build graph test test-api report load api up down lint
+.PHONY: help ingest build graph test test-api report load api up down lint front sitio
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/'
 
@@ -51,6 +51,14 @@ api:      ## Sirve la API publica en http://localhost:8000/docs (necesita DATABA
 
 test-api: ## Contrato del API (no necesita Postgres); pide api/requirements-dev.txt
 	python -m pytest api/tests/ -v
+
+front:    ## Compila las islas de Vue (docs/PLAN_VUE.md). Solo hace falta si tocaste frontend/
+	npm --prefix frontend install
+	npm --prefix frontend run build
+
+sitio:    ## Compone el CSS y genera plomada/site/ (no hace falta Node: el bundle ya esta commiteado)
+	python3 design/construir.py
+	python3 plomada/build.py
 
 up:
 	docker compose up --build

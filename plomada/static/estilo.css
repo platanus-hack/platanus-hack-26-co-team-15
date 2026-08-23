@@ -1,0 +1,939 @@
+/* GENERADO por design/construir.py — NO EDITAR A MANO.
+ * Cambios de estilo entran por una de estas cuatro piezas, nunca aqui:
+ *   1. design/plomada/fuentes.css   (Archivo auto-hospedada)
+ *   2. design/modernist/styles.css  (vendor, ver design/VENDOR.md — no se parchea)
+ *   3. design/plomada/dataviz.css   (extension de color/graficos del proyecto)
+ *   4. design/plomada/sitio.css     (layout y componentes de pagina del proyecto)
+ * Para regenerar: python3 design/construir.py
+ */
+
+
+/* Archivo, auto-hospedada (design/VENDOR.md, desviacion 1). El upstream de
+   Modernist trae un @import a fonts.googleapis.com; este sitio no puede
+   depender de un tercero en tiempo de carga, asi que los mismos archivos que
+   serviria ese @import (pesos 400/600/800, subconjuntos latin y latin-ext —
+   hacen falta las dos: el sitio es en espanol) se sirven desde
+   /static/fonts/. Google sirve el mismo archivo .woff2 para los tres pesos
+   de un mismo subconjunto (es una fuente variable) y dejamos tres bloques
+   @font-face por subconjunto para que el navegador interpole el peso
+   correcto; los unicode-range son una copia literal de los que devuelve
+   fonts.googleapis.com para esta misma familia. */
+
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/archivo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/archivo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/static/fonts/archivo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/static/fonts/archivo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/static/fonts/archivo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/static/fonts/archivo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Modernist — design-system tokens and component classes. This file is the source of truth for the system's look; retune it here and see readme.md. */
+
+
+:root {
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-text: #201e1d;
+  --color-accent: #ec3013;
+  --color-accent-2: #e15b47;
+  --color-divider: color-mix(in srgb, #201e1d 40%, transparent);
+
+  /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
+     same step of any role matches the others in visual value. */
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+
+  --color-accent-100: #fff2ef;
+  --color-accent-200: #ffe0d9;
+  --color-accent-300: #ffc4b8;
+  --color-accent-400: #ff9783;
+  --color-accent-500: #ff563c;
+  --color-accent-600: #dd2b0f;
+  --color-accent-700: #ae1800;
+  --color-accent-800: #7c1405;
+  --color-accent-900: #4d170e;
+
+  --color-accent-2-100: #fff2ef;
+  --color-accent-2-200: #ffe0da;
+  --color-accent-2-300: #ffc4b9;
+  --color-accent-2-400: #ff9784;
+  --color-accent-2-500: #ef6853;
+  --color-accent-2-600: #c94b39;
+  --color-accent-2-700: #9e3526;
+  --color-accent-2-800: #71261b;
+  --color-accent-2-900: #471d16;
+
+  --font-heading: "Archivo", system-ui, sans-serif;
+  --font-heading-weight: 800;
+  --font-body: "Archivo", system-ui, sans-serif;
+
+  --space-1: 4.0px;
+  --space-2: 8.0px;
+  --space-3: 12.0px;
+  --space-4: 16.0px;
+  --space-6: 24.0px;
+  --space-8: 32.0px;
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+
+  /* Elevation — derived from the ground: soft ink-tinted shadows on a
+     light theme, a hairline edge + ambient darkness on a dark one. */
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+
+.grayscale{filter:grayscale(1) contrast(1.08)}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Components — built with the tokens above. Plain CSS
+   on plain HTML: no JavaScript, no build step. Each class is documented in
+   readme.md and demonstrated in foundations/ and components/.
+   ══════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-size: 15px; line-height: 1.55; font-weight: 400; }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  line-height: 1.12; letter-spacing: -0.015em; margin: 0 0 var(--space-2);
+}
+h1 { font-size: 42px; }
+h2 { font-size: 32px; }
+h3 { font-size: 25px; }
+h4 { font-size: 20px; }
+h5 { font-size: 16px; }
+h6 { font-size: 13px; }
+h6 { letter-spacing: 0.08em; text-transform: uppercase; }
+p { margin: 0 0 var(--space-3); }
+a { color: var(--color-accent); text-underline-offset: 3px; }
+img { display: block; max-width: 100%; }
+figure { margin: 0; }
+figcaption {
+  font-size: 11px; margin-top: var(--space-1);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+.text-muted { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+
+/* — rules — */
+.hr {
+  height: 2px; border: 0; margin: var(--space-4) 0;
+  background: var(--color-divider);
+}
+
+/* — buttons — */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  cursor: pointer; text-decoration: none;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 14px; line-height: 1.2; color: var(--color-text); /* matches the .input's 14px —
+     the pair sits side by side in sign-up rows */
+  background: transparent; border: 1px solid transparent;
+  padding: var(--space-2) calc(var(--space-3) * 1.2);
+  border-radius: var(--radius-md);
+}
+.btn svg { display: block; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--color-accent); color: var(--color-bg); }
+.btn-primary:hover { background: var(--color-accent-600); }
+.btn-primary:active { background: var(--color-accent-700); }
+.btn-secondary { border-color: var(--color-divider); }
+.btn-secondary:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.btn-secondary:active { background: color-mix(in srgb, var(--color-text) 14%, transparent); }
+.btn-ghost { color: var(--color-accent); padding-inline: var(--space-1); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.btn-ghost:active { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.btn-icon { width: 36px; height: 36px; padding: 0; }
+.btn-block { width: 100%; margin-top: var(--space-2); justify-content: flex-start; text-align: left; }
+
+/* — forms — */
+.field > label {
+  display: block; font-size: 12px; margin-bottom: 5px;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.input {
+  width: 100%; min-height: 36px; padding: 6px 10px; font: inherit;
+  font-size: 14px; color: var(--color-text); caret-color: var(--color-accent);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+}
+.input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+textarea.input { min-height: 90px; resize: vertical; }
+.radio { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.radio input, .seg-opt input {
+  position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+}
+.radio .dot {
+  width: 16px; height: 16px; flex: none; border-radius: 50%;
+  border: 1.5px solid var(--color-divider);
+}
+.radio:hover .dot { border-color: var(--color-accent); }
+.radio input:checked + .dot {
+  border-color: var(--color-accent); background: var(--color-accent);
+  box-shadow: inset 0 0 0 4px var(--color-bg);
+}
+.radio input:focus-visible + .dot { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.seg {
+  display: inline-flex; overflow: hidden;
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+}
+.seg-opt {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; font-size: 13px; cursor: pointer;
+}
+.seg-opt + .seg-opt { border-left: 1px solid var(--color-divider); }
+.seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+.seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+/* — cards — */
+.card {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3); border-radius: var(--radius-md); background: var(--color-surface);
+}
+.card-kicker { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-accent); }
+.card-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 17px; line-height: 1.2;
+}
+.card-body { margin: 0; font-size: 13px; opacity: 0.8; flex: 1; }
+.card-meta {
+  display: flex; align-items: center; gap: 6px; font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 50%, transparent);
+}
+.elev-sm { box-shadow: var(--shadow-sm); }
+.elev-md { box-shadow: var(--shadow-md); }
+.elev-lg { box-shadow: var(--shadow-lg); }
+
+/* — tags — */
+.tag {
+  display: inline-flex; align-items: center; font-size: 11px;
+  letter-spacing: 0.02em; padding: 3px 10px;
+  border-radius: calc(var(--radius-md) * 0.75);
+}
+.tag-accent { background: var(--color-accent-100); color: var(--color-accent-800); }
+.tag-accent-2 { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
+.tag-neutral { background: var(--color-neutral-100); color: var(--color-neutral-800); }
+.tag-outline { border: 1px solid var(--color-accent); color: var(--color-accent); }
+
+/* — navigation — */
+.nav {
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 2px solid var(--color-divider);
+}
+.nav-brand {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 18px; margin-right: auto;
+}
+.nav a { color: inherit; text-decoration: none; font-size: 14px; }
+.nav a:hover, .nav a[aria-current='page'] { color: var(--color-accent); }
+
+/* — tables — */
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th {
+  text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  padding: var(--space-2); border-bottom: 2px solid var(--color-divider);
+}
+.table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+}
+.table tbody tr:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+
+/* — dialog — */
+.dialog-backdrop {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+}
+.dialog {
+  width: min(440px, 100%); display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-4); border-radius: var(--radius-lg);
+  background: var(--color-surface); box-shadow: var(--shadow-lg);
+}
+.dialog-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 20px;
+}
+.dialog-body { font-size: 14px; opacity: 0.85; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Extension de dataviz sobre Modernist.
+
+   POR QUE EXISTE ESTE ARCHIVO
+   Modernist es mono a proposito: un solo acento, y `--color-accent-2-*` es un
+   relleno derivado a maquina, no un segundo rol. Un tablero necesita canal de
+   color. Esta hoja resuelve esa tension SIN inventarle hues al sistema.
+
+   LA MEDICION QUE MANDA (validate_palette.js, fondo #f3f2f2, ver VALIDACION.md)
+   Los pasos neutros de Modernist reprueban el piso de croma: #2d2b2b da C=0.003
+   y #444141 da C=0.004, contra un minimo de 0.10. Es decir: un gris NO puede
+   portar identidad categorica; el ojo lo lee como "sin marcar", no como "la
+   categoria B". Y sin embargo la separacion contra el acento es enorme
+   (ΔE 39.0 normal, 22.4 protanopia). Traducido: tinta y acento se distinguen
+   perfecto, pero como *enfasis*, no como *categorias*.
+
+   LA CONSECUENCIA
+   No se le fuerza color categorico a un sistema mono. La identidad la lleva la
+   FORMA (relleno vs hueco); el acento queda reservado para el hallazgo. Eso es
+   ademas mas accesible que el color y mas fiel a Modernist, que pide usar el
+   rojo con avaricia. Ningun grafico depende del color solo: leyenda siempre
+   presente, etiqueta directa en las marcas destacadas, y gemelo en tabla.
+
+   MODO OSCURO: Modernist es un sistema de banda clara y no publica tokens
+   oscuros. El tablero anterior (web/index.html) si tenia modo oscuro; se pierde
+   en esta fase a proposito. Recuperarlo exige un set de tokens oscuros
+   *elegido* y re-validado contra la superficie oscura, no un volteo automatico.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ---- cromo del grafico: recesivo, siempre por debajo de los datos ---- */
+  --viz-superficie:   var(--color-bg);
+  --viz-rejilla:      color-mix(in srgb, var(--color-text) 10%, transparent);
+  --viz-eje:          color-mix(in srgb, var(--color-text) 25%, transparent);
+  --viz-tinta:        var(--color-text);
+  --viz-tinta-tenue:  color-mix(in srgb, var(--color-text) 55%, transparent);
+
+  /* ---- SECUENCIAL (magnitud): coropleta del mapa ----------------------
+     Cinco clases, un solo hue, claro->oscuro. Arranca en accent-500 y no
+     antes: accent-400 se queda en 1,88:1 contra el fondo y accent-100..300
+     son invisibles (1,02 / 1,11 / 1,36:1). Es el "snap al paso valido mas
+     cercano" que manda el metodo, no un recorte arbitrario.
+     Verificado: monotonia OK, saltos de L >= 0.06, extremo claro 2,83:1,
+     dispersion de hue 0 grados. TODAS LAS PRUEBAS PASAN.
+     Cortes FIJOS, no cuantiles: la escala no puede cambiar de significado
+     entre cargas o el mapa deja de ser comparable consigo mismo. */
+  --viz-seq-1: var(--color-accent-500);   /* #ff563c  2,83:1 */
+  --viz-seq-2: var(--color-accent-600);   /* #dd2b0f  4,25:1 */
+  --viz-seq-3: var(--color-accent-700);   /* #ae1800  6,41:1 */
+  --viz-seq-4: var(--color-accent-800);   /* #7c1405  9,59:1 */
+  --viz-seq-5: var(--color-accent-900);   /* #4d170e 13,01:1 */
+
+  /* Ausencia de dato NO es magnitud: sale de la rampa, y ademas lleva trama.
+     Pintar "sin dato" como el escalon mas bajo es afirmar un cero que nadie
+     midio. */
+  --viz-sin-dato: var(--color-neutral-300);
+
+  /* ---- IDENTIDAD POR FORMA (no por color) -----------------------------
+     Grafo de proveedores y dumbbell municipal. El relleno distingue; el
+     acento destaca. */
+  --viz-marca:          var(--color-neutral-900);  /* relleno: la categoria base */
+  --viz-marca-hueco:    var(--color-bg);           /* relleno del hueco */
+  --viz-marca-aro:      var(--color-neutral-900);  /* aro de la marca hueca */
+  --viz-marca-hallazgo: var(--color-accent);       /* el hallazgo, con avaricia */
+  --viz-aro-grosor:     2px;
+
+  /* Separador entre rellenos contiguos: 2px del color de la superficie, para
+     que dos barras apiladas no se fundan en una sola mancha. */
+  --viz-separador: var(--viz-superficie);
+}
+
+/* ---- marcas -------------------------------------------------------------
+   .viz-relleno  categoria base        circulo/barra solida en tinta
+   .viz-hueco    la otra categoria     aro de 2px, centro del fondo
+   .viz-hallazgo lo que el proyecto senala   solido en acento           */
+.viz-relleno  { fill: var(--viz-marca);          stroke: none; }
+.viz-hueco    { fill: var(--viz-marca-hueco);    stroke: var(--viz-marca-aro);
+                stroke-width: var(--viz-aro-grosor); }
+.viz-hallazgo { fill: var(--viz-marca-hallazgo); stroke: none; }
+
+/* Marcas que se traslapan (nodos del grafo) llevan un aro del color de la
+   superficie para que no se fundan entre si. */
+.viz-nodo { stroke: var(--viz-superficie); stroke-width: var(--viz-aro-grosor); }
+.viz-nodo.viz-hueco { stroke: var(--viz-marca-aro); }
+
+/* ---- ejes y rejilla: 1px, recesivos, nunca compiten con el dato ---- */
+.viz-rejilla { stroke: var(--viz-rejilla); stroke-width: 1; }
+.viz-eje     { stroke: var(--viz-eje);     stroke-width: 1; }
+.viz-tick    { fill: var(--viz-tinta-tenue); font-size: 11px; }
+
+/* El texto usa tokens de texto, NUNCA el color de la serie. Una marca de color
+   al lado carga la identidad; el numero se queda en tinta. */
+.viz-valor   { fill: var(--viz-tinta); font-size: 12px; }
+.viz-etiqueta{ fill: var(--viz-tinta-tenue); font-size: 11px; }
+
+/* ---- leyenda: obligatoria con 2+ series, sin excepcion ---- */
+.viz-leyenda { display: flex; flex-wrap: wrap; gap: var(--space-4);
+               margin: 0 0 var(--space-3); font-size: 12px; }
+.viz-leyenda span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.viz-leyenda i { width: 12px; height: 12px; flex: none; display: block; }
+.viz-leyenda .viz-relleno-m  { background: var(--viz-marca); }
+.viz-leyenda .viz-hueco-m    { background: var(--viz-marca-hueco);
+                               box-shadow: inset 0 0 0 var(--viz-aro-grosor) var(--viz-marca-aro); }
+.viz-leyenda .viz-hallazgo-m { background: var(--viz-marca-hallazgo); }
+
+/* ---- trama: el caso daltonico / impresion / forced-colors ----
+   45 grados. Se usa en "sin dato" y como relieve donde el contraste queda
+   en zona de advertencia. */
+.viz-trama {
+  background-image: repeating-linear-gradient(45deg,
+    var(--viz-sin-dato) 0 3px, transparent 3px 6px);
+}
+
+/* ---- tooltip ---- */
+.viz-tip {
+  position: fixed; pointer-events: none; z-index: 40;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface); color: var(--color-text);
+  border: 1px solid var(--color-divider); box-shadow: var(--shadow-md);
+  font-size: 12px; max-width: 34ch;
+}
+
+/* El area de hover es mas grande que la marca: invisible, capturable. */
+.viz-hit { fill: transparent; cursor: pointer; }
+
+/* Hallmark · macrostructure: Stat-Led · tone: editorial-arquitectonico · anchor hue: 25 (rojo #ec3013)
+ * sistema: Modernist vendorizado (design/modernist/, no se toca) · nav: N1a Modernist ·
+ * pie: statement · enriquecimiento: none (tipografia + una linea de plomada en CSS puro)
+ * plan de origen: design/PLAN_DISENO.md */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Capa de pagina de Plomada sobre Modernist.
+
+   POR QUE EXISTE ESTE ARCHIVO
+   design/modernist/styles.css trae los tokens y los componentes atomicos
+   (.btn, .card, .tag, .table, .nav...). No trae layout de pagina: hero,
+   cabeceras de seccion, fichas, franjas de cifras, avisos fijos. Ese
+   vocabulario es especifico de Plomada y vive aqui, nunca dentro de
+   modernist/ (VENDOR.md lo prohibe).
+
+   REGLA DE TOKENS
+   Todo color y toda fuente referencian var(--color-*) / var(--font-*) de
+   Modernist. Los unicos tokens nuevos son de tipografia, espacio y
+   movimiento (--pl-*), porque Modernist no trae una escala de texto ni
+   duraciones de animacion. Cero hex sueltos.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* escala tipografica (Modernist fija h1-h6 pero no da una escala fluida
+     para hero/cifras; se construye una encima, sin tocar los h1-h6 base) */
+  --pl-text-display: clamp(2.75rem, 1.3rem + 6vw, 5rem);   /* la cifra lider */
+  --pl-text-3xl:     clamp(2rem, 1.2rem + 3.2vw, 3rem);    /* hero h1 */
+  --pl-text-2xl:     clamp(1.375rem, 1.15rem + 0.9vw, 1.75rem);
+  --pl-text-xl:      1.25rem;
+  --pl-text-md:      1rem;
+  --pl-text-sm:      0.875rem;
+  --pl-text-xs:      0.75rem;
+
+  /* extension de la escala de espacio de Modernist (4pt: 4/8/12/16/24/32) */
+  --pl-space-12: 48px;
+  --pl-space-16: 64px;
+  --pl-space-24: 96px;
+
+  --pl-medida: 65ch;
+
+  --pl-dur: 140ms;
+  --pl-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* grosor de las reglas mayores entre secciones, ya provisto por Modernist
+     como --color-divider; se fija el ancho aqui porque Modernist no define
+     un --rule-width */
+  --pl-regla: 2px;
+}
+
+/* ─── piso duro: sin scroll horizontal en ninguna vista ─────────────────
+   Sin min-width:0 global a proposito: eso encoge los <a> del nav por
+   debajo de su contenido y el texto se solapa en vez de activar el
+   scroll horizontal propio de .nav. Cada contenedor que de verdad
+   necesita encogerse ya lo declara (minmax(0,1fr) en los grids, o
+   min-width:0 puntual en los flex que lo requieren). */
+html, body { overflow-x: clip; }
+
+body { display: flex; flex-direction: column; min-height: 100vh; }
+main#principal { flex: 1; }
+
+/* ─── saltar al contenido ──────────────────────────────────────────────
+   Hoy sin estilo: invisible hasta foco, entonces aparece como boton
+   primario arriba a la izquierda. */
+.saltar {
+  position: absolute; left: var(--space-3); top: -48px; z-index: 50;
+  background: var(--color-accent); color: var(--color-bg);
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--pl-text-sm); text-decoration: none; white-space: nowrap;
+  padding: var(--space-2) var(--space-3);
+  transition: top var(--pl-dur) var(--pl-ease);
+}
+.saltar:focus-visible { top: var(--space-3); outline: 2px solid var(--color-bg); outline-offset: 2px; }
+
+/* ─── nav: contenido dentro del ancho de pagina, scroll propio a 320px ── */
+.nav {
+  max-width: 1100px; margin-inline: auto; width: 100%;
+  overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none;
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav a { white-space: nowrap; }
+
+/* ─── contenedor de pagina ──────────────────────────────────────────────
+   El hueco entre secciones mayores se declara en --pl-gap, no directo en
+   `gap`, porque hay hijos de main que NO son secciones mayores (las migas,
+   el aviso fijo) y necesitan restarlo. Sin la variable, la unica forma de
+   apretarlos seria un numero magico que se desincroniza del `gap` real.
+
+   La separacion visible entre dos secciones es --pl-gap MAS el padding-top
+   de .caja (que ademas dibuja la regla de 2px). Por eso ninguno de los dos
+   lleva el escalon grande: 48 + 32 = 80px en escritorio ya es una pausa
+   editorial larga. Cuando ambos llevaban el escalon mayor daba 144px, casi
+   una pantalla de movil en blanco entre un titulo y el siguiente. */
+main#principal {
+  --pl-gap: var(--space-8);
+  max-width: 1100px; margin-inline: auto; width: 100%;
+  padding-inline: var(--space-4); padding-block: var(--pl-space-12);
+  display: flex; flex-direction: column; gap: var(--pl-gap);
+}
+@media (min-width: 768px) {
+  main#principal { padding-inline: var(--space-8); --pl-gap: var(--pl-space-12); }
+}
+/* La banda de cierre sangra a todo el ancho y es lo ultimo de la portada:
+   si main conserva su padding inferior, queda una franja de fondo entre el
+   rojo y la regla del pie que parece un error de maquetacion. Va pegada. */
+main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
+
+/* ─── migas ────────────────────────────────────────────────────────────
+   No son una seccion mayor: van pegadas al aviso de arriba y al titulo de
+   abajo, no separadas por la pausa entre secciones. */
+.migas {
+  margin-block: calc(var(--space-4) - var(--pl-gap));
+  font-size: var(--pl-text-sm);
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  display: flex; flex-wrap: wrap; gap: var(--space-1);
+}
+.migas a { color: inherit; }
+.migas a:hover { color: var(--color-accent); }
+
+/* ─── cabecera de seccion generica (.cab, .cab-mun) ───────────────────
+   Usada por mapa, buscador, metodologia, tablero, ficha de municipio. */
+.cab, .cab-mun { display: flex; flex-direction: column; gap: var(--space-2); }
+.cab h1, .cab-mun h1 { font-size: var(--pl-text-3xl); overflow-wrap: anywhere; }
+.cab .bajada, .cab-mun .bajada {
+  font-size: var(--pl-text-md); max-width: var(--pl-medida);
+  color: color-mix(in srgb, var(--color-text) 80%, transparent);
+}
+.cab-mun .tipo {
+  font-size: var(--pl-text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--color-accent);
+}
+.cab-mun .puesto { font-size: var(--pl-text-sm); opacity: 0.75; }
+
+/* ─── aviso fijo: "indicio, no acusacion" ─────────────────────────────
+   Franja de acento tenue, presente en toda vista con una cifra agregada
+   o una ficha individual. */
+.aviso-fijo {
+  background: var(--color-accent-100); color: var(--color-accent-800);
+  border-top: 1px solid var(--color-accent-300); border-bottom: 1px solid var(--color-accent-300);
+  padding: var(--space-3) var(--space-4); font-size: var(--pl-text-sm);
+}
+.aviso-fijo strong { font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+.aviso-cruce { border-left: 3px solid var(--color-accent); padding-left: var(--space-3); }
+
+/* ─── caja: bloque de seccion mayor, separado por una regla de 2px ────── */
+.caja {
+  padding-top: var(--space-8);
+  border-top: var(--pl-regla) solid var(--color-divider);
+  display: flex; flex-direction: column; gap: var(--space-4);
+}
+.caja:first-child { border-top: 0; padding-top: 0; }
+/* La franja de cifras ya cierra con su propia regla de 2px. Si la seccion
+   que sigue dibuja la suya, quedan dos reglas paralelas separadas por el
+   hueco entre bloques y se lee como un error, no como una pausa. */
+.cab-grid.cifras + .caja { border-top: 0; }
+/* Cuando .dos-col ya es de dos columnas las cajas van lado a lado, no una
+   debajo de otra: la regla horizontal sobra, y ademas solo le tocaba a la
+   segunda (la primera es :first-child), que quedaba subrayada y arrancando
+   mas abajo que su vecina. Apiladas en movil la regla si separa, y ahi se
+   conserva. */
+@media (min-width: 768px) {
+  .dos-col > .caja { border-top: 0; padding-top: 0; }
+}
+.caja h2 { font-size: var(--pl-text-2xl); }
+.caja h3 { font-size: var(--pl-text-xl); margin-top: var(--space-4); }
+.caja.principal { gap: var(--space-3); }
+.caja .nota { max-width: var(--pl-medida); }
+
+/* ─── nota, vacio, alerta, tenue, destacado, grande — modificadores de texto ─ */
+.nota {
+  font-size: var(--pl-text-sm);
+  color: color-mix(in srgb, var(--color-text) 65%, transparent);
+}
+.nota.vacio { padding: var(--space-4); background: var(--color-surface); }
+.alerta { color: var(--color-accent-700); font-weight: var(--font-heading-weight); }
+.tenue { color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+.destacado { font-weight: var(--font-heading-weight); }
+.grande { font-size: var(--pl-text-2xl); font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+.sin { font-style: normal; color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+
+/* ─── numeros tabulares en toda celda/valor numerico ───────────────────── */
+.table .num, .cifras, .valor, .score-num, .grande { font-variant-numeric: tabular-nums; }
+
+/* Las celdas de nombre llevan <a>Municipio</a><small>Departamento</small>.
+   Sin esta regla el <small> hereda el display inline y sale pegado al
+   enlace ("El BagreAntioquia"): es la linea secundaria de la celda, no
+   parte del enlace. */
+.table td small {
+  display: block; font-size: var(--pl-text-xs); font-weight: 400;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+/* ─── franja de cifras (.cab-grid, .cifras, .dato) ─────────────────────
+   Usada en portada, ficha, municipio, metodologia y tablero: 4 celdas
+   de igual ancho, separadas por una regla vertical de 1px. */
+.cab-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4) var(--space-6);
+  margin: 0; padding: var(--space-4) 0;
+}
+@media (min-width: 640px) {
+  .cab-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.cab-grid.cifras { border-block: var(--pl-regla) solid var(--color-divider); }
+.dato { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dato dt {
+  font-size: var(--pl-text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent); margin: 0;
+}
+.dato dd { margin: 0; font-size: var(--pl-text-md); }
+.dato dd small {
+  display: block; font-size: var(--pl-text-xs);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent); font-weight: 400;
+}
+.dl { margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.dl .dato { flex-direction: row; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.dl .dato dt { text-transform: none; letter-spacing: normal; font-size: var(--pl-text-sm); }
+
+/* ─── hero de portada ──────────────────────────────────────────────────
+   Tipografico, flush left, sin imagen. El unico adorno: una linea de
+   plomada (Tier A, CSS puro) que cae del borde superior hasta la cifra
+   lider, rematada en un cuadrado -- la pesa. */
+.hero {
+  position: relative; display: flex; flex-direction: column; gap: var(--space-3);
+  padding-left: var(--space-6);
+}
+.hero::before {
+  content: ""; position: absolute; left: 0; top: 0.4em; bottom: -1.75rem;
+  width: 2px; background: var(--color-accent);
+}
+.hero::after {
+  content: ""; position: absolute; left: -3px; bottom: -1.8rem;
+  width: 8px; height: 8px; background: var(--color-accent);
+}
+@media (max-width: 639px) {
+  .hero { padding-left: var(--space-4); }
+  .hero::before, .hero::after { display: none; }
+}
+.hero .kicker {
+  font-size: var(--pl-text-xs); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--color-accent); margin: 0;
+}
+.hero h1 { font-size: var(--pl-text-3xl); }
+.hero .lema { font-size: var(--pl-text-xl); max-width: var(--pl-medida); font-weight: 400; }
+.hero .bajada { font-size: var(--pl-text-md); max-width: var(--pl-medida);
+  color: color-mix(in srgb, var(--color-text) 75%, transparent); }
+.hero .cta { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+
+/* ─── cifra lider (el "stat" del macrostructure Stat-Led) ──────────────
+   Se llena en cliente desde /datos/titulares.json (portada.js), el mismo
+   dato que ya alimenta el tablero -- no se inventa un numero nuevo. */
+.cifra-lider { display: flex; flex-direction: column; gap: var(--space-1); }
+.cifra-lider .tipo { font-size: var(--pl-text-md); max-width: var(--pl-medida); }
+.cifra-lider .valor {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--pl-text-display); line-height: 1; color: var(--color-accent-700);
+  overflow-wrap: anywhere;
+}
+.cifra-lider .nota { margin-top: var(--space-1); }
+
+/* ─── banda de cierre: el UNICO campo de acento de la portada ─────────
+   Bleed a todo el ancho de la ventana; el contenido se mantiene en la
+   medida de pagina. */
+.cierre {
+  width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
+  background: var(--color-accent); color: var(--color-bg);
+  padding-block: var(--pl-space-12);
+}
+.cierre-inner {
+  max-width: 1100px; margin-inline: auto; padding-inline: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-3);
+}
+@media (min-width: 768px) { .cierre-inner { padding-inline: var(--space-8); } }
+.cierre h2 { font-size: var(--pl-text-2xl); max-width: var(--pl-medida); overflow-wrap: anywhere; }
+.cierre p { max-width: var(--pl-medida); opacity: 0.92; }
+.cierre a { color: var(--color-bg); text-decoration-thickness: 2px; }
+
+/* ─── tarjetas de contrato (grid de .card) ─────────────────────────── */
+.tarjetas {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3);
+}
+@media (min-width: 640px) { .tarjetas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .tarjetas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.tarjetas .card { text-decoration: none; color: inherit; transition: box-shadow var(--pl-dur) var(--pl-ease); }
+.tarjetas .card:hover { box-shadow: var(--shadow-md); }
+.tarjetas .card:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.tarjetas .card-title { overflow-wrap: anywhere; }
+.tarjetas .card-meta { overflow-wrap: anywhere; }
+
+/* ─── tabla envuelta: nunca desborda la pagina ──────────────────────── */
+.tabla-scroll { overflow-x: auto; }
+/* Tablas gemelas del tablero (graficos/comun.js las arma en cliente,
+   dentro de <details class="tbl"><div id="t-tbl-...">): mismo riesgo de
+   desborde en tablas anchas a 320px, mismo remedio. */
+[id^="t-tbl-"] { overflow-x: auto; }
+
+/* ─── ficha de contrato ────────────────────────────────────────────── */
+.ficha { display: flex; flex-direction: column; gap: var(--space-8); }
+.ficha-cab { display: flex; flex-direction: column; gap: var(--space-2); }
+.ficha-cab .tipo {
+  font-size: var(--pl-text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+.ficha-cab h1 { font-size: var(--pl-text-2xl); overflow-wrap: anywhere; }
+.ficha-cab .idc code {
+  font-size: var(--pl-text-xs); color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+.btn-verificar {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--pl-text-sm); color: var(--color-accent-700); text-decoration: none;
+  border: 1px solid var(--color-divider); padding: var(--space-2) var(--space-3);
+  width: fit-content;
+}
+.btn-verificar:hover { background: color-mix(in srgb, var(--color-accent) 8%, transparent); }
+.btn-verificar.sin { border: 0; padding: 0; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+
+/* ─── barra de puntaje ─────────────────────────────────────────────── */
+.score { display: flex; flex-direction: column; gap: var(--space-2); }
+.score-num { display: flex; align-items: baseline; gap: var(--space-2); }
+.score-num b { font-size: var(--pl-text-xl); font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+.score-num span { font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+.score-bar {
+  position: relative; height: 8px; background: var(--color-neutral-200); width: 100%;
+}
+.score-bar i { display: block; height: 100%; background: var(--color-accent-600); }
+.score-bar::after {
+  /* marca del umbral (6 puntos / 1.0 = 60%): regla vertical de tinta */
+  content: ""; position: absolute; left: 60%; top: -3px; bottom: -3px; width: 2px;
+  background: var(--color-text);
+}
+.score-pie { font-size: var(--pl-text-xs); color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+
+/* ─── banderas ─────────────────────────────────────────────────────── */
+.grupo { display: flex; flex-direction: column; gap: var(--space-3); }
+.bandera {
+  border-left: 3px solid var(--color-accent); padding: var(--space-2) 0 var(--space-2) var(--space-3);
+  display: flex; flex-direction: column; gap: var(--space-1);
+}
+.bandera.atenuada { border-left-color: var(--color-neutral-400); }
+.bandera h4 {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2);
+  font-size: var(--pl-text-md); margin: 0;
+}
+.bandera .peso {
+  font-size: var(--pl-text-xs); font-weight: 400; font-family: var(--font-body);
+  background: var(--color-accent-100); color: var(--color-accent-800);
+  padding: 2px var(--space-2);
+}
+.bandera.atenuada .peso { background: var(--color-neutral-200); color: var(--color-neutral-800); }
+.bandera .etq-aten {
+  font-size: var(--pl-text-xs); border: 1px solid var(--color-neutral-400);
+  color: color-mix(in srgb, var(--color-text) 60%, transparent); padding: 2px var(--space-2);
+}
+.bandera .glosa { margin: 0; font-size: var(--pl-text-sm); }
+.bandera .evidencia { margin: 0; font-size: var(--pl-text-sm); }
+.bandera .evidencia span {
+  font-weight: var(--font-heading-weight); font-family: var(--font-heading);
+  font-size: var(--pl-text-xs); text-transform: uppercase; letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent); margin-right: var(--space-1);
+}
+.bandera .evidencia.sin { color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+.cuenta {
+  font-size: var(--pl-text-sm); font-weight: 400; font-family: var(--font-body);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+/* ─── dos columnas (dinero / personas) ─────────────────────────────── */
+.dos-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-8) var(--space-6); }
+@media (min-width: 768px) { .dos-col { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.fuentes { font-size: var(--pl-text-sm); margin: 0; }
+
+/* ─── mapa satelital de la ficha ───────────────────────────────────── */
+/* #mapa-satelital lleva la altura en el ID, no en .mapa-placeholder: al
+   pulsar "Ver imagen satelital", mapa-satelital.js QUITA la clase
+   .mapa-placeholder antes de inicializar Leaflet (L.map(contenedor)).
+   Si la altura solo viviera en la clase, el contenedor quedaria en 0px al
+   quitarla y Leaflet renderizaria en un lienzo de tamano cero: la tile
+   se pide (200 en la pestana de red) pero nunca se ve. Bug real, encontrado
+   probando la ficha con el inspector abierto. */
+#mapa-satelital { min-height: 320px; }
+/* ...pero mientras SIGUE siendo el placeholder no: el aviso y el boton
+   ocupan ~120px y los otros 200px quedaban como un recuadro vacio debajo
+   del boton. Un id+clase gana al id solo, asi que el placeholder se ajusta
+   a su contenido y los 320px vuelven solos en cuanto el JS quita la clase. */
+#mapa-satelital.mapa-placeholder { min-height: 0; }
+.mapa-placeholder {
+  border: 1px solid var(--color-divider); padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start;
+}
+.mapa-direccion { margin: 0; font-weight: var(--font-heading-weight); font-family: var(--font-heading); overflow-wrap: anywhere; }
+.mapa-nota { margin: 0; font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+.mapa-nota.sin { font-style: normal; }
+
+/* ─── lista de hermanos / limitaciones ─────────────────────────────── */
+.lista-herm, .lista-lim { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.lista-herm li { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--color-divider); padding-top: var(--space-2); }
+.lista-herm li span { font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+.lista-lim li { font-size: var(--pl-text-sm); }
+
+/* ─── mapa (/mapa/) ────────────────────────────────────────────────── */
+.mapa-wrap { display: flex; flex-direction: column; gap: var(--space-4); }
+@media (min-width: 900px) { .mapa-wrap { flex-direction: row; align-items: stretch; } }
+#mapa { height: 420px; width: 100%; background: var(--color-surface); }
+@media (min-width: 900px) { #mapa { flex: 2 1 0; min-width: 0; } }
+.panel {
+  flex: 1 1 0; min-width: 0; border: 1px solid var(--color-divider); padding: var(--space-4);
+  overflow-y: auto; max-height: 420px;
+}
+.panel-muns { max-height: 220px; overflow-y: auto; }
+#filtro-mun.input, #filtro-mun { margin-bottom: var(--space-3); }
+
+/* ─── chips (banderas frecuentes por municipio) ────────────────────── */
+.chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chips li { font-size: var(--pl-text-sm); background: var(--color-surface); padding: var(--space-1) var(--space-2); }
+.chips b { font-family: var(--font-heading); font-weight: var(--font-heading-weight); margin-right: 4px; }
+
+/* ─── buscador ─────────────────────────────────────────────────────── */
+.filtros {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3);
+  padding: var(--space-4); background: var(--color-surface);
+}
+@media (min-width: 640px) { .filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .filtros { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.filtros > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.filtros label { font-size: var(--pl-text-xs); color: color-mix(in srgb, var(--color-text) 65%, transparent); }
+.filtros select, .filtros input {
+  min-height: 36px; padding: 6px 10px; font: inherit; font-size: var(--pl-text-sm);
+  color: var(--color-text); background: var(--color-bg);
+  border: 1px solid var(--color-divider);
+}
+.filtros select:hover, .filtros input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.filtros select:focus-visible, .filtros input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.filtros .acciones { flex-direction: row; gap: var(--space-2); align-items: flex-end; }
+.filtros .acciones button {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: var(--pl-text-sm);
+  border: 1px solid var(--color-divider); background: transparent; color: var(--color-text);
+  padding: var(--space-2) var(--space-3); cursor: pointer; white-space: nowrap;
+}
+.filtros .acciones button:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.filtros .acciones button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.filtros .acciones #exportar { border-color: var(--color-accent); color: var(--color-accent); }
+.resumen { font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 65%, transparent); }
+#resultados { display: block; overflow-x: auto; }
+#mas {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: var(--pl-text-sm);
+  border: 1px solid var(--color-divider); background: transparent; color: var(--color-text);
+  padding: var(--space-2) var(--space-4); cursor: pointer;
+}
+#mas:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+#mas:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* ─── metodologia ──────────────────────────────────────────────────── */
+.caso { display: flex; flex-direction: column; gap: var(--space-1); border-top: 1px solid var(--color-divider); padding-top: var(--space-3); }
+.caso .etq {
+  font-size: var(--pl-text-xs); text-transform: uppercase; letter-spacing: 0.06em;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent); margin-right: var(--space-1);
+}
+.descargas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.descargas li { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); border-top: 1px solid var(--color-divider); padding-top: var(--space-2); }
+.descargas code { font-size: var(--pl-text-sm); }
+.descargas span { font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 65%, transparent); }
+.descargas small { font-size: var(--pl-text-xs); color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+
+/* ─── tablero: t-hero, t-tiles heredan .caja/.cifras; tbl detalle ─────── */
+.caja.hero .tipo { font-size: var(--pl-text-md); max-width: var(--pl-medida); }
+.caja.hero .valor.grande { font-size: var(--pl-text-display); color: var(--color-accent-700); }
+.tbl summary { cursor: pointer; font-size: var(--pl-text-sm); color: var(--color-accent-700); width: fit-content; }
+.tbl summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* ─── pie de pagina: arquetipo statement, no columnas de enlaces ──────── */
+.pie {
+  border-top: var(--pl-regla) solid var(--color-divider);
+  max-width: 1100px; margin-inline: auto; width: 100%;
+  padding: var(--space-8) var(--space-4) var(--pl-space-12);
+  display: flex; flex-direction: column; gap: var(--space-3);
+}
+@media (min-width: 768px) { .pie { padding-inline: var(--space-8); } }
+.pie .aviso { font-size: var(--pl-text-md); max-width: var(--pl-medida); font-weight: 400; }
+.pie p:not(.aviso) { font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 65%, transparent); }
+
+/* ─── movimiento: presupuesto de 3 primitivas, solo transform/opacity ── */
+/* ─── ganchos sin regla propia (documentado, no un olvido) ────────────
+   `.pg-portada/-ficha/-mapa/-buscar/-tablero/-texto` en <body>: gancho por
+   vista para un override futuro, ninguna existe todavia. `.table.banderas`
+   (metodologia): modificador compuesto sobre `.table`, que ya lo cubre
+   entero -- no necesita una regla `.banderas` aparte. */
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+

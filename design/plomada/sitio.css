@@ -1,0 +1,491 @@
+/* Hallmark · macrostructure: Stat-Led · tone: editorial-arquitectonico · anchor hue: 25 (rojo #ec3013)
+ * sistema: Modernist vendorizado (design/modernist/, no se toca) · nav: N1a Modernist ·
+ * pie: statement · enriquecimiento: none (tipografia + una linea de plomada en CSS puro)
+ * plan de origen: design/PLAN_DISENO.md */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Capa de pagina de Plomada sobre Modernist.
+
+   POR QUE EXISTE ESTE ARCHIVO
+   design/modernist/styles.css trae los tokens y los componentes atomicos
+   (.btn, .card, .tag, .table, .nav...). No trae layout de pagina: hero,
+   cabeceras de seccion, fichas, franjas de cifras, avisos fijos. Ese
+   vocabulario es especifico de Plomada y vive aqui, nunca dentro de
+   modernist/ (VENDOR.md lo prohibe).
+
+   REGLA DE TOKENS
+   Todo color y toda fuente referencian var(--color-*) / var(--font-*) de
+   Modernist. Los unicos tokens nuevos son de tipografia, espacio y
+   movimiento (--pl-*), porque Modernist no trae una escala de texto ni
+   duraciones de animacion. Cero hex sueltos.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* escala tipografica (Modernist fija h1-h6 pero no da una escala fluida
+     para hero/cifras; se construye una encima, sin tocar los h1-h6 base) */
+  --pl-text-display: clamp(2.75rem, 1.3rem + 6vw, 5rem);   /* la cifra lider */
+  --pl-text-3xl:     clamp(2rem, 1.2rem + 3.2vw, 3rem);    /* hero h1 */
+  --pl-text-2xl:     clamp(1.375rem, 1.15rem + 0.9vw, 1.75rem);
+  --pl-text-xl:      1.25rem;
+  --pl-text-md:      1rem;
+  --pl-text-sm:      0.875rem;
+  --pl-text-xs:      0.75rem;
+
+  /* extension de la escala de espacio de Modernist (4pt: 4/8/12/16/24/32) */
+  --pl-space-12: 48px;
+  --pl-space-16: 64px;
+  --pl-space-24: 96px;
+
+  --pl-medida: 65ch;
+
+  --pl-dur: 140ms;
+  --pl-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* grosor de las reglas mayores entre secciones, ya provisto por Modernist
+     como --color-divider; se fija el ancho aqui porque Modernist no define
+     un --rule-width */
+  --pl-regla: 2px;
+}
+
+/* ─── piso duro: sin scroll horizontal en ninguna vista ─────────────────
+   Sin min-width:0 global a proposito: eso encoge los <a> del nav por
+   debajo de su contenido y el texto se solapa en vez de activar el
+   scroll horizontal propio de .nav. Cada contenedor que de verdad
+   necesita encogerse ya lo declara (minmax(0,1fr) en los grids, o
+   min-width:0 puntual en los flex que lo requieren). */
+html, body { overflow-x: clip; }
+
+body { display: flex; flex-direction: column; min-height: 100vh; }
+main#principal { flex: 1; }
+
+/* ─── saltar al contenido ──────────────────────────────────────────────
+   Hoy sin estilo: invisible hasta foco, entonces aparece como boton
+   primario arriba a la izquierda. */
+.saltar {
+  position: absolute; left: var(--space-3); top: -48px; z-index: 50;
+  background: var(--color-accent); color: var(--color-bg);
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--pl-text-sm); text-decoration: none; white-space: nowrap;
+  padding: var(--space-2) var(--space-3);
+  transition: top var(--pl-dur) var(--pl-ease);
+}
+.saltar:focus-visible { top: var(--space-3); outline: 2px solid var(--color-bg); outline-offset: 2px; }
+
+/* ─── nav: contenido dentro del ancho de pagina, scroll propio a 320px ── */
+.nav {
+  max-width: 1100px; margin-inline: auto; width: 100%;
+  overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none;
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav a { white-space: nowrap; }
+
+/* ─── contenedor de pagina ──────────────────────────────────────────────
+   El hueco entre secciones mayores se declara en --pl-gap, no directo en
+   `gap`, porque hay hijos de main que NO son secciones mayores (las migas,
+   el aviso fijo) y necesitan restarlo. Sin la variable, la unica forma de
+   apretarlos seria un numero magico que se desincroniza del `gap` real.
+
+   La separacion visible entre dos secciones es --pl-gap MAS el padding-top
+   de .caja (que ademas dibuja la regla de 2px). Por eso ninguno de los dos
+   lleva el escalon grande: 48 + 32 = 80px en escritorio ya es una pausa
+   editorial larga. Cuando ambos llevaban el escalon mayor daba 144px, casi
+   una pantalla de movil en blanco entre un titulo y el siguiente. */
+main#principal {
+  --pl-gap: var(--space-8);
+  max-width: 1100px; margin-inline: auto; width: 100%;
+  padding-inline: var(--space-4); padding-block: var(--pl-space-12);
+  display: flex; flex-direction: column; gap: var(--pl-gap);
+}
+@media (min-width: 768px) {
+  main#principal { padding-inline: var(--space-8); --pl-gap: var(--pl-space-12); }
+}
+/* La banda de cierre sangra a todo el ancho y es lo ultimo de la portada:
+   si main conserva su padding inferior, queda una franja de fondo entre el
+   rojo y la regla del pie que parece un error de maquetacion. Va pegada. */
+main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
+
+/* ─── migas ────────────────────────────────────────────────────────────
+   No son una seccion mayor: van pegadas al aviso de arriba y al titulo de
+   abajo, no separadas por la pausa entre secciones. */
+.migas {
+  margin-block: calc(var(--space-4) - var(--pl-gap));
+  font-size: var(--pl-text-sm);
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  display: flex; flex-wrap: wrap; gap: var(--space-1);
+}
+.migas a { color: inherit; }
+.migas a:hover { color: var(--color-accent); }
+
+/* ─── cabecera de seccion generica (.cab, .cab-mun) ───────────────────
+   Usada por mapa, buscador, metodologia, tablero, ficha de municipio. */
+.cab, .cab-mun { display: flex; flex-direction: column; gap: var(--space-2); }
+.cab h1, .cab-mun h1 { font-size: var(--pl-text-3xl); overflow-wrap: anywhere; }
+.cab .bajada, .cab-mun .bajada {
+  font-size: var(--pl-text-md); max-width: var(--pl-medida);
+  color: color-mix(in srgb, var(--color-text) 80%, transparent);
+}
+.cab-mun .tipo {
+  font-size: var(--pl-text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--color-accent);
+}
+.cab-mun .puesto { font-size: var(--pl-text-sm); opacity: 0.75; }
+
+/* ─── aviso fijo: "indicio, no acusacion" ─────────────────────────────
+   Franja de acento tenue, presente en toda vista con una cifra agregada
+   o una ficha individual. */
+.aviso-fijo {
+  background: var(--color-accent-100); color: var(--color-accent-800);
+  border-top: 1px solid var(--color-accent-300); border-bottom: 1px solid var(--color-accent-300);
+  padding: var(--space-3) var(--space-4); font-size: var(--pl-text-sm);
+}
+.aviso-fijo strong { font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+.aviso-cruce { border-left: 3px solid var(--color-accent); padding-left: var(--space-3); }
+
+/* ─── caja: bloque de seccion mayor, separado por una regla de 2px ────── */
+.caja {
+  padding-top: var(--space-8);
+  border-top: var(--pl-regla) solid var(--color-divider);
+  display: flex; flex-direction: column; gap: var(--space-4);
+}
+.caja:first-child { border-top: 0; padding-top: 0; }
+/* La franja de cifras ya cierra con su propia regla de 2px. Si la seccion
+   que sigue dibuja la suya, quedan dos reglas paralelas separadas por el
+   hueco entre bloques y se lee como un error, no como una pausa. */
+.cab-grid.cifras + .caja { border-top: 0; }
+/* Cuando .dos-col ya es de dos columnas las cajas van lado a lado, no una
+   debajo de otra: la regla horizontal sobra, y ademas solo le tocaba a la
+   segunda (la primera es :first-child), que quedaba subrayada y arrancando
+   mas abajo que su vecina. Apiladas en movil la regla si separa, y ahi se
+   conserva. */
+@media (min-width: 768px) {
+  .dos-col > .caja { border-top: 0; padding-top: 0; }
+}
+.caja h2 { font-size: var(--pl-text-2xl); }
+.caja h3 { font-size: var(--pl-text-xl); margin-top: var(--space-4); }
+.caja.principal { gap: var(--space-3); }
+.caja .nota { max-width: var(--pl-medida); }
+
+/* ─── nota, vacio, alerta, tenue, destacado, grande — modificadores de texto ─ */
+.nota {
+  font-size: var(--pl-text-sm);
+  color: color-mix(in srgb, var(--color-text) 65%, transparent);
+}
+.nota.vacio { padding: var(--space-4); background: var(--color-surface); }
+.alerta { color: var(--color-accent-700); font-weight: var(--font-heading-weight); }
+.tenue { color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+.destacado { font-weight: var(--font-heading-weight); }
+.grande { font-size: var(--pl-text-2xl); font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+.sin { font-style: normal; color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+
+/* ─── numeros tabulares en toda celda/valor numerico ───────────────────── */
+.table .num, .cifras, .valor, .score-num, .grande { font-variant-numeric: tabular-nums; }
+
+/* Las celdas de nombre llevan <a>Municipio</a><small>Departamento</small>.
+   Sin esta regla el <small> hereda el display inline y sale pegado al
+   enlace ("El BagreAntioquia"): es la linea secundaria de la celda, no
+   parte del enlace. */
+.table td small {
+  display: block; font-size: var(--pl-text-xs); font-weight: 400;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+/* ─── franja de cifras (.cab-grid, .cifras, .dato) ─────────────────────
+   Usada en portada, ficha, municipio, metodologia y tablero: 4 celdas
+   de igual ancho, separadas por una regla vertical de 1px. */
+.cab-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4) var(--space-6);
+  margin: 0; padding: var(--space-4) 0;
+}
+@media (min-width: 640px) {
+  .cab-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.cab-grid.cifras { border-block: var(--pl-regla) solid var(--color-divider); }
+.dato { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dato dt {
+  font-size: var(--pl-text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent); margin: 0;
+}
+.dato dd { margin: 0; font-size: var(--pl-text-md); }
+.dato dd small {
+  display: block; font-size: var(--pl-text-xs);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent); font-weight: 400;
+}
+.dl { margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.dl .dato { flex-direction: row; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.dl .dato dt { text-transform: none; letter-spacing: normal; font-size: var(--pl-text-sm); }
+
+/* ─── hero de portada ──────────────────────────────────────────────────
+   Tipografico, flush left, sin imagen. El unico adorno: una linea de
+   plomada (Tier A, CSS puro) que cae del borde superior hasta la cifra
+   lider, rematada en un cuadrado -- la pesa. */
+.hero {
+  position: relative; display: flex; flex-direction: column; gap: var(--space-3);
+  padding-left: var(--space-6);
+}
+.hero::before {
+  content: ""; position: absolute; left: 0; top: 0.4em; bottom: -1.75rem;
+  width: 2px; background: var(--color-accent);
+}
+.hero::after {
+  content: ""; position: absolute; left: -3px; bottom: -1.8rem;
+  width: 8px; height: 8px; background: var(--color-accent);
+}
+@media (max-width: 639px) {
+  .hero { padding-left: var(--space-4); }
+  .hero::before, .hero::after { display: none; }
+}
+.hero .kicker {
+  font-size: var(--pl-text-xs); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--color-accent); margin: 0;
+}
+.hero h1 { font-size: var(--pl-text-3xl); }
+.hero .lema { font-size: var(--pl-text-xl); max-width: var(--pl-medida); font-weight: 400; }
+.hero .bajada { font-size: var(--pl-text-md); max-width: var(--pl-medida);
+  color: color-mix(in srgb, var(--color-text) 75%, transparent); }
+.hero .cta { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+
+/* ─── cifra lider (el "stat" del macrostructure Stat-Led) ──────────────
+   Se llena en cliente desde /datos/titulares.json (portada.js), el mismo
+   dato que ya alimenta el tablero -- no se inventa un numero nuevo. */
+.cifra-lider { display: flex; flex-direction: column; gap: var(--space-1); }
+.cifra-lider .tipo { font-size: var(--pl-text-md); max-width: var(--pl-medida); }
+.cifra-lider .valor {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--pl-text-display); line-height: 1; color: var(--color-accent-700);
+  overflow-wrap: anywhere;
+}
+.cifra-lider .nota { margin-top: var(--space-1); }
+
+/* ─── banda de cierre: el UNICO campo de acento de la portada ─────────
+   Bleed a todo el ancho de la ventana; el contenido se mantiene en la
+   medida de pagina. */
+.cierre {
+  width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
+  background: var(--color-accent); color: var(--color-bg);
+  padding-block: var(--pl-space-12);
+}
+.cierre-inner {
+  max-width: 1100px; margin-inline: auto; padding-inline: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-3);
+}
+@media (min-width: 768px) { .cierre-inner { padding-inline: var(--space-8); } }
+.cierre h2 { font-size: var(--pl-text-2xl); max-width: var(--pl-medida); overflow-wrap: anywhere; }
+.cierre p { max-width: var(--pl-medida); opacity: 0.92; }
+.cierre a { color: var(--color-bg); text-decoration-thickness: 2px; }
+
+/* ─── tarjetas de contrato (grid de .card) ─────────────────────────── */
+.tarjetas {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3);
+}
+@media (min-width: 640px) { .tarjetas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .tarjetas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.tarjetas .card { text-decoration: none; color: inherit; transition: box-shadow var(--pl-dur) var(--pl-ease); }
+.tarjetas .card:hover { box-shadow: var(--shadow-md); }
+.tarjetas .card:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.tarjetas .card-title { overflow-wrap: anywhere; }
+.tarjetas .card-meta { overflow-wrap: anywhere; }
+
+/* ─── tabla envuelta: nunca desborda la pagina ──────────────────────── */
+.tabla-scroll { overflow-x: auto; }
+/* Tablas gemelas del tablero (graficos/comun.js las arma en cliente,
+   dentro de <details class="tbl"><div id="t-tbl-...">): mismo riesgo de
+   desborde en tablas anchas a 320px, mismo remedio. */
+[id^="t-tbl-"] { overflow-x: auto; }
+
+/* ─── ficha de contrato ────────────────────────────────────────────── */
+.ficha { display: flex; flex-direction: column; gap: var(--space-8); }
+.ficha-cab { display: flex; flex-direction: column; gap: var(--space-2); }
+.ficha-cab .tipo {
+  font-size: var(--pl-text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+.ficha-cab h1 { font-size: var(--pl-text-2xl); overflow-wrap: anywhere; }
+.ficha-cab .idc code {
+  font-size: var(--pl-text-xs); color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+.btn-verificar {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--pl-text-sm); color: var(--color-accent-700); text-decoration: none;
+  border: 1px solid var(--color-divider); padding: var(--space-2) var(--space-3);
+  width: fit-content;
+}
+.btn-verificar:hover { background: color-mix(in srgb, var(--color-accent) 8%, transparent); }
+.btn-verificar.sin { border: 0; padding: 0; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+
+/* ─── barra de puntaje ─────────────────────────────────────────────── */
+.score { display: flex; flex-direction: column; gap: var(--space-2); }
+.score-num { display: flex; align-items: baseline; gap: var(--space-2); }
+.score-num b { font-size: var(--pl-text-xl); font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+.score-num span { font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+.score-bar {
+  position: relative; height: 8px; background: var(--color-neutral-200); width: 100%;
+}
+.score-bar i { display: block; height: 100%; background: var(--color-accent-600); }
+.score-bar::after {
+  /* marca del umbral (6 puntos / 1.0 = 60%): regla vertical de tinta */
+  content: ""; position: absolute; left: 60%; top: -3px; bottom: -3px; width: 2px;
+  background: var(--color-text);
+}
+.score-pie { font-size: var(--pl-text-xs); color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+
+/* ─── banderas ─────────────────────────────────────────────────────── */
+.grupo { display: flex; flex-direction: column; gap: var(--space-3); }
+.bandera {
+  border-left: 3px solid var(--color-accent); padding: var(--space-2) 0 var(--space-2) var(--space-3);
+  display: flex; flex-direction: column; gap: var(--space-1);
+}
+.bandera.atenuada { border-left-color: var(--color-neutral-400); }
+.bandera h4 {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2);
+  font-size: var(--pl-text-md); margin: 0;
+}
+.bandera .peso {
+  font-size: var(--pl-text-xs); font-weight: 400; font-family: var(--font-body);
+  background: var(--color-accent-100); color: var(--color-accent-800);
+  padding: 2px var(--space-2);
+}
+.bandera.atenuada .peso { background: var(--color-neutral-200); color: var(--color-neutral-800); }
+.bandera .etq-aten {
+  font-size: var(--pl-text-xs); border: 1px solid var(--color-neutral-400);
+  color: color-mix(in srgb, var(--color-text) 60%, transparent); padding: 2px var(--space-2);
+}
+.bandera .glosa { margin: 0; font-size: var(--pl-text-sm); }
+.bandera .evidencia { margin: 0; font-size: var(--pl-text-sm); }
+.bandera .evidencia span {
+  font-weight: var(--font-heading-weight); font-family: var(--font-heading);
+  font-size: var(--pl-text-xs); text-transform: uppercase; letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent); margin-right: var(--space-1);
+}
+.bandera .evidencia.sin { color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+.cuenta {
+  font-size: var(--pl-text-sm); font-weight: 400; font-family: var(--font-body);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+/* ─── dos columnas (dinero / personas) ─────────────────────────────── */
+.dos-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-8) var(--space-6); }
+@media (min-width: 768px) { .dos-col { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.fuentes { font-size: var(--pl-text-sm); margin: 0; }
+
+/* ─── mapa satelital de la ficha ───────────────────────────────────── */
+/* #mapa-satelital lleva la altura en el ID, no en .mapa-placeholder: al
+   pulsar "Ver imagen satelital", mapa-satelital.js QUITA la clase
+   .mapa-placeholder antes de inicializar Leaflet (L.map(contenedor)).
+   Si la altura solo viviera en la clase, el contenedor quedaria en 0px al
+   quitarla y Leaflet renderizaria en un lienzo de tamano cero: la tile
+   se pide (200 en la pestana de red) pero nunca se ve. Bug real, encontrado
+   probando la ficha con el inspector abierto. */
+#mapa-satelital { min-height: 320px; }
+/* ...pero mientras SIGUE siendo el placeholder no: el aviso y el boton
+   ocupan ~120px y los otros 200px quedaban como un recuadro vacio debajo
+   del boton. Un id+clase gana al id solo, asi que el placeholder se ajusta
+   a su contenido y los 320px vuelven solos en cuanto el JS quita la clase. */
+#mapa-satelital.mapa-placeholder { min-height: 0; }
+.mapa-placeholder {
+  border: 1px solid var(--color-divider); padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start;
+}
+.mapa-direccion { margin: 0; font-weight: var(--font-heading-weight); font-family: var(--font-heading); overflow-wrap: anywhere; }
+.mapa-nota { margin: 0; font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+.mapa-nota.sin { font-style: normal; }
+
+/* ─── lista de hermanos / limitaciones ─────────────────────────────── */
+.lista-herm, .lista-lim { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.lista-herm li { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--color-divider); padding-top: var(--space-2); }
+.lista-herm li span { font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+.lista-lim li { font-size: var(--pl-text-sm); }
+
+/* ─── mapa (/mapa/) ────────────────────────────────────────────────── */
+.mapa-wrap { display: flex; flex-direction: column; gap: var(--space-4); }
+@media (min-width: 900px) { .mapa-wrap { flex-direction: row; align-items: stretch; } }
+#mapa { height: 420px; width: 100%; background: var(--color-surface); }
+@media (min-width: 900px) { #mapa { flex: 2 1 0; min-width: 0; } }
+.panel {
+  flex: 1 1 0; min-width: 0; border: 1px solid var(--color-divider); padding: var(--space-4);
+  overflow-y: auto; max-height: 420px;
+}
+.panel-muns { max-height: 220px; overflow-y: auto; }
+#filtro-mun.input, #filtro-mun { margin-bottom: var(--space-3); }
+
+/* ─── chips (banderas frecuentes por municipio) ────────────────────── */
+.chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chips li { font-size: var(--pl-text-sm); background: var(--color-surface); padding: var(--space-1) var(--space-2); }
+.chips b { font-family: var(--font-heading); font-weight: var(--font-heading-weight); margin-right: 4px; }
+
+/* ─── buscador ─────────────────────────────────────────────────────── */
+.filtros {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3);
+  padding: var(--space-4); background: var(--color-surface);
+}
+@media (min-width: 640px) { .filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .filtros { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.filtros > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.filtros label { font-size: var(--pl-text-xs); color: color-mix(in srgb, var(--color-text) 65%, transparent); }
+.filtros select, .filtros input {
+  min-height: 36px; padding: 6px 10px; font: inherit; font-size: var(--pl-text-sm);
+  color: var(--color-text); background: var(--color-bg);
+  border: 1px solid var(--color-divider);
+}
+.filtros select:hover, .filtros input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.filtros select:focus-visible, .filtros input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.filtros .acciones { flex-direction: row; gap: var(--space-2); align-items: flex-end; }
+.filtros .acciones button {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: var(--pl-text-sm);
+  border: 1px solid var(--color-divider); background: transparent; color: var(--color-text);
+  padding: var(--space-2) var(--space-3); cursor: pointer; white-space: nowrap;
+}
+.filtros .acciones button:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.filtros .acciones button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.filtros .acciones #exportar { border-color: var(--color-accent); color: var(--color-accent); }
+.resumen { font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 65%, transparent); }
+#resultados { display: block; overflow-x: auto; }
+#mas {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: var(--pl-text-sm);
+  border: 1px solid var(--color-divider); background: transparent; color: var(--color-text);
+  padding: var(--space-2) var(--space-4); cursor: pointer;
+}
+#mas:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+#mas:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* ─── metodologia ──────────────────────────────────────────────────── */
+.caso { display: flex; flex-direction: column; gap: var(--space-1); border-top: 1px solid var(--color-divider); padding-top: var(--space-3); }
+.caso .etq {
+  font-size: var(--pl-text-xs); text-transform: uppercase; letter-spacing: 0.06em;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent); margin-right: var(--space-1);
+}
+.descargas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.descargas li { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); border-top: 1px solid var(--color-divider); padding-top: var(--space-2); }
+.descargas code { font-size: var(--pl-text-sm); }
+.descargas span { font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 65%, transparent); }
+.descargas small { font-size: var(--pl-text-xs); color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+
+/* ─── tablero: t-hero, t-tiles heredan .caja/.cifras; tbl detalle ─────── */
+.caja.hero .tipo { font-size: var(--pl-text-md); max-width: var(--pl-medida); }
+.caja.hero .valor.grande { font-size: var(--pl-text-display); color: var(--color-accent-700); }
+.tbl summary { cursor: pointer; font-size: var(--pl-text-sm); color: var(--color-accent-700); width: fit-content; }
+.tbl summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* ─── pie de pagina: arquetipo statement, no columnas de enlaces ──────── */
+.pie {
+  border-top: var(--pl-regla) solid var(--color-divider);
+  max-width: 1100px; margin-inline: auto; width: 100%;
+  padding: var(--space-8) var(--space-4) var(--pl-space-12);
+  display: flex; flex-direction: column; gap: var(--space-3);
+}
+@media (min-width: 768px) { .pie { padding-inline: var(--space-8); } }
+.pie .aviso { font-size: var(--pl-text-md); max-width: var(--pl-medida); font-weight: 400; }
+.pie p:not(.aviso) { font-size: var(--pl-text-sm); color: color-mix(in srgb, var(--color-text) 65%, transparent); }
+
+/* ─── movimiento: presupuesto de 3 primitivas, solo transform/opacity ── */
+/* ─── ganchos sin regla propia (documentado, no un olvido) ────────────
+   `.pg-portada/-ficha/-mapa/-buscar/-tablero/-texto` en <body>: gancho por
+   vista para un override futuro, ninguna existe todavia. `.table.banderas`
+   (metodologia): modificador compuesto sobre `.table`, que ya lo cubre
+   entero -- no necesita una regla `.banderas` aparte. */
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

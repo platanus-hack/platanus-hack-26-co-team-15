@@ -1,4 +1,21 @@
+# Blueprint de Render para Plomada: tres servicios en un solo deploy.
+#
+#   1. plomada-db     -- Postgres del warehouse (plan free)
+#   2. plomada-api    -- API publica + MCP, contenedor Docker de api/
+#   3. plomada-sitio  -- Static Site: plomada/build.py genera site/ y Render
+#                        lo sirve. No hay servidor propio -- las fichas, el
+#                        buscador y los municipios se hidratan en el navegador
+#                        contra el API (services[].envVars.PLOMADA_API_URL).
+#
+# Las reglas de `routes` del sitio son la traduccion de site/_redirects al
+# formato de Render, y NO son opcionales: /contrato/<slug>/ y
+# /municipio/<slug>/ no tienen un archivo detras. Sin ellas, toda ficha
+# compartida da 404.
+#
+# Guias: docs/DESPLIEGUE_RENDER.md (sitio) y README.md (API).
+
 services:
+  # --- API publica + MCP -------------------------------------------------
   - type: web
     name: plomada-api
     runtime: docker
@@ -14,6 +31,51 @@ services:
         value: https://plomada-api.onrender.com
       - key: CORS_ORIGINS
         sync: false
+
+  # --- Sitio estatico ----------------------------------------------------
+  - type: web
+    runtime: static
+    name: plomada-sitio
+    branch: main
+    buildCommand: pip install -r plomada/requirements.txt && python3 plomada/build.py
+    staticPublishPath: ./plomada/site
+    envVars:
+      # El API que consulta el navegador. Cambiar aqui si se mueve el servicio.
+      - key: PLOMADA_API_URL
+        value: https://plumb-duy6.onrender.com
+      # El build llama al API 60+ veces (sitemap de 12.678 fichas). Si el API
+      # esta dormido, la primera respuesta tarda: el cliente ya reintenta con
+      # backoff y un timeout de 60 s en la primera llamada.
+      - key: PYTHON_VERSION
+        value: "3.11"
+
+    routes:
+      # Rutas dinamicas -> su shell. `rewrite` conserva la URL en la barra
+      # (a diferencia de `redirect`, que la cambiaria y romperia el enlace
+      # compartido).
+      - type: rewrite
+        source: /contrato/*
+        destination: /contrato/index.html
+      - type: rewrite
+        source: /municipio/*
+        destination: /municipio/index.html
+
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      # Los JSON del tablero se regeneran en cada build; el HTML tambien.
+      # Cache corto para que un redespliegue se vea sin esperar.
+      - path: /datos/*
+        name: Cache-Control
+        value: public, max-age=300
+      # El bundle y Leaflet llevan hash o version fija: se pueden cachear.
+      - path: /static/vendor/*
+        name: Cache-Control
+        value: public, max-age=86400
 
 databases:
   - name: plomada-db

@@ -1,0 +1,3096 @@
+{
+ "exacta": {
+  "KM 1 Via Buenaventura - Zona Rural, Buenaventura, Valle del Cauca, Colombia": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "exacta_arcgis"
+  },
+  "KM 1 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 10 Via Puerres - Zona Rural, Puerres, Narino, Colombia": {
+   "lat": 0.88335,
+   "lon": -77.50344,
+   "precision": "exacta_arcgis"
+  },
+  "KM 10 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 11 Via Quibdo - Zona Rural, Quibdo, Choco, Colombia": {
+   "lat": 5.6908311,
+   "lon": -76.659068,
+   "precision": "exacta_arcgis"
+  },
+  "KM 11 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 11 Via Soledad - Zona Rural, Soledad, Atlantico, Colombia": {
+   "lat": 10.8878586,
+   "lon": -74.8032804,
+   "precision": "exacta_arcgis"
+  },
+  "KM 11 Via Uribia - Zona Rural, Uribia, La Guajira, Colombia": {
+   "lat": 11.715748,
+   "lon": -72.2658724,
+   "precision": "exacta_arcgis"
+  },
+  "KM 12 Via Monteria - Zona Rural, Monteria, Cordoba, Colombia": {
+   "lat": 8.6764214,
+   "lon": -75.8075526,
+   "precision": "exacta_arcgis"
+  },
+  "KM 12 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 12 Via Sogamoso - Zona Rural, Sogamoso, Boyaca, Colombia": {
+   "lat": 5.7183144,
+   "lon": -72.9309844,
+   "precision": "exacta_arcgis"
+  },
+  "KM 13 Via Barrancabermeja - Zona Rural, Barrancabermeja, Santander, Colombia": {
+   "lat": 7.06217,
+   "lon": -73.85433,
+   "precision": "exacta_arcgis"
+  },
+  "KM 13 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 14 Via Bogota D.C. - Zona Rural, Bogota D.C., Bogota D.C., Colombia": {
+   "lat": 4.31465,
+   "lon": -74.18077,
+   "precision": "exacta_arcgis"
+  },
+  "KM 14 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 15 Via Cartagena - Zona Rural, Cartagena, Bolivar, Colombia": {
+   "lat": 10.3874496,
+   "lon": -75.52247,
+   "precision": "exacta_arcgis"
+  },
+  "KM 15 Via Florencia - Zona Rural, Florencia, Caqueta, Colombia": {
+   "lat": 1.6175445,
+   "lon": -75.6066955,
+   "precision": "exacta_arcgis"
+  },
+  "KM 15 Via Ipiales - Zona Rural, Ipiales, Narino, Colombia": {
+   "lat": 0.8232528,
+   "lon": -77.6353371,
+   "precision": "exacta_arcgis"
+  },
+  "KM 15 Via Sincelejo - Zona Rural, Sincelejo, Sucre, Colombia": {
+   "lat": 9.3002135,
+   "lon": -75.3956027,
+   "precision": "exacta_arcgis"
+  },
+  "KM 15 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 16 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 17 Via Quibdo - Zona Rural, Quibdo, Choco, Colombia": {
+   "lat": 5.6908311,
+   "lon": -76.659068,
+   "precision": "exacta_arcgis"
+  },
+  "KM 17 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 18 Via Cartagena - Zona Rural, Cartagena, Bolivar, Colombia": {
+   "lat": 10.3874496,
+   "lon": -75.52247,
+   "precision": "exacta_arcgis"
+  },
+  "KM 18 Via Inirida - Zona Rural, Inirida, Guainia, Colombia": {
+   "lat": 3.8651683,
+   "lon": -67.9266056,
+   "precision": "exacta_arcgis"
+  },
+  "KM 18 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 19 Via San Jose del Guaviare - Zona Rural, San Jose del Guaviare, Guaviare, Colombia": {
+   "lat": 2.5623928,
+   "lon": -72.6403445,
+   "precision": "exacta_arcgis"
+  },
+  "KM 19 Via Santa Marta - Zona Rural, Santa Marta, Magdalena, Colombia": {
+   "lat": 11.2319728,
+   "lon": -74.2007449,
+   "precision": "exacta_arcgis"
+  },
+  "KM 19 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 19 Via Valledupar - Zona Rural, Valledupar, Cesar, Colombia": {
+   "lat": 10.4690257,
+   "lon": -73.2570353,
+   "precision": "exacta_arcgis"
+  },
+  "KM 2 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 20 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 20 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 21 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 22 Via Cucuta - Zona Rural, Cucuta, Norte de Santander, Colombia": {
+   "lat": 7.8862388,
+   "lon": -72.4913939,
+   "precision": "exacta_arcgis"
+  },
+  "KM 22 Via Quibdo - Zona Rural, Quibdo, Choco, Colombia": {
+   "lat": 5.6908311,
+   "lon": -76.659068,
+   "precision": "exacta_arcgis"
+  },
+  "KM 22 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 22 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 23 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 24 Via Cucuta - Zona Rural, Cucuta, Norte de Santander, Colombia": {
+   "lat": 7.8862388,
+   "lon": -72.4913939,
+   "precision": "exacta_arcgis"
+  },
+  "KM 24 Via Monteria - Zona Rural, Monteria, Cordoba, Colombia": {
+   "lat": 8.5794206,
+   "lon": -75.728383,
+   "precision": "exacta_arcgis"
+  },
+  "KM 24 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 24 Via Soledad - Zona Rural, Soledad, Atlantico, Colombia": {
+   "lat": 10.8878586,
+   "lon": -74.8032804,
+   "precision": "exacta_arcgis"
+  },
+  "KM 24 Via Tunja - Zona Rural, Tunja, Boyaca, Colombia": {
+   "lat": 5.53859,
+   "lon": -73.36638,
+   "precision": "exacta_arcgis"
+  },
+  "KM 25 Via Bogota D.C. - Zona Rural, Bogota D.C., Bogota D.C., Colombia": {
+   "lat": 4.31465,
+   "lon": -74.18077,
+   "precision": "exacta_arcgis"
+  },
+  "KM 25 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 25 Via Tunja - Zona Rural, Tunja, Boyaca, Colombia": {
+   "lat": 5.53859,
+   "lon": -73.36638,
+   "precision": "exacta_arcgis"
+  },
+  "KM 26 Via Buenaventura - Zona Rural, Buenaventura, Valle del Cauca, Colombia": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "exacta_arcgis"
+  },
+  "KM 26 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 26 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 27 Via Puerres - Zona Rural, Puerres, Narino, Colombia": {
+   "lat": 0.88335,
+   "lon": -77.50344,
+   "precision": "exacta_arcgis"
+  },
+  "KM 27 Via Santa Marta - Zona Rural, Santa Marta, Magdalena, Colombia": {
+   "lat": 11.2319728,
+   "lon": -74.2007449,
+   "precision": "exacta_arcgis"
+  },
+  "KM 27 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 27 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 28 Via Puerto Gaitan - Zona Rural, Puerto Gaitan, Meta, Colombia": {
+   "lat": 4.3117059,
+   "lon": -72.0793454,
+   "precision": "exacta_arcgis"
+  },
+  "KM 28 Via Saravena - Zona Rural, Saravena, Arauca, Colombia": {
+   "lat": 6.95319,
+   "lon": -71.87516,
+   "precision": "exacta_arcgis"
+  },
+  "KM 28 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 29 Via Buenaventura - Zona Rural, Buenaventura, Valle del Cauca, Colombia": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "exacta_arcgis"
+  },
+  "KM 29 Via Cartagena - Zona Rural, Cartagena, Bolivar, Colombia": {
+   "lat": 10.3874496,
+   "lon": -75.52247,
+   "precision": "exacta_arcgis"
+  },
+  "KM 29 Via Cucuta - Zona Rural, Cucuta, Norte de Santander, Colombia": {
+   "lat": 7.8862388,
+   "lon": -72.4913939,
+   "precision": "exacta_arcgis"
+  },
+  "KM 29 Via Manizales - Zona Rural, Manizales, Caldas, Colombia": {
+   "lat": 5.0676781,
+   "lon": -75.5098239,
+   "precision": "exacta_arcgis"
+  },
+  "KM 29 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 3 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 30 Via Bogota D.C. - Zona Rural, Bogota D.C., Bogota D.C., Colombia": {
+   "lat": 4.31465,
+   "lon": -74.18077,
+   "precision": "exacta_arcgis"
+  },
+  "KM 30 Via Cartagena - Zona Rural, Cartagena, Bolivar, Colombia": {
+   "lat": 10.3874496,
+   "lon": -75.52247,
+   "precision": "exacta_arcgis"
+  },
+  "KM 30 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 31 Via Buenaventura - Zona Rural, Buenaventura, Valle del Cauca, Colombia": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "exacta_arcgis"
+  },
+  "KM 31 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 31 Via Uribia - Zona Rural, Uribia, La Guajira, Colombia": {
+   "lat": 11.715748,
+   "lon": -72.2658724,
+   "precision": "exacta_arcgis"
+  },
+  "KM 31 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via Buenaventura - Zona Rural, Buenaventura, Valle del Cauca, Colombia": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via Mitu - Zona Rural, Mitu, Vaupes, Colombia": {
+   "lat": 1.2559718,
+   "lon": -70.2330339,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via Mocoa - Zona Rural, Mocoa, Putumayo, Colombia": {
+   "lat": 1.14893,
+   "lon": -76.64775,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via Neiva - Zona Rural, Neiva, Huila, Colombia": {
+   "lat": 2.9323,
+   "lon": -75.28688,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 33 Via Barrancabermeja - Zona Rural, Barrancabermeja, Santander, Colombia": {
+   "lat": 7.06217,
+   "lon": -73.85433,
+   "precision": "exacta_arcgis"
+  },
+  "KM 33 Via Pereira - Zona Rural, Pereira, Risaralda, Colombia": {
+   "lat": 4.812216,
+   "lon": -75.6920466,
+   "precision": "exacta_arcgis"
+  },
+  "KM 33 Via San Andres - Zona Rural, San Andres, Archipielago de San Andres Providencia y Santa Catalina, Colombia": {
+   "lat": 12.54793,
+   "lon": -81.71665,
+   "precision": "exacta_arcgis"
+  },
+  "KM 33 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 33 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 34 Via Ibague - Zona Rural, Ibague, Tolima, Colombia": {
+   "lat": 4.420139264564,
+   "lon": -75.183847189669,
+   "precision": "exacta_arcgis"
+  },
+  "KM 34 Via Puerto Gaitan - Zona Rural, Puerto Gaitan, Meta, Colombia": {
+   "lat": 4.3117059,
+   "lon": -72.0793454,
+   "precision": "exacta_arcgis"
+  },
+  "KM 34 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 35 Via Neiva - Zona Rural, Neiva, Huila, Colombia": {
+   "lat": 2.9323,
+   "lon": -75.28688,
+   "precision": "exacta_arcgis"
+  },
+  "KM 35 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 35 Via Soledad - Zona Rural, Soledad, Atlantico, Colombia": {
+   "lat": 10.8878586,
+   "lon": -74.8032804,
+   "precision": "exacta_arcgis"
+  },
+  "KM 36 Via Popayan - Zona Rural, Popayan, Cauca, Colombia": {
+   "lat": 2.444511,
+   "lon": -76.6145619,
+   "precision": "exacta_arcgis"
+  },
+  "KM 36 Via Quibdo - Zona Rural, Quibdo, Choco, Colombia": {
+   "lat": 5.6908311,
+   "lon": -76.659068,
+   "precision": "exacta_arcgis"
+  },
+  "KM 36 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 36 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 37 Via Leticia - Zona Rural, Leticia, Amazonas, Colombia": {
+   "lat": -4.2155963,
+   "lon": -69.9390649,
+   "precision": "exacta_arcgis"
+  },
+  "KM 37 Via Puerres - Zona Rural, Puerres, Narino, Colombia": {
+   "lat": 0.88335,
+   "lon": -77.50344,
+   "precision": "exacta_arcgis"
+  },
+  "KM 37 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 38 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 38 Via Yopal - Zona Rural, Yopal, Casanare, Colombia": {
+   "lat": 5.34017,
+   "lon": -72.39424,
+   "precision": "exacta_arcgis"
+  },
+  "KM 38 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 39 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 39 Via Sogamoso - Zona Rural, Sogamoso, Boyaca, Colombia": {
+   "lat": 5.7183144,
+   "lon": -72.9309844,
+   "precision": "exacta_arcgis"
+  },
+  "KM 4 Via Sincelejo - Zona Rural, Sincelejo, Sucre, Colombia": {
+   "lat": 9.3002135,
+   "lon": -75.3956027,
+   "precision": "exacta_arcgis"
+  },
+  "KM 4 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 4 Via Uribia - Zona Rural, Uribia, La Guajira, Colombia": {
+   "lat": 11.715748,
+   "lon": -72.2658724,
+   "precision": "exacta_arcgis"
+  },
+  "KM 40 Via Bogota D.C. - Zona Rural, Bogota D.C., Bogota D.C., Colombia": {
+   "lat": 4.31465,
+   "lon": -74.18077,
+   "precision": "exacta_arcgis"
+  },
+  "KM 40 Via Cumaribo - Zona Rural, Cumaribo, Vichada, Colombia": {
+   "lat": 4.44448,
+   "lon": -69.80027,
+   "precision": "exacta_arcgis"
+  },
+  "KM 40 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 5 Via Armenia - Zona Rural, Armenia, Quindio, Colombia": {
+   "lat": 4.5328876,
+   "lon": -75.6778603,
+   "precision": "exacta_arcgis"
+  },
+  "KM 5 Via Ibague - Zona Rural, Ibague, Tolima, Colombia": {
+   "lat": 4.420139264564,
+   "lon": -75.183847189669,
+   "precision": "exacta_arcgis"
+  },
+  "KM 5 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 6 Via Saravena - Zona Rural, Saravena, Arauca, Colombia": {
+   "lat": 6.95319,
+   "lon": -71.87516,
+   "precision": "exacta_arcgis"
+  },
+  "KM 6 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 6 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 7 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 7 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 8 Via Santa Marta - Zona Rural, Santa Marta, Magdalena, Colombia": {
+   "lat": 11.2319728,
+   "lon": -74.2007449,
+   "precision": "exacta_arcgis"
+  },
+  "KM 8 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 9 Via Popayan - Zona Rural, Popayan, Cauca, Colombia": {
+   "lat": 2.444511,
+   "lon": -76.6145619,
+   "precision": "exacta_arcgis"
+  },
+  "KM 9 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  }
+ },
+ "municipio": {
+  "Amazonas|Leticia": {
+   "lat": -4.2155963,
+   "lon": -69.9390649,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Amaga": {
+   "lat": 6.032850684903,
+   "lon": -75.70781996078,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Andes": {
+   "lat": 5.625197350324,
+   "lon": -75.926367117328,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Angelopolis": {
+   "lat": 6.120956715764,
+   "lon": -75.715951796035,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Anza": {
+   "lat": 6.308401158137,
+   "lon": -75.912680258787,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Apartado": {
+   "lat": 7.88561,
+   "lon": -76.63479,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Argelia": {
+   "lat": 5.7081222209,
+   "lon": -75.094100997245,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Barbosa": {
+   "lat": 6.443356141712,
+   "lon": -75.329435017958,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Bello": {
+   "lat": 6.33493,
+   "lon": -75.55828,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Belmira": {
+   "lat": 6.60639,
+   "lon": -75.66716,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Betania": {
+   "lat": 5.729241971958,
+   "lon": -75.987754463457,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Betulia": {
+   "lat": 6.11393,
+   "lon": -75.9863,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Caldas": {
+   "lat": 6.0899991,
+   "lon": -75.6366273,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Carepa": {
+   "lat": 7.7575483,
+   "lon": -76.6562745,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Carolina": {
+   "lat": 6.75762113395,
+   "lon": -75.314247912868,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Caucasia": {
+   "lat": 7.9873472,
+   "lon": -75.1968546,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Chigorodo": {
+   "lat": 7.6676804,
+   "lon": -76.6796854,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Cisneros": {
+   "lat": 6.550494718887,
+   "lon": -75.082816994695,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Copacabana": {
+   "lat": 6.3485127,
+   "lon": -75.5070615,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Dabeiba": {
+   "lat": 6.990359964493,
+   "lon": -76.312852392613,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Don Matias": {
+   "lat": 6.505587268384,
+   "lon": -75.366847625194,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Ebejico": {
+   "lat": 6.326814608391,
+   "lon": -75.783039246352,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|El Bagre": {
+   "lat": 7.704953112293,
+   "lon": -74.66050764261,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|El Carmen de Viboral": {
+   "lat": 6.08236,
+   "lon": -75.33509,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|El Santuario": {
+   "lat": 6.13568,
+   "lon": -75.25705,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Entrerrios": {
+   "lat": 6.595436036441,
+   "lon": -75.559598426247,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Envigado": {
+   "lat": 6.1731963,
+   "lon": -75.5920973,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Frontino": {
+   "lat": 6.685073148165,
+   "lon": -76.335360362772,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Giraldo": {
+   "lat": 6.646737110828,
+   "lon": -75.95981687837,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Girardota": {
+   "lat": 6.37731,
+   "lon": -75.44627,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Gomez Plata": {
+   "lat": 6.709057593244,
+   "lon": -75.192619798,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Granada": {
+   "lat": 6.12375539595,
+   "lon": -75.127083516871,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Guarne": {
+   "lat": 6.268247686747,
+   "lon": -75.433977639617,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Guatape": {
+   "lat": 6.246037436969,
+   "lon": -75.158474926692,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Hispania": {
+   "lat": 5.796586655179,
+   "lon": -75.907128178966,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Itagui": {
+   "lat": 6.17026,
+   "lon": -75.61654,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Jardin": {
+   "lat": 5.5746903217,
+   "lon": -75.819047156947,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|La Ceja": {
+   "lat": 6.03214,
+   "lon": -75.4319421,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|La Estrella": {
+   "lat": 6.1570528,
+   "lon": -75.6428113,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|La Pintada": {
+   "lat": 5.746669,
+   "lon": -75.6063176,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|La Union": {
+   "lat": 5.94123863023,
+   "lon": -75.35367399154,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Maceo": {
+   "lat": 6.536368432371,
+   "lon": -74.718993500652,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Marinilla": {
+   "lat": 6.17384,
+   "lon": -75.3348,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Medellin": {
+   "lat": 6.2482172,
+   "lon": -75.5800345,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Montebello": {
+   "lat": 5.917763065609,
+   "lon": -75.51988698836,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Murindo": {
+   "lat": 6.828740605397,
+   "lon": -76.708689633794,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Necocli": {
+   "lat": 8.42321,
+   "lon": -76.78497,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Penol": {
+   "lat": 6.246445312759,
+   "lon": -75.22111122439,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Peque": {
+   "lat": 7.044625346137,
+   "lon": -75.88988932095,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Puerto Triunfo": {
+   "lat": 5.955122433521,
+   "lon": -74.686079888348,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Retiro": {
+   "lat": 6.069563226263,
+   "lon": -75.513497918637,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Rionegro": {
+   "lat": 6.15367,
+   "lon": -75.37413,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Sabaneta": {
+   "lat": 6.1545746,
+   "lon": -75.6171474,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|San Carlos": {
+   "lat": 6.193692883667,
+   "lon": -74.906609630563,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|San Francisco": {
+   "lat": 5.879794408084,
+   "lon": -74.976944221047,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|San Jeronimo": {
+   "lat": 6.438444117039,
+   "lon": -75.704213440154,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|San Juan de Uraba": {
+   "lat": 8.707053080828,
+   "lon": -76.5325929938,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|San Pedro de Uraba": {
+   "lat": 8.2768,
+   "lon": -76.38037,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|San Rafael": {
+   "lat": 6.310819011921,
+   "lon": -74.998422930083,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|San Vicente": {
+   "lat": 6.311463669509,
+   "lon": -75.324314213873,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Santa Rosa de Osos": {
+   "lat": 6.675735884483,
+   "lon": -75.438913793725,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Santafe de Antioquia": {
+   "lat": 6.529095178204,
+   "lon": -75.899000835243,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Segovia": {
+   "lat": 7.264719377989,
+   "lon": -74.625667183133,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Sonson": {
+   "lat": 5.762897646327,
+   "lon": -75.058295172817,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Tamesis": {
+   "lat": 5.674548936698,
+   "lon": -75.709744102048,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Taraza": {
+   "lat": 7.487114119136,
+   "lon": -75.488422125755,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Turbo": {
+   "lat": 8.09804,
+   "lon": -76.73169,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Uramita": {
+   "lat": 6.9029061,
+   "lon": -76.1740876,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Urrao": {
+   "lat": 6.335667635231,
+   "lon": -76.260340123932,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Valdivia": {
+   "lat": 7.264395710185,
+   "lon": -75.400869744329,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Valparaiso": {
+   "lat": 5.650731777224,
+   "lon": -75.631015674292,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Vegachi": {
+   "lat": 6.836628884382,
+   "lon": -74.754141278184,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Venecia": {
+   "lat": 5.956650679521,
+   "lon": -75.776344202118,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Vigia del Fuerte": {
+   "lat": 6.452854134302,
+   "lon": -76.69407378436,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Yarumal": {
+   "lat": 6.988380636579,
+   "lon": -75.454175297399,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Yondo": {
+   "lat": 6.925603231457,
+   "lon": -74.157826710458,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|Zaragoza": {
+   "lat": 7.475101404504,
+   "lon": -74.857880259715,
+   "precision": "cabecera_municipal"
+  },
+  "Arauca|Arauca": {
+   "lat": 7.0861731,
+   "lon": -70.7573471,
+   "precision": "cabecera_municipal"
+  },
+  "Arauca|Cravo Norte": {
+   "lat": 6.348023839079,
+   "lon": -70.070069303289,
+   "precision": "cabecera_municipal"
+  },
+  "Arauca|Fortul": {
+   "lat": 6.705428595401,
+   "lon": -71.829753780653,
+   "precision": "cabecera_municipal"
+  },
+  "Arauca|Puerto Rondon": {
+   "lat": 6.411494822141,
+   "lon": -70.96819435234,
+   "precision": "cabecera_municipal"
+  },
+  "Arauca|Saravena": {
+   "lat": 6.906407977131,
+   "lon": -71.850707362469,
+   "precision": "cabecera_municipal"
+  },
+  "Arauca|Tame": {
+   "lat": 6.46125,
+   "lon": -71.73426,
+   "precision": "cabecera_municipal"
+  },
+  "Archipielago de San Andres Providencia y Santa Catalina|San Andres": {
+   "lat": 12.54793,
+   "lon": -81.71665,
+   "precision": "cabecera_municipal"
+  },
+  "Atlantico|Barranquilla": {
+   "lat": 10.961041,
+   "lon": -74.8009587,
+   "precision": "cabecera_municipal"
+  },
+  "Atlantico|Galapa": {
+   "lat": 10.898226039519,
+   "lon": -74.886572873957,
+   "precision": "cabecera_municipal"
+  },
+  "Atlantico|Malambo": {
+   "lat": 10.8616042,
+   "lon": -74.7739502,
+   "precision": "cabecera_municipal"
+  },
+  "Atlantico|Soledad": {
+   "lat": 10.8878586,
+   "lon": -74.8032804,
+   "precision": "cabecera_municipal"
+  },
+  "Bogota D.C.|Bogota D.C.": {
+   "lat": 4.6596802,
+   "lon": -74.0664222,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Arjona": {
+   "lat": 10.2491996,
+   "lon": -75.3475343,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Cartagena": {
+   "lat": 10.4025344,
+   "lon": -75.5020994,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Clemencia": {
+   "lat": 10.556664891955,
+   "lon": -75.314336779435,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|El Carmen de Bolivar": {
+   "lat": 9.7172233,
+   "lon": -75.1190866,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Magangue": {
+   "lat": 9.2353968,
+   "lon": -74.74586,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Maria la Baja": {
+   "lat": 9.975463683325,
+   "lon": -75.345259400321,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Mompos": {
+   "lat": 9.142631605052,
+   "lon": -74.545859660439,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Norosi": {
+   "lat": 8.505850347296,
+   "lon": -74.11661899333,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Pinillos": {
+   "lat": 8.9207735,
+   "lon": -74.4741661,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|San Jacinto": {
+   "lat": 9.835067280283,
+   "lon": -75.103755407933,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|San Juan Nepomuceno": {
+   "lat": 9.967626166718,
+   "lon": -75.065521575521,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|San Pablo": {
+   "lat": 7.423932775129,
+   "lon": -74.135951228584,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Santa Rosa": {
+   "lat": 10.468920774437,
+   "lon": -75.360922780038,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Santa Rosa del Sur": {
+   "lat": 7.772676004884,
+   "lon": -74.262601064642,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Turbaco": {
+   "lat": 10.3296155,
+   "lon": -75.4150265,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Turbana": {
+   "lat": 10.232484236066,
+   "lon": -75.455188890063,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Aquitania": {
+   "lat": 5.432383154449,
+   "lon": -72.883620480822,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Belen": {
+   "lat": 6.005154448929,
+   "lon": -72.895073547383,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Berbeo": {
+   "lat": 5.301014166667,
+   "lon": -73.0642077,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Beteitiva": {
+   "lat": 5.921001902503,
+   "lon": -72.848618180969,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Boavita": {
+   "lat": 6.336016790981,
+   "lon": -72.61979032558,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Boyaca": {
+   "lat": 5.77734105439,
+   "lon": -73.097991818065,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Briceno": {
+   "lat": 5.663937190503,
+   "lon": -73.907368368269,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Caldas": {
+   "lat": 5.574853841437,
+   "lon": -73.879909516404,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Campohermoso": {
+   "lat": 5.006539627086,
+   "lon": -73.145136698669,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Chiquinquira": {
+   "lat": 5.61891,
+   "lon": -73.81997,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Chita": {
+   "lat": 6.074640747739,
+   "lon": -72.436322567532,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Chitaraque": {
+   "lat": 5.982496729535,
+   "lon": -73.42521577743,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Combita": {
+   "lat": 5.688225149742,
+   "lon": -73.32903920389,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Coper": {
+   "lat": 5.443426386882,
+   "lon": -74.029595685062,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Corrales": {
+   "lat": 5.823272757071,
+   "lon": -72.845700225094,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Covarachia": {
+   "lat": 6.519390136505,
+   "lon": -72.740203796266,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Cucaita": {
+   "lat": 5.526774871307,
+   "lon": -73.446197578725,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Duitama": {
+   "lat": 5.82696,
+   "lon": -73.03441,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|El Cocuy": {
+   "lat": 6.352756864029,
+   "lon": -72.418910815775,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Firavitoba": {
+   "lat": 5.673670614942,
+   "lon": -73.018670121659,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Floresta": {
+   "lat": 5.859252664585,
+   "lon": -72.925490755469,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Gachantiva": {
+   "lat": 5.744663850194,
+   "lon": -73.542011449379,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Gameza": {
+   "lat": 5.803316653552,
+   "lon": -72.735086057948,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Garagoa": {
+   "lat": 5.089458863827,
+   "lon": -73.314298723052,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Guacamayas": {
+   "lat": 6.445460322689,
+   "lon": -72.517224986388,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Guateque": {
+   "lat": 5.014207455297,
+   "lon": -73.486495887732,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Iza": {
+   "lat": 5.617131766904,
+   "lon": -72.969571739706,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|La Uvita": {
+   "lat": 6.264992913241,
+   "lon": -72.555446762816,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Macanal": {
+   "lat": 4.980026060764,
+   "lon": -73.293683774226,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Maripi": {
+   "lat": 5.570146465362,
+   "lon": -74.02182184051,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Miraflores": {
+   "lat": 5.15133675327,
+   "lon": -73.179624502569,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Moniquira": {
+   "lat": 5.862516906204,
+   "lon": -73.559313754713,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Motavita": {
+   "lat": 5.605779823421,
+   "lon": -73.377068716999,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Nobsa": {
+   "lat": 5.778742090086,
+   "lon": -72.933621060717,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Nuevo Colon": {
+   "lat": 5.353891095283,
+   "lon": -73.448990040276,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Oicata": {
+   "lat": 5.611078108481,
+   "lon": -73.279930195152,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Paipa": {
+   "lat": 6.004036666667,
+   "lon": -73.198616666667,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Pauna": {
+   "lat": 5.685922763685,
+   "lon": -74.003073573198,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Paya": {
+   "lat": 5.630261309547,
+   "lon": -72.364097198048,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Paz de Rio": {
+   "lat": 6.029006278771,
+   "lon": -72.767331740284,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Pesca": {
+   "lat": 5.498757406581,
+   "lon": -73.078419928114,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Pisba": {
+   "lat": 5.744773881883,
+   "lon": -72.445962989207,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Puerto Boyaca": {
+   "lat": 5.9746061,
+   "lon": -74.5858429,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Quipama": {
+   "lat": 5.55834612111,
+   "lon": -74.215980235092,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Ramiriqui": {
+   "lat": 5.321027162695,
+   "lon": -73.311664638633,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Raquira": {
+   "lat": 5.493922350455,
+   "lon": -73.627332372465,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Saboya": {
+   "lat": 5.699273579899,
+   "lon": -73.747958806508,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Sachica": {
+   "lat": 5.574408432978,
+   "lon": -73.543389033739,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Samaca": {
+   "lat": 5.470028653578,
+   "lon": -73.522456131943,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|San Eduardo": {
+   "lat": 5.234827156204,
+   "lon": -73.049234918209,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|San Mateo": {
+   "lat": 6.406739535645,
+   "lon": -72.560354259371,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|San Pablo de Borbur": {
+   "lat": 5.6514156,
+   "lon": -74.069406,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Santa Maria": {
+   "lat": 4.822773847841,
+   "lon": -73.25371365497,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Santana": {
+   "lat": 6.058032749884,
+   "lon": -73.486645239078,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Sativanorte": {
+   "lat": 6.131950163839,
+   "lon": -72.730474534898,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Sativasur": {
+   "lat": 6.070663532274,
+   "lon": -72.714878868422,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Soata": {
+   "lat": 6.323047091324,
+   "lon": -72.695998613296,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Socota": {
+   "lat": 5.929653954486,
+   "lon": -72.555185680259,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Sogamoso": {
+   "lat": 5.7183144,
+   "lon": -72.9309844,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Somondoco": {
+   "lat": 4.971174560589,
+   "lon": -73.428436185491,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Sora": {
+   "lat": 5.580590542544,
+   "lon": -73.44373693238,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Sotaquira": {
+   "lat": 5.785227062708,
+   "lon": -73.253806016696,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Susacon": {
+   "lat": 6.21485618842,
+   "lon": -72.716013247216,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Sutamarchan": {
+   "lat": 5.641268446934,
+   "lon": -73.621694462345,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Tasco": {
+   "lat": 5.882431674851,
+   "lon": -72.726438057813,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Tibasosa": {
+   "lat": 5.748160573355,
+   "lon": -73.011167856646,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Tinjaca": {
+   "lat": 5.573260428156,
+   "lon": -73.677168430556,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Tipacoque": {
+   "lat": 6.42080265793,
+   "lon": -72.694661151595,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Tota": {
+   "lat": 5.489057113313,
+   "lon": -73.006905367755,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Tunja": {
+   "lat": 5.53859,
+   "lon": -73.36638,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Tuta": {
+   "lat": 5.672428514371,
+   "lon": -73.182728236594,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Tutaza": {
+   "lat": 6.03214,
+   "lon": -72.85515,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Villa de Leyva": {
+   "lat": 5.666309674965,
+   "lon": -73.511713313326,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Zetaquira": {
+   "lat": 5.287645889301,
+   "lon": -73.163283590236,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Belalcazar": {
+   "lat": 4.994970188626,
+   "lon": -75.812595583422,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Chinchina": {
+   "lat": 4.9843754,
+   "lon": -75.6048006,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Filadelfia": {
+   "lat": 5.285965238906,
+   "lon": -75.590080426726,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|La Dorada": {
+   "lat": 5.45222,
+   "lon": -74.66918,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Manizales": {
+   "lat": 5.0676781,
+   "lon": -75.5098239,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Manzanares": {
+   "lat": 5.234007977409,
+   "lon": -75.151897483203,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Marquetalia": {
+   "lat": 5.309255425904,
+   "lon": -75.040207221605,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Norcasia": {
+   "lat": 5.63811549722,
+   "lon": -74.85475093812,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Pacora": {
+   "lat": 5.50042180119,
+   "lon": -75.482023107787,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Palestina": {
+   "lat": 5.049345238189,
+   "lon": -75.662132842434,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Pensilvania": {
+   "lat": 5.407974409372,
+   "lon": -75.165989728705,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Riosucio": {
+   "lat": 5.42135,
+   "lon": -75.70323,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Risaralda": {
+   "lat": 5.111499224511,
+   "lon": -75.758909098027,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Supia": {
+   "lat": 5.453307373553,
+   "lon": -75.640640685584,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Victoria": {
+   "lat": 5.445006566137,
+   "lon": -74.833223824284,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Villamaria": {
+   "lat": 5.0356684,
+   "lon": -75.5094586,
+   "precision": "cabecera_municipal"
+  },
+  "Caqueta|Albania": {
+   "lat": 1.228916482243,
+   "lon": -75.884691876053,
+   "precision": "cabecera_municipal"
+  },
+  "Caqueta|Belen de los Andaquies": {
+   "lat": 1.4959519237,
+   "lon": -75.877983342538,
+   "precision": "cabecera_municipal"
+  },
+  "Caqueta|Curillo": {
+   "lat": 1.076787993679,
+   "lon": -75.962104852287,
+   "precision": "cabecera_municipal"
+  },
+  "Caqueta|El Paujil": {
+   "lat": 1.613258757369,
+   "lon": -75.230922075207,
+   "precision": "cabecera_municipal"
+  },
+  "Caqueta|Florencia": {
+   "lat": 1.6175445,
+   "lon": -75.6066955,
+   "precision": "cabecera_municipal"
+  },
+  "Caqueta|La Montanita": {
+   "lat": 1.48047,
+   "lon": -75.43528,
+   "precision": "cabecera_municipal"
+  },
+  "Caqueta|Puerto Rico": {
+   "lat": 2.017472975046,
+   "lon": -75.073181627288,
+   "precision": "cabecera_municipal"
+  },
+  "Caqueta|San Vicente del Caguan": {
+   "lat": 2.11317,
+   "lon": -74.76918,
+   "precision": "cabecera_municipal"
+  },
+  "Caqueta|Valparaiso": {
+   "lat": 1.091196235175,
+   "lon": -75.621161559577,
+   "precision": "cabecera_municipal"
+  },
+  "Casanare|Aguazul": {
+   "lat": 5.126517908283,
+   "lon": -72.548712626547,
+   "precision": "cabecera_municipal"
+  },
+  "Casanare|La Salina": {
+   "lat": 6.172762966428,
+   "lon": -72.345595396049,
+   "precision": "cabecera_municipal"
+  },
+  "Casanare|Mani": {
+   "lat": 4.676409622398,
+   "lon": -72.213906814156,
+   "precision": "cabecera_municipal"
+  },
+  "Casanare|Monterrey": {
+   "lat": 4.840748216764,
+   "lon": -72.845822071144,
+   "precision": "cabecera_municipal"
+  },
+  "Casanare|Sabanalarga": {
+   "lat": 4.808531979444,
+   "lon": -72.994714347939,
+   "precision": "cabecera_municipal"
+  },
+  "Casanare|Sacama": {
+   "lat": 6.050306238656,
+   "lon": -72.211262212903,
+   "precision": "cabecera_municipal"
+  },
+  "Casanare|Tauramena": {
+   "lat": 4.69588723728,
+   "lon": -72.628035446612,
+   "precision": "cabecera_municipal"
+  },
+  "Casanare|Villanueva": {
+   "lat": 4.526637170039,
+   "lon": -72.820611790551,
+   "precision": "cabecera_municipal"
+  },
+  "Casanare|Yopal": {
+   "lat": 5.34017,
+   "lon": -72.39424,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Balboa": {
+   "lat": 2.084441022439,
+   "lon": -77.208384456914,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Buenos Aires": {
+   "lat": 3.0164953,
+   "lon": -76.6419316,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Caloto": {
+   "lat": 3.042472226183,
+   "lon": -76.366618738967,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|El Tambo": {
+   "lat": 2.534617790176,
+   "lon": -77.005262011368,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Florencia": {
+   "lat": 1.694366527999,
+   "lon": -77.087646370398,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Morales": {
+   "lat": 2.814644929028,
+   "lon": -76.751328094994,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Patia": {
+   "lat": 2.149003903831,
+   "lon": -77.057574086596,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Piendamo": {
+   "lat": 2.715676334341,
+   "lon": -76.565487459251,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Popayan": {
+   "lat": 2.444511,
+   "lon": -76.6145619,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Santander de Quilichao": {
+   "lat": 3.00879,
+   "lon": -76.4859,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Sucre": {
+   "lat": 2.057112783035,
+   "lon": -76.91043765513,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Timbio": {
+   "lat": 2.370115659664,
+   "lon": -76.710424965484,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Timbiqui": {
+   "lat": 2.698746987419,
+   "lon": -77.491108309451,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|Aguachica": {
+   "lat": 8.3102286,
+   "lon": -73.5998366,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|Agustin Codazzi": {
+   "lat": 10.0355,
+   "lon": -73.23725,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|Astrea": {
+   "lat": 9.49779,
+   "lon": -73.97584,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|Becerril": {
+   "lat": 9.728017770243,
+   "lon": -73.253873741795,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|Chimichagua": {
+   "lat": 9.2559,
+   "lon": -73.81427,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|El Paso": {
+   "lat": 9.66203,
+   "lon": -73.74723,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|La Gloria": {
+   "lat": 8.620266703977,
+   "lon": -73.627895051796,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|La Jagua de Ibirico": {
+   "lat": 9.550926030718,
+   "lon": -73.321617897084,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|La Paz": {
+   "lat": 10.461844766667,
+   "lon": -73.1688662,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|Pueblo Bello": {
+   "lat": 10.468258403547,
+   "lon": -73.587855720255,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|San Diego": {
+   "lat": 10.167796346973,
+   "lon": -73.290666490449,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|San Martin": {
+   "lat": 7.937520275825,
+   "lon": -73.54432262812,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|Valledupar": {
+   "lat": 10.4690257,
+   "lon": -73.2570353,
+   "precision": "cabecera_municipal"
+  },
+  "Choco|Condoto": {
+   "lat": 5.07393683053,
+   "lon": -76.527485683458,
+   "precision": "cabecera_municipal"
+  },
+  "Choco|Quibdo": {
+   "lat": 5.6908311,
+   "lon": -76.659068,
+   "precision": "cabecera_municipal"
+  },
+  "Cordoba|La Apartada": {
+   "lat": 8.049147121325,
+   "lon": -75.288411685541,
+   "precision": "cabecera_municipal"
+  },
+  "Cordoba|Montelibano": {
+   "lat": 7.98301,
+   "lon": -75.41726,
+   "precision": "cabecera_municipal"
+  },
+  "Cordoba|Monteria": {
+   "lat": 8.742688,
+   "lon": -75.8844118,
+   "precision": "cabecera_municipal"
+  },
+  "Cordoba|Pueblo Nuevo": {
+   "lat": 8.477836340001,
+   "lon": -75.406749972292,
+   "precision": "cabecera_municipal"
+  },
+  "Cordoba|Sahagun": {
+   "lat": 8.94581,
+   "lon": -75.44361,
+   "precision": "cabecera_municipal"
+  },
+  "Cordoba|Valencia": {
+   "lat": 8.220264485231,
+   "lon": -76.220236941021,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Agua de Dios": {
+   "lat": 4.372664521295,
+   "lon": -74.670659781277,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Alban": {
+   "lat": 4.889481243284,
+   "lon": -74.441180009835,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Anolaima": {
+   "lat": 4.789743326661,
+   "lon": -74.461509993588,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Apulo": {
+   "lat": 4.522479562314,
+   "lon": -74.57853580104,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Bojaca": {
+   "lat": 4.692746792255,
+   "lon": -74.328504385859,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Cajica": {
+   "lat": 4.9186013,
+   "lon": -74.0271518,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Caparrapi": {
+   "lat": 5.381910695383,
+   "lon": -74.520963291384,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Caqueza": {
+   "lat": 4.402401568666,
+   "lon": -73.945125986912,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Chia": {
+   "lat": 4.8595634,
+   "lon": -74.0607829,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Choconta": {
+   "lat": 5.118402907964,
+   "lon": -73.678333002072,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Cogua": {
+   "lat": 5.103900797578,
+   "lon": -73.976806880068,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Cota": {
+   "lat": 4.787941306043,
+   "lon": -74.12370098235,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Cucunuba": {
+   "lat": 5.23048280198,
+   "lon": -73.778108196689,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|El Colegio": {
+   "lat": 4.556992236462,
+   "lon": -74.427056974557,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|El Rosal": {
+   "lat": 4.877035016309,
+   "lon": -74.239395492924,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Facatativa": {
+   "lat": 4.8100958,
+   "lon": -74.3565009,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Funza": {
+   "lat": 4.7148651,
+   "lon": -74.2129966,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Fusagasuga": {
+   "lat": 4.3436686,
+   "lon": -74.3615869,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Gachala": {
+   "lat": 4.654948213959,
+   "lon": -73.510169427597,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Gachancipa": {
+   "lat": 5.007944815993,
+   "lon": -73.874958880668,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Gacheta": {
+   "lat": 4.866721189908,
+   "lon": -73.618494037801,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Gama": {
+   "lat": 4.723413970413,
+   "lon": -73.600857134334,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Girardot": {
+   "lat": 4.3039651,
+   "lon": -74.8047876,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Guacheta": {
+   "lat": 5.38618654465,
+   "lon": -73.692573425915,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Guaduas": {
+   "lat": 5.173976393679,
+   "lon": -74.639173051771,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Guasca": {
+   "lat": 4.80337038902,
+   "lon": -73.846264521195,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|La Calera": {
+   "lat": 4.700633486794,
+   "lon": -73.927933241804,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|La Mesa": {
+   "lat": 4.651066006591,
+   "lon": -74.473432278739,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|La Vega": {
+   "lat": 4.97786387309,
+   "lon": -74.339660017994,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Lenguazaque": {
+   "lat": 5.302531097432,
+   "lon": -73.682486377321,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Macheta": {
+   "lat": 5.039432060821,
+   "lon": -73.617480555601,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Madrid": {
+   "lat": 4.73339,
+   "lon": -74.26663,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Manta": {
+   "lat": 4.977850510948,
+   "lon": -73.562686417889,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Mosquera": {
+   "lat": 4.7051812,
+   "lon": -74.230329,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Nemocon": {
+   "lat": 5.096573780111,
+   "lon": -73.881096813831,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Nilo": {
+   "lat": 4.294886996748,
+   "lon": -74.614748563981,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Nocaima": {
+   "lat": 5.066748201087,
+   "lon": -74.390399424333,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Pacho": {
+   "lat": 5.169001972782,
+   "lon": -74.163830811444,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Puerto Salgar": {
+   "lat": 5.62050852113,
+   "lon": -74.579512112485,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Ricaurte": {
+   "lat": 4.307822571632,
+   "lon": -74.730247106189,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|San Antonio del Tequendama": {
+   "lat": 4.600076371223,
+   "lon": -74.343751574898,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|San Francisco": {
+   "lat": 4.964696877899,
+   "lon": -74.27075916106,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Sasaima": {
+   "lat": 4.946078747155,
+   "lon": -74.413313387153,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Sesquile": {
+   "lat": 5.008385084994,
+   "lon": -73.779439505089,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Sibate": {
+   "lat": 4.467180702325,
+   "lon": -74.262721278981,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Silvania": {
+   "lat": 4.436844173818,
+   "lon": -74.370612858071,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Simijaca": {
+   "lat": 5.508056728261,
+   "lon": -73.845404093297,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Soacha": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Sopo": {
+   "lat": 4.88887690223,
+   "lon": -73.96582436722,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Subachoque": {
+   "lat": 4.970177693131,
+   "lon": -74.157456640687,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Suesca": {
+   "lat": 5.136643626935,
+   "lon": -73.778728270839,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Sutatausa": {
+   "lat": 5.24154614123,
+   "lon": -73.855812276386,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Tabio": {
+   "lat": 4.951802400882,
+   "lon": -74.084616340788,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Tausa": {
+   "lat": 5.192410192244,
+   "lon": -73.952540938793,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Tenjo": {
+   "lat": 4.838015643742,
+   "lon": -74.146938716867,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Tocancipa": {
+   "lat": 4.968446815275,
+   "lon": -73.927604800094,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Villa de San Diego de Ubate": {
+   "lat": 5.313710488746,
+   "lon": -73.821503176651,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Villagomez": {
+   "lat": 5.269380284389,
+   "lon": -74.188859161586,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Villapinzon": {
+   "lat": 5.227606562418,
+   "lon": -73.577019054008,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Villeta": {
+   "lat": 5.012132690196,
+   "lon": -74.487819371232,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Viota": {
+   "lat": 4.436435686604,
+   "lon": -74.486392157354,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Zipacon": {
+   "lat": 4.753848823668,
+   "lon": -74.387946371697,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Zipaquira": {
+   "lat": 5.025207,
+   "lon": -74.0014801,
+   "precision": "cabecera_municipal"
+  },
+  "Distrito Capital de Bogota|Bogota": {
+   "lat": 4.6068824,
+   "lon": -74.071837,
+   "precision": "cabecera_municipal"
+  },
+  "Distrito Capital de Bogota|Distrito Capital": {
+   "lat": 4.315224902299,
+   "lon": -74.181056448711,
+   "precision": "cabecera_municipal"
+  },
+  "Guainia|Inirida": {
+   "lat": 3.8651683,
+   "lon": -67.9266056,
+   "precision": "cabecera_municipal"
+  },
+  "Guaviare|Miraflores": {
+   "lat": 1.364965529611,
+   "lon": -72.018332099053,
+   "precision": "cabecera_municipal"
+  },
+  "Guaviare|San Jose del Guaviare": {
+   "lat": 2.5623928,
+   "lon": -72.6403445,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Acevedo": {
+   "lat": 1.709552976603,
+   "lon": -75.997140672228,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Agrado": {
+   "lat": 2.269154735029,
+   "lon": -75.71634604103,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Algeciras": {
+   "lat": 2.494672466057,
+   "lon": -75.29234013262,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Altamira": {
+   "lat": 2.080704767921,
+   "lon": -75.767544116294,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Baraya": {
+   "lat": 3.141675376451,
+   "lon": -74.971059514588,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Campoalegre": {
+   "lat": 2.65859312213,
+   "lon": -75.329374641132,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Garzon": {
+   "lat": 2.1957827,
+   "lon": -75.6290058,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Iquira": {
+   "lat": 2.693064026821,
+   "lon": -75.675161830408,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Isnos": {
+   "lat": 2.006083152924,
+   "lon": -76.249779024814,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|La Argentina": {
+   "lat": 2.197011,
+   "lon": -75.9800179,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|La Plata": {
+   "lat": 2.39167,
+   "lon": -75.89167,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Nataga": {
+   "lat": 2.576568263873,
+   "lon": -75.787470022652,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Neiva": {
+   "lat": 2.9323,
+   "lon": -75.28688,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Paicol": {
+   "lat": 2.406739232564,
+   "lon": -75.728064841592,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Palermo": {
+   "lat": 2.914871026703,
+   "lon": -75.44029806607,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Palestina": {
+   "lat": 1.68271452373,
+   "lon": -76.146720110264,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Pital": {
+   "lat": 2.259491831333,
+   "lon": -75.830168543677,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Pitalito": {
+   "lat": 1.8536,
+   "lon": -76.0449,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Saladoblanco": {
+   "lat": 2.100251841304,
+   "lon": -76.227845447843,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|San Agustin": {
+   "lat": 1.923723323263,
+   "lon": -76.416126936979,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Timana": {
+   "lat": 1.949946974651,
+   "lon": -75.919442628986,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Yaguara": {
+   "lat": 2.650736775968,
+   "lon": -75.5143076399,
+   "precision": "cabecera_municipal"
+  },
+  "La Guajira|Dibulla": {
+   "lat": 11.2726011,
+   "lon": -73.3089001,
+   "precision": "cabecera_municipal"
+  },
+  "La Guajira|Distraccion": {
+   "lat": 10.926763392455,
+   "lon": -72.944508975946,
+   "precision": "cabecera_municipal"
+  },
+  "La Guajira|Fonseca": {
+   "lat": 10.827837670238,
+   "lon": -72.801435290507,
+   "precision": "cabecera_municipal"
+  },
+  "La Guajira|Hatonuevo": {
+   "lat": 11.0694,
+   "lon": -72.7669,
+   "precision": "cabecera_municipal"
+  },
+  "La Guajira|Maicao": {
+   "lat": 11.377623,
+   "lon": -72.2388276,
+   "precision": "cabecera_municipal"
+  },
+  "La Guajira|Riohacha": {
+   "lat": 11.5517744,
+   "lon": -72.9097538,
+   "precision": "cabecera_municipal"
+  },
+  "La Guajira|Uribia": {
+   "lat": 11.715748,
+   "lon": -72.2658724,
+   "precision": "cabecera_municipal"
+  },
+  "Magdalena|Fundacion": {
+   "lat": 10.52138,
+   "lon": -74.18664,
+   "precision": "cabecera_municipal"
+  },
+  "Magdalena|Plato": {
+   "lat": 9.79191,
+   "lon": -74.78297,
+   "precision": "cabecera_municipal"
+  },
+  "Magdalena|Santa Marta": {
+   "lat": 11.2319728,
+   "lon": -74.2007449,
+   "precision": "cabecera_municipal"
+  },
+  "Magdalena|Sitionuevo": {
+   "lat": 10.77525,
+   "lon": -74.71955,
+   "precision": "cabecera_municipal"
+  },
+  "Meta|Acacias": {
+   "lat": 3.987212,
+   "lon": -73.7658374,
+   "precision": "cabecera_municipal"
+  },
+  "Meta|Cumaral": {
+   "lat": 4.232845933468,
+   "lon": -73.314680583828,
+   "precision": "cabecera_municipal"
+  },
+  "Meta|Guamal": {
+   "lat": 3.947653295379,
+   "lon": -73.959373599388,
+   "precision": "cabecera_municipal"
+  },
+  "Meta|Mesetas": {
+   "lat": 3.150008592566,
+   "lon": -74.122883342523,
+   "precision": "cabecera_municipal"
+  },
+  "Meta|Puerto Gaitan": {
+   "lat": 4.005931524814,
+   "lon": -71.631098430182,
+   "precision": "cabecera_municipal"
+  },
+  "Meta|Puerto Lopez": {
+   "lat": 4.013923344003,
+   "lon": -72.643079919928,
+   "precision": "cabecera_municipal"
+  },
+  "Meta|Restrepo": {
+   "lat": 4.461053766667,
+   "lon": -73.604025366667,
+   "precision": "cabecera_municipal"
+  },
+  "Meta|San Martin": {
+   "lat": 3.536313370146,
+   "lon": -72.984066350274,
+   "precision": "cabecera_municipal"
+  },
+  "Meta|Villavicencio": {
+   "lat": 4.1442287,
+   "lon": -73.6345253,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Barbacoas": {
+   "lat": 1.445327187388,
+   "lon": -78.156607733997,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Buesaco": {
+   "lat": 1.33271145124,
+   "lon": -77.1380393111,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Colon": {
+   "lat": 1.636694341019,
+   "lon": -77.047474447359,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Contadero": {
+   "lat": 0.933050787912,
+   "lon": -77.528208275688,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Cuaspud": {
+   "lat": 0.875746158466,
+   "lon": -77.735841495932,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Cumbal": {
+   "lat": 0.944329508728,
+   "lon": -77.95950820845,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Cumbitara": {
+   "lat": 1.725704036339,
+   "lon": -77.593026310002,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|El Charco": {
+   "lat": 2.6835223,
+   "lon": -78.151746766667,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Guachucal": {
+   "lat": 0.97565761969,
+   "lon": -77.737411190117,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Ipiales": {
+   "lat": 0.8232528,
+   "lon": -77.6353371,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|La Cruz": {
+   "lat": 1.583942047743,
+   "lon": -76.923492500395,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|La Llanada": {
+   "lat": 1.552667542426,
+   "lon": -77.701376445661,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|La Tola": {
+   "lat": 2.408113413622,
+   "lon": -78.208506014779,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|La Union": {
+   "lat": 1.619603777052,
+   "lon": -77.142990848876,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Leiva": {
+   "lat": 1.938589400557,
+   "lon": -77.312013395614,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Mallama": {
+   "lat": 1.155945411043,
+   "lon": -77.846573390594,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Olaya Herrera": {
+   "lat": 2.284645848126,
+   "lon": -78.294654936896,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Pasto": {
+   "lat": 1.2001855,
+   "lon": -77.2780995,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Policarpa": {
+   "lat": 1.735525146814,
+   "lon": -77.481561952418,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Potosi": {
+   "lat": 0.72550700678,
+   "lon": -77.427338549278,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Puerres": {
+   "lat": 0.826617410902,
+   "lon": -77.322390483592,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Ricaurte": {
+   "lat": 1.2098737,
+   "lon": -77.9932562,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|San Pablo": {
+   "lat": 1.681704316523,
+   "lon": -76.975383360141,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Santa Barbara": {
+   "lat": 2.660735866667,
+   "lon": -77.973852533333,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Tuquerres": {
+   "lat": 1.133630605105,
+   "lon": -77.631467543513,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Abrego": {
+   "lat": 8.020436534341,
+   "lon": -73.158513633375,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Chinacota": {
+   "lat": 7.582814989069,
+   "lon": -72.583574725545,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Cucuta": {
+   "lat": 7.8862388,
+   "lon": -72.4913939,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Durania": {
+   "lat": 7.747625455567,
+   "lon": -72.671144636136,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Hacari": {
+   "lat": 8.361839455468,
+   "lon": -73.07836749929,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Los Patios": {
+   "lat": 7.83879,
+   "lon": -72.50296,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Ocana": {
+   "lat": 8.23342,
+   "lon": -73.35331,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Pamplona": {
+   "lat": 7.3771552,
+   "lon": -72.6489566,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Pamplonita": {
+   "lat": 7.43764,
+   "lon": -72.63941,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Puerto Santander": {
+   "lat": 8.329295199415,
+   "lon": -72.411132556901,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Silos": {
+   "lat": 7.2054036,
+   "lon": -72.7564916,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Teorama": {
+   "lat": 8.4337,
+   "lon": -73.28679,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Villa Caro": {
+   "lat": 7.936266626534,
+   "lon": -72.987561554789,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Villa del Rosario": {
+   "lat": 7.8359948,
+   "lon": -72.4725258,
+   "precision": "cabecera_municipal"
+  },
+  "Putumayo|Colon": {
+   "lat": 1.235576938741,
+   "lon": -77.006734387322,
+   "precision": "cabecera_municipal"
+  },
+  "Putumayo|Leguizamo": {
+   "lat": -0.19337,
+   "lon": -74.78189,
+   "precision": "cabecera_municipal"
+  },
+  "Putumayo|Mocoa": {
+   "lat": 1.14893,
+   "lon": -76.64775,
+   "precision": "cabecera_municipal"
+  },
+  "Putumayo|Puerto Asis": {
+   "lat": 0.49765,
+   "lon": -76.49768,
+   "precision": "cabecera_municipal"
+  },
+  "Putumayo|San Miguel": {
+   "lat": 0.306293636014,
+   "lon": -76.857117886489,
+   "precision": "cabecera_municipal"
+  },
+  "Putumayo|Valle del Guamuez": {
+   "lat": 0.413288373422,
+   "lon": -76.883045352661,
+   "precision": "cabecera_municipal"
+  },
+  "Putumayo|Villagarzon": {
+   "lat": 0.911120795522,
+   "lon": -76.744054045465,
+   "precision": "cabecera_municipal"
+  },
+  "Quindio|Armenia": {
+   "lat": 4.5328876,
+   "lon": -75.6778603,
+   "precision": "cabecera_municipal"
+  },
+  "Quindio|Calarca": {
+   "lat": 4.5287585,
+   "lon": -75.640267,
+   "precision": "cabecera_municipal"
+  },
+  "Quindio|Circasia": {
+   "lat": 4.605163912916,
+   "lon": -75.665460935813,
+   "precision": "cabecera_municipal"
+  },
+  "Quindio|Filandia": {
+   "lat": 4.668979739834,
+   "lon": -75.671512548066,
+   "precision": "cabecera_municipal"
+  },
+  "Quindio|La Tebaida": {
+   "lat": 4.436312996715,
+   "lon": -75.81678663857,
+   "precision": "cabecera_municipal"
+  },
+  "Quindio|Montenegro": {
+   "lat": 4.522425986483,
+   "lon": -75.817533580894,
+   "precision": "cabecera_municipal"
+  },
+  "Quindio|Quimbaya": {
+   "lat": 4.610473234579,
+   "lon": -75.791401784671,
+   "precision": "cabecera_municipal"
+  },
+  "Quindio|Salento": {
+   "lat": 4.611298910672,
+   "lon": -75.530586931812,
+   "precision": "cabecera_municipal"
+  },
+  "Risaralda|Apia": {
+   "lat": 5.137756041744,
+   "lon": -75.953576278413,
+   "precision": "cabecera_municipal"
+  },
+  "Risaralda|Belen de Umbria": {
+   "lat": 5.200465962214,
+   "lon": -75.868076668771,
+   "precision": "cabecera_municipal"
+  },
+  "Risaralda|Dosquebradas": {
+   "lat": 4.83916,
+   "lon": -75.66727,
+   "precision": "cabecera_municipal"
+  },
+  "Risaralda|La Virginia": {
+   "lat": 4.904458810942,
+   "lon": -75.85250488114,
+   "precision": "cabecera_municipal"
+  },
+  "Risaralda|Marsella": {
+   "lat": 4.943742508158,
+   "lon": -75.75293931703,
+   "precision": "cabecera_municipal"
+  },
+  "Risaralda|Pereira": {
+   "lat": 4.812216,
+   "lon": -75.6920466,
+   "precision": "cabecera_municipal"
+  },
+  "Risaralda|Pueblo Rico": {
+   "lat": 5.286825659982,
+   "lon": -76.072998882676,
+   "precision": "cabecera_municipal"
+  },
+  "San Andres, Providencia y Santa Catalina|San Andres": {
+   "lat": 12.54793,
+   "lon": -81.71665,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Aratoca": {
+   "lat": 6.6944445,
+   "lon": -73.0186945,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Barbosa": {
+   "lat": 5.95539770947,
+   "lon": -73.623221679358,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Barichara": {
+   "lat": 6.647518582375,
+   "lon": -73.214965482804,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Barrancabermeja": {
+   "lat": 7.06217,
+   "lon": -73.85433,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Bucaramanga": {
+   "lat": 7.1311813,
+   "lon": -73.1250327,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Cimitarra": {
+   "lat": 6.410180394896,
+   "lon": -74.169319037272,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Confines": {
+   "lat": 6.35647,
+   "lon": -73.24109,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Contratacion": {
+   "lat": 6.2926122,
+   "lon": -73.4738388,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Curiti": {
+   "lat": 6.60495,
+   "lon": -73.06788,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Floridablanca": {
+   "lat": 7.06112,
+   "lon": -73.08805,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Giron": {
+   "lat": 7.0741958,
+   "lon": -73.1675342,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Guaca": {
+   "lat": 6.943117826063,
+   "lon": -72.823539887999,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Guapota": {
+   "lat": 6.3122583,
+   "lon": -73.3203924,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Lebrija": {
+   "lat": 7.203255611423,
+   "lon": -73.290885887118,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Malaga": {
+   "lat": 6.720595588271,
+   "lon": -72.738035729343,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Matanza": {
+   "lat": 7.3224073,
+   "lon": -73.0153912,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Mogotes": {
+   "lat": 6.491836400378,
+   "lon": -72.958514794729,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Palmar": {
+   "lat": 6.5385119,
+   "lon": -73.292112,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Palmas del Socorro": {
+   "lat": 6.4057558,
+   "lon": -73.2875368,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Piedecuesta": {
+   "lat": 6.988034,
+   "lon": -73.0500301,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Pinchote": {
+   "lat": 6.53247,
+   "lon": -73.1727,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Rionegro": {
+   "lat": 7.470312617097,
+   "lon": -73.345746738387,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|San Andres": {
+   "lat": 6.79656372419,
+   "lon": -72.815459200288,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|San Gil": {
+   "lat": 6.550876606875,
+   "lon": -73.118117381795,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|San Vicente de Chucuri": {
+   "lat": 6.894024618359,
+   "lon": -73.539053221109,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Simacota": {
+   "lat": 6.913215233333,
+   "lon": -73.843942366667,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Socorro": {
+   "lat": 6.462463847417,
+   "lon": -73.24378529311,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Sucre": {
+   "lat": 5.91766,
+   "lon": -73.79242,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Velez": {
+   "lat": 6.216645932157,
+   "lon": -73.698745050022,
+   "precision": "cabecera_municipal"
+  },
+  "Sucre|Corozal": {
+   "lat": 9.31778,
+   "lon": -75.29583,
+   "precision": "cabecera_municipal"
+  },
+  "Sucre|Guaranda": {
+   "lat": 8.510093933333,
+   "lon": -74.568958633333,
+   "precision": "cabecera_municipal"
+  },
+  "Sucre|Sincelejo": {
+   "lat": 9.3002135,
+   "lon": -75.3956027,
+   "precision": "cabecera_municipal"
+  },
+  "Sucre|Tolu Viejo": {
+   "lat": 9.45082,
+   "lon": -75.43864,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Armero": {
+   "lat": 5.00739595083,
+   "lon": -74.846797816582,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Ataco": {
+   "lat": 3.42875528134,
+   "lon": -75.482384361676,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Chaparral": {
+   "lat": 3.744135215486,
+   "lon": -75.589967471894,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Coyaima": {
+   "lat": 3.73692451434,
+   "lon": -75.149442101621,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Espinal": {
+   "lat": 4.1503,
+   "lon": -74.88462,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Flandes": {
+   "lat": 4.242577226798,
+   "lon": -74.838080869595,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Guamo": {
+   "lat": 4.076210147142,
+   "lon": -74.976465349637,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Herveo": {
+   "lat": 5.068868786838,
+   "lon": -75.243067081033,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Honda": {
+   "lat": 5.179300651484,
+   "lon": -74.782638484414,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Ibague": {
+   "lat": 4.4449323,
+   "lon": -75.2434283,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Lerida": {
+   "lat": 4.865945379037,
+   "lon": -74.922980534192,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Mariquita": {
+   "lat": 5.235491826558,
+   "lon": -74.906345563069,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Melgar": {
+   "lat": 4.186758916587,
+   "lon": -74.637735559535,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Prado": {
+   "lat": 3.728116796836,
+   "lon": -74.872133449072,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Rioblanco": {
+   "lat": 3.468280535605,
+   "lon": -75.854961305041,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Rovira": {
+   "lat": 4.215168313484,
+   "lon": -75.348668283394,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Venadillo": {
+   "lat": 4.709064602295,
+   "lon": -74.923321828289,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Alcala": {
+   "lat": 4.678594799248,
+   "lon": -75.782666972119,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Andalucia": {
+   "lat": 4.142520912377,
+   "lon": -76.162598383755,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Ansermanuevo": {
+   "lat": 4.797040768194,
+   "lon": -76.02710532281,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Buenaventura": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Bugalagrande": {
+   "lat": 4.19870675764,
+   "lon": -76.091484865405,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Caicedonia": {
+   "lat": 4.309191480742,
+   "lon": -75.836894983989,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Cali": {
+   "lat": 3.4529814,
+   "lon": -76.5187809,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Calima": {
+   "lat": 3.944573210405,
+   "lon": -76.62712178035,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Candelaria": {
+   "lat": 3.4083251,
+   "lon": -76.3490859,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Cartago": {
+   "lat": 4.7467432,
+   "lon": -75.9135982,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Dagua": {
+   "lat": 3.650119469094,
+   "lon": -76.720667320667,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|El Cerrito": {
+   "lat": 3.68806,
+   "lon": -76.31661,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|El Dovio": {
+   "lat": 4.539908061875,
+   "lon": -76.287060359439,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Florida": {
+   "lat": 3.32442,
+   "lon": -76.23546,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Ginebra": {
+   "lat": 3.744164983684,
+   "lon": -76.191343349711,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Guacari": {
+   "lat": 3.78376056817,
+   "lon": -76.294199610174,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Guadalajara de Buga": {
+   "lat": 3.90089,
+   "lon": -76.29783,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Jamundi": {
+   "lat": 3.2636509,
+   "lon": -76.5384273,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|La Union": {
+   "lat": 4.537119623455,
+   "lon": -76.104420804129,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Palmira": {
+   "lat": 3.5389083,
+   "lon": -76.2984657,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Pradera": {
+   "lat": 3.41866,
+   "lon": -76.24198,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Roldanillo": {
+   "lat": 4.443296598839,
+   "lon": -76.168629224598,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|San Pedro": {
+   "lat": 3.981805604862,
+   "lon": -76.205843683884,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Sevilla": {
+   "lat": 4.198026658453,
+   "lon": -75.891030392575,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Toro": {
+   "lat": 4.637215921849,
+   "lon": -76.081672665481,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Tulua": {
+   "lat": 4.08432,
+   "lon": -76.19665,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Vijes": {
+   "lat": 3.744087858374,
+   "lon": -76.471060631691,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Yumbo": {
+   "lat": 3.5813777,
+   "lon": -76.4946476,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Zarzal": {
+   "lat": 4.355731144934,
+   "lon": -76.056091184957,
+   "precision": "cabecera_municipal"
+  },
+  "Vaupes|Mitu": {
+   "lat": 1.2559718,
+   "lon": -70.2330339,
+   "precision": "cabecera_municipal"
+  },
+  "Vichada|Cumaribo": {
+   "lat": 4.262699324437,
+   "lon": -69.521787654165,
+   "precision": "cabecera_municipal"
+  },
+  "Vichada|Puerto Carreno": {
+   "lat": 6.1908541,
+   "lon": -67.4847793,
+   "precision": "cabecera_municipal"
+  }
+ }
+}
