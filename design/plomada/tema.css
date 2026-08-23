@@ -79,6 +79,14 @@
   --color-accent-2-800: #ffa593;
   --color-accent-2-900: #ffd0c6;
 
+  /* estados del boton primario: la rampa de acento NO se invierte, asi que
+     aqui los pasos que oscurecen no sirven -- el 600 es el propio acento y
+     el boton se quedaba quieto bajo el raton. Sobre negro el estado se
+     senala subiendo la luz, no bajandola. (Los define sitio.css en :root
+     con los pasos claros; esto es solo el delta.) */
+  --pl-btn-hover:  var(--color-accent-700);
+  --pl-btn-active: var(--color-accent-800);
+
   /* sombras: las de Modernist son ink-tinted sobre fondo claro y sobre negro
      son invisibles. En banda oscura el trabajo de separar lo hace el
      hairline superior (simula luz cenital); la sombra queda como oscuridad

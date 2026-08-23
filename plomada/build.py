@@ -127,8 +127,15 @@ def aviso_fijo(texto, enlace=("Qué significa esto", "/metodologia/")):
 
 
 # ----------------------------------------------------------------- plantilla
-def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase="", cabecera=""):
+def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase="", cabecera="",
+           pie_aviso=True):
     canon = "/" + ruta if not ruta.startswith("/") else ruta
+    # `pie_aviso=False` solo lo usa la portada, y solo porque ahi la salvedad
+    # ya la dice la banda .cierre, palabra por palabra y en cuerpo mayor,
+    # justo encima del pie: repetirla apila dos declaraciones identicas en
+    # dos franjas pegadas. La salvedad NO desaparece de la portada -- cambia
+    # de sitio. En las demas vistas el pie la sigue llevando.
+    aviso_del_pie = f'<p class="aviso">{C.AVISO}</p>\n    ' if pie_aviso else ""
     return f"""<!doctype html>
 <html lang="es">
 <meta charset="utf-8">
@@ -154,8 +161,7 @@ def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase="", cabecera
 </main>
 <footer class="banda-oscura banda-pie">
   <div class="pie">
-    <p class="aviso">{C.AVISO}</p>
-    <p>Datos públicos del SECOP II. <a href="/metodologia/">Cómo se calcula</a> ·
+    {aviso_del_pie}<p>Datos públicos del SECOP II. <a href="/metodologia/">Cómo se calcula</a> ·
        <a href="/datos/">Descargar los datos</a></p>
   </div>
 </footer>
@@ -766,6 +772,19 @@ def portada(muns, cifras, top_contratos):
 </header>
 """
 
+    # Cuarta celda de la franja: "Administraciones" (entidad x periodo de
+    # gobierno) NO es derivable del API -- se imprimia siempre como "sin
+    # dato" en tipografia de cifra, un hueco en la portada. La reemplaza una
+    # cifra que el API si publica (titulares.json, la misma fuente de las
+    # otras tres). Si tampoco esa esta (API caido, base vacia), la franja se
+    # publica con tres celdas en vez de cuatro: preferimos una columna menos
+    # a un "sin dato" del tamano de un titular.
+    cuarta_cifra = (
+        dato("Con indicio fuerte de red",
+             f"<b class='grande'>{D.entero(cifras['n_red_fuerte'])}</b>",
+             f"<small>contratos, {D.plata(cifras['valor_red_fuerte'])}</small>")
+        if cifras.get("n_red_fuerte") else "")
+
     cuerpo = f"""
 {isla("cifra-lider",
       '<p class="nota">Ver el desglose completo de indicios en el '
@@ -777,7 +796,7 @@ def portada(muns, cifras, top_contratos):
   {dato("Contratos atípicos", f"<b class='grande'>{D.entero(cifras['n_atipicos'])}</b>",
         f"<small>{D.pct(cifras['pct_atipicos'])} &middot; {D.plata(cifras['valor_atipico'])}</small>")}
   {dato("Municipios en el ranking", D.entero(cifras["n_municipios"]))}
-  {dato("Administraciones", D.entero(cifras["n_admin"]), "<small>entidad x período de gobierno</small>")}
+  {cuarta_cifra}
 </dl>
 <section class="caja principal">
   <h2>Municipios con mayor tasa ajustada</h2>
@@ -821,7 +840,7 @@ def portada(muns, cifras, top_contratos):
     return pagina(LEMA, "Plomada detecta indicios de irregularidad en la contratación de obra "
                   "pública en Colombia siguiendo a las personas que firman, no a las empresas. "
                   "Datos públicos del SECOP II.", cuerpo, "/", clase="pg-portada",
-                  js=ISLAS_JS, cabecera=cabecera)
+                  js=ISLAS_JS, cabecera=cabecera, pie_aviso=False)
 
 
 def pagina_tablero():
@@ -1296,6 +1315,8 @@ def cifras_universo(datos_api):
     titulares = datos_api.get("titulares.json") or []
     atipico = next((t for t in titulares
                      if str(t.get("concepto", "")).startswith("Clasificado atipico")), None)
+    red = next((t for t in titulares
+                if str(t.get("concepto", "")).startswith("Con indicio fuerte de red")), None)
     n_universo = meta.get("contratos") if meta else None
     n_atipicos = meta.get("contratos_atipicos") if meta else None
     return {
@@ -1304,6 +1325,12 @@ def cifras_universo(datos_api):
         "n_atipicos": n_atipicos,
         "pct_atipicos": (n_atipicos / n_universo) if n_universo else None,
         "valor_atipico": atipico["valor"] if atipico else None,
+        # cuarta columna de la franja de cifras de portada. Sale del mismo
+        # titulares.json que las otras tres; si el API no lo trae, queda en
+        # None y la columna se cae entera (ver portada()), que es mejor que
+        # publicar un "sin dato" en tipografia de cifra.
+        "n_red_fuerte": red["n_contratos"] if red else None,
+        "valor_red_fuerte": red["valor"] if red else None,
     }
 
 
@@ -1379,10 +1406,10 @@ def main():
     escribir("buscar/index.html", pagina_buscar())
 
     # 7.4
-    # n_admin (entidad x periodo de gobierno) no es derivable del API:
-    # ContratoResumen no trae periodo_gobierno. Queda en None y D.entero()
-    # imprime "sin dato" -- antes que inventarlo.
-    cifras = {"n_municipios": len(muns), "n_admin": None}
+    # (n_admin -- entidad x periodo de gobierno -- salio de aqui: no es
+    # derivable del API, ContratoResumen no trae periodo_gobierno, y la
+    # portada no publica una celda que solo sabe decir "sin dato".)
+    cifras = {"n_municipios": len(muns)}
     cifras.update(agregados_de(filas))
     cifras.update(cifras_universo(datos_api))
     escribir("metodologia/index.html", pagina_metodologia(glos, cifras, cifras["umbral"]))

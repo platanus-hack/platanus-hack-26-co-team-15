@@ -262,17 +262,20 @@ del hero, rematada en pesa:
 }
 .banda-cab .hero .lema, .banda-cab .hero .bajada { max-width: 52ch; }
 
-/* la plomada: linea que cae desde el borde superior de la banda */
+/* la plomada: linea que cae desde la regla del nav */
 .banda-cab .hero { position: relative; padding-left: var(--space-4); }
 .banda-cab .hero::before {
   left: auto; right: var(--space-8);
-  top: calc(-1 * var(--pl-space-12)); bottom: var(--space-4);
+  top: 0; bottom: var(--pl-space-12);
 }
 .banda-cab .hero::after {
-  left: auto; right: calc(var(--space-8) - 6px); bottom: calc(var(--space-4) - 18px);
+  left: auto; right: calc(var(--space-8) - 6px); bottom: calc(var(--pl-space-12) - 18px);
   width: 14px; height: 20px;
   clip-path: polygon(0 0, 100% 0, 100% 45%, 50% 100%, 0 45%);
 }
+
+/* el nav comparte la reticula de la pagina, o la plomada no cae donde debe */
+@media (min-width: 768px) { .nav { padding-inline: var(--space-8); } }
 @media (max-width: 959px) {
   .banda-cab .hero::before, .banda-cab .hero::after { display: none; }
 }
@@ -283,9 +286,20 @@ del hero, rematada en pesa:
 
 Notas de intencion, para no "corregir" lo correcto:
 
-- `top: calc(-1 * var(--pl-space-12))` saca la linea por encima del padding
-  del hero, hasta tocar visualmente el nav: la plomada cuelga DESDE la
-  estructura, ese es el gesto del mockup.
+- `top: 0` es el borde superior del hero, que ES el borde inferior del nav:
+  la plomada cuelga DESDE la estructura, ese es el gesto del mockup, pero
+  sin atravesarla. (La primera version decia `top: calc(-1 * var(--pl-space-12))`
+  para "descontar el padding del hero"; es un error de caja: un pseudo-elemento
+  absoluto se posiciona contra la caja de RELLENO, no contra el contenido, asi
+  que esos 48px metian la linea dentro del nav, encima del conmutador de tono.)
+- La pesa remata `--pl-space-12` por encima del filo inferior de la banda, no
+  pegada a el: en tono claro ese filo es el corte oscuro/claro de la pagina y
+  una pesa que lo cruza se lee como recortada, no como rematada.
+- El nav tiene que llevar el MISMO padding lateral que `main#principal`, `.pie`
+  y el hero (16px, 32px desde 768px). Modernist se lo fija en 16px siempre; sin
+  el override el nav queda 16px corrido a la izquierda respecto de todo lo demas
+  y la plomada, que cuelga del borde derecho de la columna de texto, cae encima
+  del ultimo elemento del nav.
 - La pesa es el mismo pseudo-elemento cuadrado de siempre con `clip-path`
   de cinco puntos: CSS puro, cero SVG nuevo.
 - A menos de 960px linea y pesa desaparecen: en pantallas angostas no hay

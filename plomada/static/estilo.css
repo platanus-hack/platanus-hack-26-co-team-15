@@ -497,6 +497,16 @@ textarea.input { min-height: 90px; resize: vertical; }
      como --color-divider; se fija el ancho aqui porque Modernist no define
      un --rule-width */
   --pl-regla: 2px;
+
+  /* Estados del boton primario. Modernist los cablea a --color-accent-600
+     (hover) y -700 (active), pasos que OSCURECEN -- correcto sobre banda
+     clara. En banda oscura la rampa de acento no se invierte (ver
+     design/plomada/tema.css), asi que el 600 vale exactamente lo mismo que
+     --color-accent y el boton se quedaba quieto al pasarle el raton. Con el
+     estado en un token, el delta oscuro solo mueve la direccion de la luz
+     (sube en vez de bajar) y ningun componente se entera de que hay temas. */
+  --pl-btn-hover:  var(--color-accent-600);
+  --pl-btn-active: var(--color-accent-700);
 }
 
 /* ─── piso duro: sin scroll horizontal en ninguna vista ─────────────────
@@ -529,6 +539,12 @@ main#principal { flex: 1; }
   overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none;
 }
 .nav::-webkit-scrollbar { display: none; }
+/* Modernist le da al nav `padding: var(--space-3) var(--space-4)` fijo, pero
+   main#principal, .pie y el hero de la banda pasan a 32px desde 768px. Sin
+   esta linea el nav queda 16px a la izquierda de TODO lo demas: la marca no
+   alinea con el titular y la plomada (que cuelga del borde derecho de la
+   columna de texto) cae encima del conmutador de tono. Una sola reticula. */
+@media (min-width: 768px) { .nav { padding-inline: var(--space-8); } }
 .nav a { white-space: nowrap; }
 
 /* ─── conmutador de tono (F1) ───────────────────────────────────────────
@@ -768,11 +784,17 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
 }
 @media (min-width: 640px) { .tarjetas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 960px) { .tarjetas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.tarjetas .card { text-decoration: none; color: inherit; transition: box-shadow var(--pl-dur) var(--pl-ease); }
-.tarjetas .card:hover { box-shadow: var(--shadow-md); }
+.tarjetas .card { text-decoration: none; color: inherit; }
 .tarjetas .card:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .tarjetas .card-title { overflow-wrap: anywhere; }
 .tarjetas .card-meta { overflow-wrap: anywhere; }
+
+/* La fila bajo el raton: Modernist la marca con un velo de tinta al 4%. Sobre
+   banda clara eso es un gris apenas, y sobre #14100f es practicamente nada --
+   y este sitio se lee sobre todo en tablas. Sube al 7%, el mismo velo que ya
+   usan los botones secundarios, para que la senal tenga una sola fuerza en
+   todo el sitio. Sale de --color-text, asi que se invierte con la banda sola. */
+.table tbody tr:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
 
 /* ─── tabla envuelta: nunca desborda la pagina ──────────────────────── */
 .tabla-scroll { overflow-x: auto; }
@@ -800,6 +822,12 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
   width: fit-content;
 }
 .btn-verificar:hover { background: color-mix(in srgb, var(--color-accent) 8%, transparent); }
+
+/* Modernist cablea el hover/active del boton primario a pasos que oscurecen
+   el acento; en banda oscura el paso 600 ES el acento y el boton no se movia.
+   Se enrutan por token (ver --pl-btn-hover / --pl-btn-active arriba). */
+.btn-primary:hover  { background: var(--pl-btn-hover); }
+.btn-primary:active { background: var(--pl-btn-active); }
 .btn-verificar.sin { border: 0; padding: 0; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
 
 /* ─── barra de puntaje ─────────────────────────────────────────────── */
@@ -1181,7 +1209,16 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
   text-transform: uppercase; letter-spacing: 0.06em;
   font-family: var(--font-heading); font-weight: var(--font-heading-weight);
 }
-.nav .nav-cta { padding: var(--space-2) var(--space-3); font-size: var(--pl-text-sm); }
+.nav .nav-cta {
+  padding: var(--space-2) var(--space-3); font-size: var(--pl-text-sm);
+  /* la tinta la tiene que poner .btn-primary (`color: var(--color-bg)`, tinta
+     oscura sobre el acento), pero `.nav a { color: inherit }` de Modernist le
+     gana por especificidad y el CTA acababa con la tinta CLARA de la banda
+     sobre naranja: 2,7:1 de contraste, el unico boton del sitio con el texto
+     de otro color que los demas .btn-primary. Restituido: 5,8:1. */
+  color: var(--color-bg);
+}
+.nav .nav-cta:hover, .nav .nav-cta[aria-current="page"] { color: var(--color-bg); }
 
 .banda-pie .pie { border-top: 0; }
 /* la regla superior del pie la reemplaza el cambio de banda; conservarla
@@ -1205,14 +1242,22 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
 }
 .banda-cab .hero .lema, .banda-cab .hero .bajada { max-width: 52ch; }
 
-/* la plomada: linea que cae desde el borde superior de la banda */
+/* la plomada: linea que cae desde la regla del nav hasta dentro de la banda.
+   `top: 0` es el borde superior del hero, que ES el borde inferior del nav:
+   la plomada cuelga de la estructura sin atravesarla. (Antes decia
+   `top: calc(-1 * var(--pl-space-12))`, pensado para descontar el padding
+   del hero; pero un pseudo-elemento absoluto se posiciona contra la caja de
+   relleno, no contra el contenido, asi que esos 48px metian la linea DENTRO
+   del nav y la pasaban por encima del conmutador de tono.)
+   La pesa termina 30px por encima del filo de la banda: en tono claro ese
+   filo es el corte oscuro/claro, y una pesa que lo cruza parece recortada. */
 .banda-cab .hero { position: relative; padding-left: var(--space-4); }
 .banda-cab .hero::before {
   left: auto; right: var(--space-8);
-  top: calc(-1 * var(--pl-space-12)); bottom: var(--space-4);
+  top: 0; bottom: var(--pl-space-12);
 }
 .banda-cab .hero::after {
-  left: auto; right: calc(var(--space-8) - 6px); bottom: calc(var(--space-4) - 18px);
+  left: auto; right: calc(var(--space-8) - 6px); bottom: calc(var(--pl-space-12) - 18px);
   width: 14px; height: 20px;
   clip-path: polygon(0 0, 100% 0, 100% 45%, 50% 100%, 0 45%);
 }
@@ -1241,10 +1286,33 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
 .vistas { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
 @media (min-width: 640px) { .vistas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 960px) { .vistas { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-.vistas .card { text-decoration: none; color: inherit;
-  transition: box-shadow var(--pl-dur) var(--pl-ease); }
-.vistas .card:hover { box-shadow: var(--shadow-md); }
+.vistas .card { text-decoration: none; color: inherit; }
 .vistas .card:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* ─── hover de tarjeta: una senal que se lee en las DOS bandas ────────
+   Era `box-shadow: var(--shadow-md)` y nada mas. Sobre banda clara eso
+   levanta la tarjeta; sobre #14100f una sombra negra sencillamente no
+   existe, asi que en tono oscuro la tarjeta no respondia al raton. La
+   sombra se conserva (sigue siendo la senal correcta en claro) pero deja
+   de ser la unica: se le suman dos que salen de tokens que YA cambian con
+   la banda, y por eso funcionan en las dos sin una sola regla por tema.
+
+   1. Una regla de acento de --pl-regla en el canto superior. Va PRIMERA en
+      la lista: box-shadow pinta la primera declarada encima, y el delta
+      oscuro de --shadow-* trae su propio hairline inset de 1px que si no
+      le comeria el borde de arriba a la regla.
+   2. La superficie sube 5% hacia la tinta. En claro la tinta es oscura y
+      la tarjeta se hunde un punto; en oscuro es clara y la tarjeta se
+      aclara. El gesto es el mismo -- "esta viva" -- y el sentido de la luz
+      lo pone el tono, no una excepcion escrita a mano. */
+.tarjetas .card, .vistas .card {
+  transition: box-shadow var(--pl-dur) var(--pl-ease),
+              background-color var(--pl-dur) var(--pl-ease);
+}
+.tarjetas .card:hover, .vistas .card:hover {
+  box-shadow: inset 0 var(--pl-regla) 0 0 var(--color-accent), var(--shadow-md);
+  background: color-mix(in srgb, var(--color-text) 5%, var(--color-surface));
+}
 
 /* ═══════════════════════════════════════════════════════════════════════
    Banda oscura de Plomada. Se compone de ULTIMO (design/construir.py), asi
@@ -1326,6 +1394,14 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
   --color-accent-2-700: #ff7a60;
   --color-accent-2-800: #ffa593;
   --color-accent-2-900: #ffd0c6;
+
+  /* estados del boton primario: la rampa de acento NO se invierte, asi que
+     aqui los pasos que oscurecen no sirven -- el 600 es el propio acento y
+     el boton se quedaba quieto bajo el raton. Sobre negro el estado se
+     senala subiendo la luz, no bajandola. (Los define sitio.css en :root
+     con los pasos claros; esto es solo el delta.) */
+  --pl-btn-hover:  var(--color-accent-700);
+  --pl-btn-active: var(--color-accent-800);
 
   /* sombras: las de Modernist son ink-tinted sobre fondo claro y sobre negro
      son invisibles. En banda oscura el trabajo de separar lo hace el
