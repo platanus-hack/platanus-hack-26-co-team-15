@@ -196,28 +196,51 @@ def test_vocabulario():
 
 
 # ------------------------------------------------------------ 3. verificable
-def test_fichas_verificables():
-    fichas = list((SITE / "contrato").rglob("index.html"))
-    check(fichas, "no se genero ninguna ficha de contrato")
-    for p in fichas:
-        t = p.read_text(encoding="utf-8")
-        check("secop.gov.co" in t or "no publico enlace al proceso" in t,
-              f"la ficha {p.parent.name} no permite verificar en la fuente")
-        check("Indicio, no acusacion" in t, f"la ficha {p.parent.name} no muestra el aviso")
-        check("urlproceso" not in t and "{'url'" not in t,
-              f"la ficha {p.parent.name} muestra el struct crudo en vez de la URL")
+def test_ficha_shell_verificable():
+    """La ficha ya no se pre-renderiza: hay UN shell que static/ficha.js
+    hidrata desde el API. Lo que se comprueba cambia de sitio, no de fondo.
+
+    El aviso "Indicio, no acusacion" tiene que estar en el HTML ESTATICO, no
+    pintarse por JS: es la salvedad que no puede depender de que una llamada
+    de red funcione. Si el API esta caido, el visitante igual la ve.
+    """
+    p = SITE / "contrato" / "index.html"
+    check(p.exists(), "no se genero el shell de ficha (contrato/index.html)")
+    if not p.exists():
+        return
+    t = p.read_text(encoding="utf-8")
+    check("Indicio, no acusación" in t, "el shell de ficha no trae el aviso en el HTML estatico")
+    check("/static/ficha.js" in t, "el shell de ficha no carga ficha.js")
+
+    # El "verificar en la fuente" ahora lo pinta ficha.js: se comprueba ahi.
+    js = (RAIZ / "static" / "ficha.js").read_text(encoding="utf-8")
+    check("urlproceso" in js and "Verificar en SECOP II" in js,
+          "ficha.js no ofrece el enlace de verificacion en la fuente oficial")
+    check("no publicó enlace al proceso" in js or "no publico enlace al proceso" in js,
+          "ficha.js no avisa cuando la fuente no publico enlace al proceso")
 
 
 def test_urls_compartibles():
     for ruta in ("index.html", "mapa/index.html", "buscar/index.html",
-                 "metodologia/index.html", "datos/index.html", "sitemap.xml"):
+                 "metodologia/index.html", "datos/index.html", "sitemap.xml",
+                 "contrato/index.html", "municipio/index.html"):
         check((SITE / ruta).exists(), f"falta {ruta}")
-    mun = list((SITE / "municipio").rglob("index.html"))
-    check(len(mun) == len(D.municipios()), "falta una pagina de municipio")
-    mapa = json.loads((SITE / "datos" / "contratos.json").read_text(encoding="utf-8"))
-    for c in mapa[:20]:
-        check((SITE / c["u"].strip("/") / "index.html").exists(),
-              f"el indice apunta a {c['u']}, que no existe")
+
+    # Las fichas se hidratan en el navegador pero SIGUEN teniendo URL propia:
+    # sin esto dejan de ser compartibles y rastreables, que es el producto.
+    mapa = (SITE / "sitemap.xml").read_text(encoding="utf-8")
+    check(mapa.count("/contrato/") > 1000,
+          "el sitemap perdio las fichas de contrato: dejan de ser rastreables")
+    check(mapa.count("/municipio/") > 100, "el sitemap perdio los municipios")
+
+    # Sin la regla de reescritura, /contrato/<slug>/ devuelve 404 en un host
+    # estatico y ninguna URL compartida funciona.
+    red = SITE / "_redirects"
+    check(red.exists(), "falta _redirects: /contrato/<slug>/ daria 404 en el host")
+    if red.exists():
+        t = red.read_text(encoding="utf-8")
+        check("/contrato/*" in t and "/municipio/*" in t,
+              "_redirects no cubre las dos rutas dinamicas")
 
 
 # ---------------------------------------------------------------- 4. rankings
@@ -294,21 +317,25 @@ def test_presentacion():
 
 
 def test_valor_plausible():
-    """El dinero se suma con valor_plausible, nunca con valor."""
+    """El dinero se suma con valor_plausible, nunca con valor.
+
+    Ya no hay 12.678 fichas pre-renderizadas que barrer: la explicacion del
+    valor imposible la pinta static/ficha.js. Se comprueba que la plantilla
+    siga trayendola, y que la regla se cumpla en los datos.
+    """
     cs = list(D.contratos())
     raros = [c for c in cs if c.get("valor") and c["valor"] != c.get("valor_plausible")]
     check(raros, "los datos de prueba deberian traer un valor imposible")
-    for c in raros:
-        t = (SITE / f"contrato/{D.slug(c['id_contrato'])}/index.html").read_text(encoding="utf-8")
-        check("falla de publicacion" in t,
-              f"{c['id_contrato']} no explica que el valor publicado es imposible")
+
+    js = (RAIZ / "static" / "ficha.js").read_text(encoding="utf-8")
+    check("falla de publicación" in js or "falla de publicacion" in js,
+          "ficha.js no explica que el valor publicado por la entidad es imposible")
+    check("valor_plausible" in js, "ficha.js no usa valor_plausible como valor del contrato")
+
     total_pub = sum(c["valor_plausible"] or 0 for c in cs)
     total_bruto = sum(c["valor"] or 0 for c in cs)
     check(total_pub < total_bruto / 1000,
           "el saneado deberia ser ordenes de magnitud menor que el bruto en estos datos")
-    idx = json.loads((SITE / "datos" / "contratos.json").read_text(encoding="utf-8"))
-    check(max(c["v"] for c in idx) < 10 ** 15,
-          "el indice del buscador esta publicando un valor imposible")
 
 
 # --------------------------------------------------------------------- 7. mapa

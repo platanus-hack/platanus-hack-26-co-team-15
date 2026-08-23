@@ -4,7 +4,7 @@ Estatico a proposito: cada contrato, municipio y busqueda tiene una URL real
 y compartible, el HTML sale ya renderizado (indexable) y no hay servidor que
 mantener. Los 78.000 contratos caben en un portatil.
 """
-import csv, html, json, shutil, sys
+import csv, html, json, os, shutil, sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -19,8 +19,12 @@ SITE = RAIZ / "site"
 # site/, para que test_privacy.py controle todo el artefacto publicado de
 # una sola pasada.
 PIPELINE = RAIZ.parent / "pipeline"
+# El navegador consulta este API en cada vista. Se inyecta en el <head> de
+# todas las paginas para que static/api.js lo lea (window.PLOMADA_API_URL) y
+# ninguna vista tenga que hardcodearlo.
+API_URL = os.environ.get("PLOMADA_API_URL", "https://plumb-duy6.onrender.com")
 SITIO_NOMBRE = "Plomada"
-LEMA = "Indicios de irregularidad en la contratacion de obra publica en Colombia"
+LEMA = "Indicios de irregularidad en la contratación de obra pública en Colombia"
 
 # Leaflet vendorizado (Tanda B, B6): plomada/static/vendor/leaflet/, version
 # 1.9.4, licencia BSD-2 (ver design/VENDOR.md). Nada de unpkg en produccion.
@@ -43,7 +47,7 @@ def h(x):
 # Modernist solo aplica entre hijos DIRECTOS.
 NAV_ENLACES = (
     ("/tablero/", "Tablero"), ("/mapa/", "Mapa"), ("/buscar/", "Buscador"),
-    ("/metodologia/", "Metodologia"), ("/datos/", "Datos"),
+    ("/metodologia/", "Metodología"), ("/datos/", "Datos"),
 )
 
 
@@ -71,13 +75,13 @@ def isla(nombre, fallback="", **props):
     return f'<div data-isla="{h(nombre)}"{attrs}>{fallback}</div>'
 
 
-def aviso_fijo(texto, enlace=("Que significa esto", "/metodologia/")):
+def aviso_fijo(texto, enlace=("Qué significa esto", "/metodologia/")):
     """El aviso permanente ('Indicio, no acusacion') como bloque reutilizable
     (B1): antes vivia copiado a mano solo en la ficha de contrato. Se usa en
     toda vista que muestre una cifra agregada o una ficha individual, para
     que la salvedad este siempre donde hay un numero que se pueda malleer."""
     texto_enlace, url_enlace = enlace
-    return (f'<div class="aviso-fijo" role="note"><strong>Indicio, no acusacion.</strong> '
+    return (f'<div class="aviso-fijo" role="note"><strong>Indicio, no acusación.</strong> '
             f'{texto} <a href="{h(url_enlace)}">{h(texto_enlace)}</a></div>')
 
 
@@ -95,6 +99,7 @@ def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase=""):
 <meta property="og:description" content="{h(descripcion)}">
 <meta property="og:type" content="article">
 <link rel="stylesheet" href="/static/estilo.css">
+<script>window.PLOMADA_API_URL={json.dumps(API_URL)};</script>
 {head}
 <body class="{clase}">
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -104,7 +109,7 @@ def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase=""):
 </main>
 <footer class="pie">
   <p class="aviso">{C.AVISO}</p>
-  <p>Datos publicos del SECOP II. <a href="/metodologia/">Como se calcula</a> ·
+  <p>Datos públicos del SECOP II. <a href="/metodologia/">Cómo se calcula</a> ·
      <a href="/datos/">Descargar los datos</a></p>
 </footer>
 {js}
@@ -129,6 +134,16 @@ def dato(etiqueta, valor, extra=""):
             f'<dd>{valor}{extra}</dd></div>')
 
 
+def _cifra(x, dec):
+    """D._num() con decimales, tolerando None.
+
+    D.plata/pct/entero ya devuelven "sin dato" ante None, pero D._num() es el
+    formateador crudo y revienta. Ahora que las cifras vienen del API, None es
+    un valor normal (el API no respondio, o no publica ese agregado): la
+    pagina tiene que decir "sin dato", no tumbar el build."""
+    return "sin dato" if x is None else D._num(x, dec)
+
+
 # ------------------------------------------------------------------- 7.1 ficha
 def url_contrato(c):
     return f"/contrato/{D.slug(c['id_contrato'])}/"
@@ -142,27 +157,27 @@ def barra_score(c):
     s = c.get("score") or 0
     fuertes = c.get("n_banderas_fuertes") or 0
     return f"""<div class="score">
-  <div class="score-num"><b>{fuertes}</b> <span>senal{'' if fuertes == 1 else 'es'} fuerte{'' if fuertes == 1 else 's'}</span></div>
+  <div class="score-num"><b>{fuertes}</b> <span>señal{'' if fuertes == 1 else 'es'} fuerte{'' if fuertes == 1 else 's'}</span></div>
   <div class="score-bar" role="img" aria-label="Puntaje {D._num(s, 2)} de 1">
     <i style="width:{min(100, s * 100):.0f}%"></i></div>
   <div class="score-pie">Puntaje {D._num(s, 2)} / 1 &middot; suma de pesos, no una probabilidad.
-    <a href="/metodologia/#puntaje">Como se calcula</a></div>
+    <a href="/metodologia/#puntaje">Cómo se calcula</a></div>
 </div>"""
 
 
 def bloque_banderas(grupos, total):
     if not total:
-        return '<p class="vacio">Este contrato no tiene senales encendidas.</p>'
+        return '<p class="vacio">Este contrato no tiene señales encendidas.</p>'
     out = []
     for grupo, items in grupos:
         out.append(f'<section class="grupo"><h3>{h(grupo)}</h3>')
         for b in items:
             aten = " atenuada" if b["atenuada"] else ""
-            etq = ('<span class="etq-aten" title="Patron esperable en este contexto: '
-                   'no cuenta como indicio fuerte">senal atenuada</span>') if b["atenuada"] else ""
+            etq = ('<span class="etq-aten" title="Patrón esperable en este contexto: '
+                   'no cuenta como indicio fuerte">señal atenuada</span>') if b["atenuada"] else ""
             ev = (f'<p class="evidencia"><span>Evidencia</span> {h(b["evidencia"])}</p>'
                   if b["evidencia"] else
-                  '<p class="evidencia sin"><span>Evidencia</span> sin dato numerico '
+                  '<p class="evidencia sin"><span>Evidencia</span> sin dato numérico '
                   'para esta bandera en este contrato</p>')
             out.append(f"""<article class="bandera{aten}">
   <h4>{h(D.titulo(b["bandera"].removeprefix("f_").replace("_", " ")))}
@@ -175,23 +190,30 @@ def bloque_banderas(grupos, total):
 
 
 NOTA_PRECISION = {
-    "cabecera_municipal": "Ubicacion aproximada: cabecera municipal. No se pudo geocodificar "
-                          "la direccion exacta, comun en zona rural.",
+    "cabecera_municipal": "Ubicación aproximada: cabecera municipal. No se pudo geocodificar "
+                          "la dirección exacta, común en zona rural.",
 }
 
 
 def bloque_mapa(c, geocache):
     """Mapa satelital de la seccion Ejecucion, o una nota si no hay ubicacion confiable.
 
+    ESPEJO en JS: static/mapa-satelital.js + bloqueMapa() de static/ficha.js.
+    La ficha que se sirve la pinta el JS (el shell es uno solo para 12.678
+    contratos), asi que esta version ya no genera HTML publicado; se conserva
+    como comportamiento de referencia y es la que ejerce test_privacy.py
+    (mismo arreglo que data.py <-> formato.js). Si cambias la regla aqui,
+    cambiala alla.
+
     El fallback 'defecto' (centro de Colombia) de coords_contrato() nunca llega
     aqui: un mapa generico centrado en Bogota para un contrato de otro
     departamento es peor que no mostrar mapa. Sin evidencia no se publica.
     """
     if not D.ciudad_visible(c.get("ciudad")):
-        return '<p class="mapa-nota sin">Municipio no definido en la fuente: no hay donde centrar un mapa.</p>', False
+        return '<p class="mapa-nota sin">Municipio no definido en la fuente: no hay dónde centrar un mapa.</p>', False
     coords = D.coords_contrato(c, geocache)
     if not coords:
-        return '<p class="mapa-nota sin">Ubicacion no geocodificada todavia.</p>', False
+        return '<p class="mapa-nota sin">Ubicación no geocodificada todavía.</p>', False
     direccion = ", ".join(x for x in (D.titulo(c.get("dir_ejecucion")), D.ciudad_visible(c.get("ciudad"))) if x)
     nota = NOTA_PRECISION.get(coords["precision"], "")
     # Click-to-load (Tanda B, B6): las imagenes satelitales las sirve Esri
@@ -203,9 +225,9 @@ def bloque_mapa(c, geocache):
     # hasta que el lector pulsa el boton.
     html_mapa = (f'<div id="mapa-satelital" class="mapa-placeholder" data-lat="{h(coords["lat"])}" '
                 f'data-lon="{h(coords["lon"])}" data-direccion="{h(direccion)}">'
-                f'<p class="mapa-direccion">{h(direccion) or "Ubicacion sin direccion textual"}</p>'
+                f'<p class="mapa-direccion">{h(direccion) or "Ubicación sin dirección textual"}</p>'
                 '<p class="nota">La imagen satelital la sirve Esri (arcgisonline.com): al cargarla, '
-                'Esri recibe las coordenadas que esta viendo. No se pide sola.</p>'
+                'Esri recibe las coordenadas que está viendo. No se pide sola.</p>'
                 '<button type="button" class="btn btn-secondary">Ver imagen satelital</button></div>'
                 + (f'<p class="mapa-nota">{h(nota)}</p>' if nota else ""))
     return html_mapa, True
@@ -222,8 +244,8 @@ def ficha_contrato(c, glos, hermanos, geocache):
 
     verificar = (f'<a class="btn-verificar" href="{h(url)}" rel="noopener nofollow" '
                  f'target="_blank">Verificar en SECOP II &rarr;</a>' if url else
-                 '<p class="btn-verificar sin">La fuente no publico enlace al proceso. '
-                 'Sin verificacion en origen, tratelo como no confirmado.</p>')
+                 '<p class="btn-verificar sin">La fuente no publicó enlace al proceso. '
+                 'Sin verificación en origen, trátelo como no confirmado.</p>')
 
     # dinero
     filas_plata = [dato("Valor del contrato", D.plata(valor),
@@ -231,20 +253,20 @@ def ficha_contrato(c, glos, hermanos, geocache):
     if c.get("valor") and c["valor"] != valor:
         filas_plata.append(dato("Valor publicado por la entidad",
             f'<span class="alerta">{D.plata(c["valor"])}</span>',
-            '<small>Cifra aritmeticamente imposible. Se trata como falla de publicacion; '
+            '<small>Cifra aritméticamente imposible. Se trata como falla de publicación; '
             'todas las sumas de este sitio usan el valor saneado.</small>'))
-    for etq, k in (("Pagado", "valor_pagado"), ("Pendiente de ejecucion", "valor_pend_ejecucion"),
+    for etq, k in (("Pagado", "valor_pagado"), ("Pendiente de ejecución", "valor_pend_ejecucion"),
                    ("Anticipo", "valor_anticipo"), ("Precio base del estudio", "precio_base")):
         if c.get(k):
             filas_plata.append(dato(etq, D.plata(c[k])))
 
-    recursos = [n for n, k in (("Regalias", "rec_regalias"), ("SGP", "rec_sgp"),
+    recursos = [n for n, k in (("Regalías", "rec_regalias"), ("SGP", "rec_sgp"),
                                ("Recursos propios", "rec_propios_terr")) if c.get(k)]
 
     personas = [dato("Proveedor", h(D.titulo(c.get("proveedor"))) or "sin dato")]
     if c.get("ordenador"):
         personas.append(dato("Ordenador del gasto", h(D.titulo(c["ordenador"])),
-                             "<small>Funcionario publico. Se publica el nombre, no el documento.</small>"))
+                             "<small>Funcionario público. Se publica el nombre, no el documento.</small>"))
     personas.append(dato("Supervisor", h(D.titulo(c.get("supervisor")))
                          or '<span class="alerta">no reportado</span>'))
 
@@ -255,14 +277,14 @@ def ficha_contrato(c, glos, hermanos, geocache):
                      for x in hermanos[:8])
         herm = f"""<section class="caja"><h2>Otros contratos marcados del mismo proveedor</h2>
 <p class="nota">Coincidencia de proveedor dentro de este municipio. Es contexto para
-reportear, no una relacion probada entre los contratos.</p><ul class="lista-herm">{li}</ul></section>"""
+reportear, no una relación probada entre los contratos.</p><ul class="lista-herm">{li}</ul></section>"""
 
     mapa_html, hay_mapa = bloque_mapa(c, geocache)
 
     cuerpo = f"""
-<div class="aviso-fijo" role="note"><strong>Indicio, no acusacion.</strong>
-  Este contrato esta marcado por patrones detectados en datos publicos. No afirma que
-  alguien haya obrado de forma irregular. <a href="/metodologia/">Que significa esto</a></div>
+<div class="aviso-fijo" role="note"><strong>Indicio, no acusación.</strong>
+  Este contrato está marcado por patrones detectados en datos públicos. No afirma que
+  alguien haya obrado de forma irregular. <a href="/metodologia/">Qué significa esto</a></div>
 
 {migas(("Plomada", "/"), (dep, f"/mapa/?dep={D.slug(c['departamento'])}"),
        (ciudad or "Municipio sin definir", url_municipio(c["departamento"], c["ciudad"]) if ciudad else None),
@@ -282,9 +304,9 @@ reportear, no una relacion probada entre los contratos.</p><ul class="lista-herm
                         if ciudad else '<span class="alerta">no definido en la fuente</span>')
           , f'<small>{h(dep)}</small>')}
     {dato("Valor", D.plata(valor))}
-    {dato("Firma", h(c.get("fecha_firma")), f'<small>Periodo {h(c.get("periodo_gobierno"))}</small>')}
+    {dato("Firma", h(c.get("fecha_firma")), f'<small>Período {h(c.get("periodo_gobierno"))}</small>')}
     {dato("Estado", h(D.titulo(c.get("estado"))))}
-    {dato("Plazo", f'{D.entero(c.get("dias_originales"))} dias'
+    {dato("Plazo", f'{D.entero(c.get("dias_originales"))} días'
           + (f' <span class="alerta">+{D.entero(c["dias_adicionados"])} adicionados</span>'
              if c.get("dias_adicionados") else ""))}
   </dl>
@@ -292,9 +314,9 @@ reportear, no una relacion probada entre los contratos.</p><ul class="lista-herm
   {barra_score(c)}
 
   <section class="caja principal">
-    <h2>Senales de riesgo encendidas <span class="cuenta">{len(items)}</span></h2>
-    <p class="nota">Agrupadas por tipo y ordenadas por peso. Cada una viene con el numero
-       que la disparo: si el numero no le convence, el enlace a la fuente oficial esta arriba.</p>
+    <h2>Señales de riesgo encendidas <span class="cuenta">{len(items)}</span></h2>
+    <p class="nota">Agrupadas por tipo y ordenadas por peso. Cada una viene con el número
+       que la disparó: si el número no le convence, el enlace a la fuente oficial está arriba.</p>
     {bloque_banderas(grupos, len(items))}
   </section>
 
@@ -305,17 +327,17 @@ reportear, no una relacion probada entre los contratos.</p><ul class="lista-herm
     <section class="caja"><h2>Personas y competencia</h2><dl class="dl">{"".join(personas)}
       {dato("Ofertas recibidas", D.entero(c.get("n_oferentes_unicos")))}
       {dato("Invitados", D.entero(c.get("n_invitados")))}
-      {dato("Ventana de publicacion", f'{D.entero(c.get("dias_ventana"))} dias',
-            f'<small>Mediana de su modalidad: {D.entero(c.get("ev_ventana_mediana_modalidad"))} dias</small>')}
+      {dato("Ventana de publicación", f'{D.entero(c.get("dias_ventana"))} días',
+            f'<small>Mediana de su modalidad: {D.entero(c.get("ev_ventana_mediana_modalidad"))} días</small>')}
     </dl>
       <p class="nota">Los documentos de identidad de particulares no se publican.
-         <a href="/metodologia/#privacidad">Por que</a></p>
+         <a href="/metodologia/#privacidad">Por qué</a></p>
     </section>
   </div>
 
-  <section class="caja"><h2>Ejecucion</h2><dl class="dl">
-    {dato("Direccion de ejecucion", h(D.titulo(c.get("dir_ejecucion"))))}
-    {dato("Clasificacion UNSPSC", h(c.get("unspsc")))}
+  <section class="caja"><h2>Ejecución</h2><dl class="dl">
+    {dato("Dirección de ejecución", h(D.titulo(c.get("dir_ejecucion"))))}
+    {dato("Clasificación UNSPSC", h(c.get("unspsc")))}
   </dl>
   {mapa_html}
   </section>
@@ -323,8 +345,8 @@ reportear, no una relacion probada entre los contratos.</p><ul class="lista-herm
   {herm}
 </article>
 """
-    desc = (f"{len(items)} senales de riesgo en un contrato de {D.plata(valor)} de "
-            f"{ent} en {ciudad or dep}. Indicio para revision, no acusacion.")
+    desc = (f"{len(items)} señales de riesgo en un contrato de {D.plata(valor)} de "
+            f"{ent} en {ciudad or dep}. Indicio para revisión, no acusación.")
     head = LEAFLET_CSS if hay_mapa else ""
     js = (LEAFLET_JS + '<script src="/static/mapa-satelital.js"></script>') if hay_mapa else ""
     return pagina(objeto[:70], desc, cuerpo, url_contrato(c), head=head, js=js, clase="pg-ficha")
@@ -358,19 +380,19 @@ def pagina_municipio(m, contratos_mun, puesto, total_mun):
 <dl class="cab-grid">
   {dato("Tasa ajustada", f'<b class="grande">{D.pct(m["tasa_ajustada"])}</b>',
         f'<small>Tasa cruda {D.pct(m["tasa_cruda"])} sobre {D.entero(m["n_contratos"])} contratos. '
-        f'La ajustada corrige el azar de los municipios pequenos.</small>')}
-  {dato("Contratos atipicos", f'{D.entero(m["n_atipicos"])} de {D.entero(m["n_contratos"])}')}
-  {dato("Valor atipico", D.plata(m["valor_atipico"]),
+        f'La ajustada corrige el azar de los municipios pequeños.</small>')}
+  {dato("Contratos atípicos", f'{D.entero(m["n_atipicos"])} de {D.entero(m["n_contratos"])}')}
+  {dato("Valor atípico", D.plata(m["valor_atipico"]),
         f'<small>{D.pct(m.get("share_valor_atipico") or 0)} de {D.plata(m["valor_total"])} contratados</small>')}
-  {dato("Regalias en contratos atipicos", D.plata(m.get("regalias_atipicas")))}
+  {dato("Regalías en contratos atípicos", D.plata(m.get("regalias_atipicas")))}
 </dl>
-{'<section class="caja"><h2>Banderas mas frecuentes</h2><ul class="chips">' + chips + "</ul></section>" if chips else ""}
+{'<section class="caja"><h2>Banderas más frecuentes</h2><ul class="chips">' + chips + "</ul></section>" if chips else ""}
 <section class="caja principal">
   <h2>Contratos marcados <span class="cuenta">{len(contratos_mun)}</span></h2>
   <p class="nota">Ordenados por puntaje. Cada uno abre su ficha con la evidencia y el
      enlace a SECOP II.</p>
   <div class="tabla-scroll"><table class="table"><thead><tr><th>Objeto</th><th class="num">Valor</th>
-    <th class="num">Ano</th><th class="num">Senales fuertes</th></tr></thead>
+    <th class="num">Año</th><th class="num">Señales fuertes</th></tr></thead>
     <tbody>{filas or '<tr><td colspan="4">Sin contratos en la muestra.</td></tr>'}</tbody></table></div>
   <p><a href="/buscar/?municipio={h(m['ciudad'])}">Ver en el buscador con filtros &rarr;</a></p>
 </section>
@@ -447,11 +469,11 @@ def pagina_mapa(deps, muns):
 
     nota_mun = ("" if cross else """
 <p class="nota aviso-cruce"><strong>Capa municipal pendiente.</strong> El cruce entre el
-campo <code>ciudad</code> (texto libre) y los codigos DIVIPOLA lo esta resolviendo otro
-frente del equipo. Este mapa no arma su propio pareo de nombres a proposito: pintar un
+campo <code>ciudad</code> (texto libre) y los códigos DIVIPOLA lo está resolviendo otro
+frente del equipo. Este mapa no arma su propio pareo de nombres a propósito: pintar un
 municipio equivocado es peor que no pintarlo. Mientras llega
-<code>out/divipola_municipios.csv</code>, los 721 municipios estan en la tabla de abajo,
-ordenados por la misma metrica.</p>""")
+<code>out/divipola_municipios.csv</code>, los 721 municipios están en la tabla de abajo,
+ordenados por la misma métrica.</p>""")
 
     aviso_faltantes = (f'<p class="nota">Sin datos en el mapa: {", ".join(sin_datos)}.</p>'
                        if sin_datos else "")
@@ -460,13 +482,13 @@ ordenados por la misma metrica.</p>""")
 
     cuerpo = f"""
 <header class="cab">
-  <h1>Mapa de senales de riesgo</h1>
-  <p class="bajada">Coropletico por <strong>tasa ajustada</strong> de contratos de obra
+  <h1>Mapa de señales de riesgo</h1>
+  <p class="bajada">Coroplético por <strong>tasa ajustada</strong> de contratos de obra
      marcados. Nunca por tasa cruda: un municipio con 4 contratos y 2 marcados da 50% y
-     encabezaria la lista por puro azar. <a href="/metodologia/#tasa">Como se corrige</a></p>
+     encabezaría la lista por puro azar. <a href="/metodologia/#tasa">Cómo se corrige</a></p>
 </header>
 <div class="mapa-wrap">
-  <div id="mapa" role="application" aria-label="Mapa coropletico de Colombia"></div>
+  <div id="mapa" role="application" aria-label="Mapa coroplético de Colombia"></div>
   <aside id="panel" class="panel"><p class="vacio">Elija un departamento en el mapa.</p></aside>
 </div>
 {aviso_faltantes}{aviso_huerfanos}
@@ -474,54 +496,62 @@ ordenados por la misma metrica.</p>""")
   <h2>Municipios <span class="cuenta">{len(muns)}</span></h2>
   {nota_mun}
   <p class="nota">Se muestran las dos tasas juntas: la ajustada, que es la que ordena, y
-     la cruda, para que la correccion sea visible.</p>
+     la cruda, para que la corrección sea visible.</p>
   <input id="filtro-mun" type="search" placeholder="Filtrar municipio o departamento"
          aria-label="Filtrar municipios">
   <div class="tabla-scroll"><table class="table" id="tabla-mun"><thead><tr><th class="num">#</th><th>Municipio</th>
     <th class="num">Tasa ajustada</th><th class="num">Tasa cruda</th>
-    <th class="num">Contratos</th><th class="num">Valor atipico</th></tr></thead>
+    <th class="num">Contratos</th><th class="num">Valor atípico</th></tr></thead>
     <tbody>{filas}</tbody></table></div>
 </section>
 """
     head = LEAFLET_CSS
     js = LEAFLET_JS + '<script src="/static/mapa.js"></script>'
-    return pagina("Mapa", "Mapa de Colombia por tasa ajustada de contratos de obra publica "
-                  "con senales de riesgo, por departamento y municipio.", cuerpo, "/mapa/",
+    return pagina("Mapa", "Mapa de Colombia por tasa ajustada de contratos de obra pública "
+                  "con señales de riesgo, por departamento y municipio.", cuerpo, "/mapa/",
                   head=head, js=js, clase="pg-mapa")
 
 
 # --------------------------------------------------------------------- 7.3 buscar
-def pagina_buscar(glos, facetas):
-    def opts(nombre, valores, etiqueta_fn=D.titulo):
-        o = "".join(f'<option value="{h(v)}">{h(etiqueta_fn(v))}</option>' for v in valores)
-        return f'<select id="f-{nombre}" data-campo="{nombre}"><option value="">Todos</option>{o}</select>'
+def pagina_buscar():
+    """Shell del buscador. Ya no incrusta facetas: static/buscar.js las trae
+    del API (/v1/departamentos, /v1/municipios, /v1/banderas) y las cachea en
+    sessionStorage. Antes este HTML pesaba 155 KB, casi todo <option>.
 
-    banderas_opt = "".join(
-        f'<option value="{h(b)}">{h(D.titulo(b.removeprefix("f_").replace("_", " ")))}'
-        f' ({h(glos[b]["grupo"])})</option>'
-        for b in sorted(glos, key=lambda x: (glos[x]["grupo"], -glos[x]["peso"])))
+    Dos filtros del buscador viejo desaparecieron porque el API no los ofrece
+    como parametro de consulta, y filtrarlos solo sobre la pagina cargada
+    mentiria sobre el resto del resultado:
+      - Periodo de gobierno: /v1/contratos no acepta ese filtro.
+      - Orden por Objeto/Entidad/Municipio: el API solo ordena por
+        fecha, riesgo, score y valor (devuelve 422 con cualquier otro).
+    """
+    def sel(nombre, etiqueta_vacia="Todos"):
+        return (f'<select id="f-{nombre}" data-campo="{nombre}">'
+                f'<option value="">{etiqueta_vacia}</option></select>')
 
     cuerpo = f"""
 <header class="cab">
   <h1>Buscador de contratos marcados</h1>
-  <p class="bajada">Filtre, ordene y llevese los datos. Cada busqueda tiene su propia URL:
+  <p class="bajada">Filtre, ordene y llévese los datos. Cada búsqueda tiene su propia URL:
      el enlace de la barra de direcciones ya lleva los filtros puestos.</p>
 </header>
 <form class="filtros" id="filtros" role="search">
   <div><label for="f-q">Texto</label>
     <input id="f-q" data-campo="q" type="search" placeholder="Objeto, entidad o proveedor"></div>
-  <div><label for="f-departamento">Departamento</label>{opts("departamento", facetas["departamento"])}</div>
-  <div><label for="f-municipio">Municipio</label>{opts("municipio", facetas["municipio"])}</div>
-  <div><label for="f-entidad">Entidad</label>{opts("entidad", facetas["entidad"])}</div>
-  <div><label for="f-anio">Ano</label>{opts("anio", facetas["anio"], str)}</div>
-  <div><label for="f-periodo">Periodo de gobierno</label>{opts("periodo", facetas["periodo"], str)}</div>
-  <div><label for="f-tipo">Tipo</label>{opts("tipo", facetas["tipo"])}</div>
-  <div><label for="f-modalidad">Modalidad</label>{opts("modalidad", facetas["modalidad"])}</div>
-  <div><label for="f-bandera">Bandera</label>
-    <select id="f-bandera" data-campo="bandera"><option value="">Cualquiera</option>{banderas_opt}</select></div>
-  <div><label for="f-vmin">Valor minimo (COP)</label>
+  <div><label for="f-departamento">Departamento</label>{sel("departamento")}</div>
+  <div><label for="f-municipio">Municipio</label>{sel("municipio")}</div>
+  <div><label for="f-entidad">Entidad</label>
+    <input id="f-entidad" data-campo="entidad" type="search" placeholder="Nombre de la entidad"></div>
+  <div><label for="f-anio">Año</label>
+    <input id="f-anio" data-campo="anio" type="number" min="2015" max="2030" placeholder="Todos"></div>
+  <div><label for="f-tipo">Tipo</label>
+    <input id="f-tipo" data-campo="tipo" type="search" placeholder="Todos"></div>
+  <div><label for="f-modalidad">Modalidad</label>
+    <input id="f-modalidad" data-campo="modalidad" type="search" placeholder="Todas"></div>
+  <div><label for="f-bandera">Bandera</label>{sel("bandera", "Cualquiera")}</div>
+  <div><label for="f-vmin">Valor mínimo (COP)</label>
     <input id="f-vmin" data-campo="vmin" type="number" min="0" step="1000000" placeholder="0"></div>
-  <div><label for="f-vmax">Valor maximo (COP)</label>
+  <div><label for="f-vmax">Valor máximo (COP)</label>
     <input id="f-vmax" data-campo="vmax" type="number" min="0" step="1000000" placeholder="sin tope"></div>
   <div class="acciones">
     <button type="button" id="limpiar">Limpiar</button>
@@ -531,21 +561,21 @@ def pagina_buscar(glos, facetas):
 <p id="resumen" class="resumen" aria-live="polite">Cargando…</p>
 <div class="tabla-scroll"><table class="table" id="resultados">
   <thead><tr>
-    <th data-orden="descripcion">Objeto</th>
-    <th data-orden="entidad">Entidad</th>
-    <th data-orden="municipio">Municipio</th>
-    <th class="num" data-orden="anio">Ano</th>
+    <th>Objeto</th>
+    <th>Entidad</th>
+    <th>Municipio</th>
+    <th class="num" data-orden="anio">Año</th>
     <th class="num" data-orden="valor">Valor</th>
-    <th class="num" data-orden="fuertes">Senales</th>
+    <th class="num" data-orden="fuertes">Señales</th>
     <th class="num" data-orden="score">Puntaje</th>
   </tr></thead><tbody></tbody>
 </table></div>
-<p><button type="button" id="mas" hidden>Ver mas</button></p>
+<p><button type="button" id="mas" hidden>Ver más</button></p>
 <p class="nota">El CSV que descarga es el mismo que ve, ya saneado: no incluye documentos
-   de particulares ni numeros de cuenta. <a href="/metodologia/#privacidad">Por que</a></p>
+   de particulares ni números de cuenta. <a href="/metodologia/#privacidad">Por qué</a></p>
 """
-    return pagina("Buscador", "Buscador de contratos de obra publica con senales de riesgo: "
-                  "filtros por departamento, municipio, entidad, ano, modalidad y bandera.",
+    return pagina("Buscador", "Buscador de contratos de obra pública con señales de riesgo: "
+                  "filtros por departamento, municipio, entidad, año, modalidad y bandera.",
                   cuerpo, "/buscar/", js='<script type="module" src="/static/buscar.js"></script>',
                   clase="pg-buscar")
 
@@ -566,11 +596,11 @@ def pagina_metodologia(glos, cifras, umbral):
             for b in sorted(por_grupo[g], key=lambda x: -x["peso"]))
         bloques.append(f'<h3>{h(g)}</h3><div class="tabla-scroll"><table class="table banderas"><thead><tr>'
                        f'<th>Bandera</th><th class="num">Peso</th>'
-                       f'<th>Que pregunta y en que se apoya</th></tr></thead><tbody>{filas}</tbody></table></div>')
+                       f'<th>Qué pregunta y en qué se apoya</th></tr></thead><tbody>{filas}</tbody></table></div>')
 
     fp = "".join(f"""<article class="caso"><h3>{h(t)}</h3>
-      <p><span class="etq">Que pasaba</span> {p}</p>
-      <p><span class="etq">Que se hizo</span> {q}</p></article>""" for t, p, q in C.FALSOS_POSITIVOS)
+      <p><span class="etq">Qué pasaba</span> {p}</p>
+      <p><span class="etq">Qué se hizo</span> {q}</p></article>""" for t, p, q in C.FALSOS_POSITIVOS)
     lim = "".join(f"<li><strong>{h(t)}</strong> {p}</li>" for t, p in C.LIMITACIONES)
     cob = "".join(f'<tr><td><code>{h(k)}</code></td><td class="num">{v}</td></tr>'
                   for k, v in [("dir_ejecucion", "100%"), ("doc_proveedor", "87,4%"),
@@ -579,78 +609,78 @@ def pagina_metodologia(glos, cifras, umbral):
 
     cuerpo = f"""
 <header class="cab">
-  <h1>Metodologia</h1>
-  <p class="bajada">Que mide Plomada, como lo mide, y sobre todo que <em>no</em> puede
-     afirmar. Esta pagina es parte del producto, no un anexo.</p>
+  <h1>Metodología</h1>
+  <p class="bajada">Qué mide Plomada, cómo lo mide, y sobre todo qué <em>no</em> puede
+     afirmar. Esta página es parte del producto, no un anexo.</p>
 </header>
 {C.INTRO_METODOLOGIA}
 
 <section class="caja"><h2>El universo analizado</h2>
 <dl class="cab-grid">
   {dato("Contratos en SECOP II", "sin dato", "<small>el API no publica el total de todo SECOP II, solo el universo de obra</small>")}
-  {dato("Universo de obra publica", f"<b class='grande'>{D.entero(cifras['n_universo'])}</b>",
-        "<small>el API no desglosa por tipo de contrato (Obra/Interventoria/Consultoria/APP/Concesion)</small>")}
+  {dato("Universo de obra pública", f"<b class='grande'>{D.entero(cifras['n_universo'])}</b>",
+        "<small>el API no desglosa por tipo de contrato (Obra/Interventoría/Consultoría/APP/Concesión)</small>")}
   {dato("Valor total", D.plata(cifras["valor_universo"]))}
-  {dato("Contratos atipicos", f"{D.entero(cifras['n_atipicos'])} <span class='tenue'>({D.pct(cifras['pct_atipicos'])})</span>",
+  {dato("Contratos atípicos", f"{D.entero(cifras['n_atipicos'])} <span class='tenue'>({D.pct(cifras['pct_atipicos'])})</span>",
         f"<small>{D.plata(cifras['valor_atipico'])}</small>")}
 </dl>
-<p class="nota">En Colombia un billon son 10<sup>12</sup> pesos. Todo el dinero de este
-   sitio se suma con <code>valor_plausible</code>, la version saneada del valor
-   publicado. <a href="#falsos">Por que</a></p>
+<p class="nota">En Colombia un billón son 10<sup>12</sup> pesos. Todo el dinero de este
+   sitio se suma con <code>valor_plausible</code>, la versión saneada del valor
+   publicado. <a href="#falsos">Por qué</a></p>
 </section>
 
 <section class="caja" id="banderas"><h2>Las {len(glos)} banderas</h2>
 <p class="nota">Nombres, pesos y glosas salen de <code>banderas_glosario.csv</code>.
-   No estan escritas en el codigo del sitio: si el pipeline agrega una bandera, aparece
-   aqui sola.</p>
+   No están escritas en el código del sitio: si el pipeline agrega una bandera, aparece
+   aquí sola.</p>
 {"".join(bloques)}
 </section>
 
-<section class="caja" id="puntaje"><h2>Como se calcula el puntaje</h2>
+<section class="caja" id="puntaje"><h2>Cómo se calcula el puntaje</h2>
 {C.PUNTAJE}
-<p class="nota">En el corte vigente, el contrato marcado con menos senales acumula
-   {D._num(umbral, 1)} puntos crudos y el conjunto de atipicos promedia
-   {D._num(cifras["score_medio"], 2)} de puntaje.</p>
+<p class="nota">En el corte vigente, el contrato marcado con menos señales acumula
+   {_cifra(umbral, 1)} puntos crudos y el conjunto de atípicos promedia
+   {_cifra(cifras["score_medio"], 2)} de puntaje.</p>
 </section>
 
-<section class="caja" id="tasa"><h2>Por que la tasa ajustada y no el porcentaje</h2>
+<section class="caja" id="tasa"><h2>Por qué la tasa ajustada y no el porcentaje</h2>
 <p>Ordenar municipios por porcentaje de contratos marcados premia a los municipios
-   pequenos. Con 4 contratos, dos marcados dan 50%: el mismo numero que un municipio con
-   200 contratos y 100 marcados, cuando la evidencia detras es incomparable.</p>
+   pequeños. Con 4 contratos, dos marcados dan 50%: el mismo número que un municipio con
+   200 contratos y 100 marcados, cuando la evidencia detrás es incomparable.</p>
 <p>La <strong>tasa ajustada</strong> contrae cada municipio hacia la tasa nacional en
-   proporcion a lo poco que se sabe de el, con un prior Beta estimado sobre el conjunto
+   proporción a lo poco que se sabe de él, con un prior Beta estimado sobre el conjunto
    de municipios. Un municipio con muchos contratos casi no se mueve; uno con cuatro se
-   mueve mucho. Los parametros <code>alpha</code> y <code>beta</code> viajan en el CSV de
-   rankings para que el calculo se pueda reproducir.</p>
+   mueve mucho. Los parámetros <code>alpha</code> y <code>beta</code> viajan en el CSV de
+   rankings para que el cálculo se pueda reproducir.</p>
 <p>El sitio muestra siempre las dos tasas, la cruda al lado de la ajustada. Esconder la
-   correccion no genera confianza; ensenarla si.</p>
+   corrección no genera confianza; enseñarla sí.</p>
 </section>
 
 <section class="caja" id="falsos"><h2>Falsos positivos conocidos</h2>
-<p class="nota">Casos reales en que una bandera se encendia sin que hubiera nada que
-   revisar. Se listan porque un lector tiene derecho a saber donde falla la herramienta.</p>
+<p class="nota">Casos reales en que una bandera se encendía sin que hubiera nada que
+   revisar. Se listan porque un lector tiene derecho a saber dónde falla la herramienta.</p>
 {fp}
 </section>
 
 <section class="caja" id="limitaciones"><h2>Limitaciones</h2>
 <ul class="lista-lim">{lim}</ul>
 <h3>Cobertura por campo</h3>
-<p class="nota">El analisis de red solo puede calcularse sobre los contratos que traen el
+<p class="nota">El análisis de red solo puede calcularse sobre los contratos que traen el
    identificador. Es un piso, no un censo.</p>
 <div class="tabla-scroll"><table class="table"><thead><tr><th>Campo</th><th class="num">Cobertura</th></tr></thead>
   <tbody>{cob}</tbody></table></div>
 </section>
 
-<section class="caja" id="privacidad"><h2>Que no se publica</h2>
+<section class="caja" id="privacidad"><h2>Qué no se publica</h2>
 {C.PRIVACIDAD}
 </section>
 
-<section class="caja" id="fuentes"><h2>Datos crudos y codigo</h2>
+<section class="caja" id="fuentes"><h2>Datos crudos y código</h2>
 {C.FUENTES}
 </section>
 """
-    return pagina("Metodologia", "Las 22 banderas con su peso y su glosa, como se calcula "
-                  "el puntaje, los falsos positivos conocidos y los limites de cobertura.",
+    return pagina("Metodología", "Las 22 banderas con su peso y su glosa, cómo se calcula "
+                  "el puntaje, los falsos positivos conocidos y los límites de cobertura.",
                   cuerpo, "/metodologia/", clase="pg-texto")
 
 
@@ -667,7 +697,7 @@ def portada(muns, cifras, top_contratos):
         for i, m in enumerate(top, 1))
     tarjetas = "".join(
         f'<a class="card elev-sm" href="{url_contrato(c)}">'
-        f'<span class="card-kicker">{c["n_banderas_fuertes"]} senales fuertes</span>'
+        f'<span class="card-kicker">{c["n_banderas_fuertes"]} señales fuertes</span>'
         f'<b class="card-title">{h((D.titulo(c.get("descripcion")) or "Objeto no publicado")[:80])}</b>'
         f'<span class="card-meta">{h(D.titulo(c.get("entidad")))[:60]} &middot; '
         f'{h(D.ciudad_visible(c.get("ciudad")) or D.titulo(c.get("departamento")))} &middot; '
@@ -675,13 +705,13 @@ def portada(muns, cifras, top_contratos):
 
     cuerpo = f"""
 <header class="hero">
-  <p class="kicker">Obra publica &middot; SECOP II &middot; datos abiertos</p>
-  <h1>La plomada revela lo que esta torcido</h1>
-  <p class="lema">Esta sigue <strong>personas</strong>, no empresas, en la contratacion de
-     obra publica del Estado colombiano.</p>
-  <p class="bajada">Una empresa se disuelve y manana aparece otra con otro NIT. Una cedula no.
-     Por eso Plomada mira las cuatro personas que firman cada contrato: quien autorizo el
-     gasto, quien debia supervisar, quien representa a la empresa y quien autorizo el pago.</p>
+  <p class="kicker">Obra pública &middot; SECOP II &middot; datos abiertos</p>
+  <h1>La plomada revela lo que está torcido</h1>
+  <p class="lema">Esta sigue <strong>personas</strong>, no empresas, en la contratación de
+     obra pública del Estado colombiano.</p>
+  <p class="bajada">Una empresa se disuelve y mañana aparece otra con otro NIT. Una cédula no.
+     Por eso Plomada mira las cuatro personas que firman cada contrato: quién autorizó el
+     gasto, quién debía supervisar, quién representa a la empresa y quién autorizó el pago.</p>
   <p class="cta"><a class="btn btn-primary" href="/buscar/">Buscar un contrato</a>
      <a class="btn btn-secondary" href="/mapa/">Ver el mapa</a></p>
 </header>
@@ -691,39 +721,39 @@ def portada(muns, cifras, top_contratos):
       '<a href="/tablero/">tablero</a>.</p>')}
 
 <dl class="cab-grid cifras">
-  {dato("Universo de obra publica", f"<b class='grande'>{D.entero(cifras['n_universo'])}</b>",
+  {dato("Universo de obra pública", f"<b class='grande'>{D.entero(cifras['n_universo'])}</b>",
         f"<small>contratos, {D.plata(cifras['valor_universo'])}</small>")}
-  {dato("Contratos atipicos", f"<b class='grande'>{D.entero(cifras['n_atipicos'])}</b>",
+  {dato("Contratos atípicos", f"<b class='grande'>{D.entero(cifras['n_atipicos'])}</b>",
         f"<small>{D.pct(cifras['pct_atipicos'])} &middot; {D.plata(cifras['valor_atipico'])}</small>")}
   {dato("Municipios en el ranking", D.entero(cifras["n_municipios"]))}
-  {dato("Administraciones", D.entero(cifras["n_admin"]), "<small>entidad x periodo de gobierno</small>")}
+  {dato("Administraciones", D.entero(cifras["n_admin"]), "<small>entidad x período de gobierno</small>")}
 </dl>
 <section class="caja principal">
   <h2>Municipios con mayor tasa ajustada</h2>
   <p class="nota">Ordenado por tasa ajustada, nunca por la cruda. Las dos se muestran
-     juntas. <a href="/metodologia/#tasa">Por que</a></p>
+     juntas. <a href="/metodologia/#tasa">Por qué</a></p>
   <div class="tabla-scroll"><table class="table"><thead><tr><th class="num">#</th><th>Municipio</th>
     <th class="num">Tasa ajustada</th><th class="num">Tasa cruda</th>
     <th class="num">Contratos</th></tr></thead><tbody>{filas}</tbody></table></div>
   <p><a href="/mapa/">Ver los {D.entero(cifras['n_municipios'])} municipios en el mapa &rarr;</a></p>
 </section>
-<section class="caja"><h2>Contratos con mas senales fuertes</h2>
+<section class="caja"><h2>Contratos con más señales fuertes</h2>
   <div class="tarjetas">{tarjetas}</div>
 </section>
 
 <div class="cierre">
   <div class="cierre-inner">
-    <h2>Un indicio no es una acusacion.</h2>
-    <p>Todo lo que aparece en Plomada es un indicio calculado sobre datos publicos del
-       SECOP II para priorizar revision periodistica y control social. No afirma que
+    <h2>Un indicio no es una acusación.</h2>
+    <p>Todo lo que aparece en Plomada es un indicio calculado sobre datos públicos del
+       SECOP II para priorizar revisión periodística y control social. No afirma que
        ninguna persona o entidad haya obrado de forma irregular.
-       <a href="/metodologia/">Como se calcula</a> &middot; <a href="/datos/">Descargar los datos</a></p>
+       <a href="/metodologia/">Cómo se calcula</a> &middot; <a href="/datos/">Descargar los datos</a></p>
   </div>
 </div>
 """
-    return pagina(LEMA, "Plomada detecta indicios de irregularidad en la contratacion de obra "
-                  "publica en Colombia siguiendo a las personas que firman, no a las empresas. "
-                  "Datos publicos del SECOP II.", cuerpo, "/", clase="pg-portada",
+    return pagina(LEMA, "Plomada detecta indicios de irregularidad en la contratación de obra "
+                  "pública en Colombia siguiendo a las personas que firman, no a las empresas. "
+                  "Datos públicos del SECOP II.", cuerpo, "/", clase="pg-portada",
                   js=ISLAS_JS)
 
 
@@ -739,14 +769,14 @@ def pagina_tablero():
     cada modulo.
     """
     cuerpo = f"""
-{aviso_fijo("Cada cifra de este tablero mide cuanta plata publica paso por "
-            "contratos con indicios verificables. Ninguna mide cuanta plata se "
-            "robaron: eso requiere una investigacion judicial que este proyecto "
+{aviso_fijo("Cada cifra de este tablero mide cuánta plata pública pasó por "
+            "contratos con indicios verificables. Ninguna mide cuánta plata se "
+            "robaron: eso requiere una investigación judicial que este proyecto "
             "no hace ni reemplaza.")}
 
 <header class="cab">
   <h1>Tablero</h1>
-  <p class="bajada">Vision agregada de los indicios: cuanta plata publica paso por
+  <p class="bajada">Visión agregada de los indicios: cuánta plata pública pasó por
      contratos marcados, por indicio, por territorio y por red de proveedores.</p>
 </header>
 
@@ -754,15 +784,15 @@ def pagina_tablero():
   Corra <code>pipeline/export_web.py</code> y <code>plomada/build.py</code> otra vez.</p>
 
 <section class="caja hero" id="t-hero">
-  <p class="tipo">Obra publica adjudicada sin competencia real (un solo oferente)</p>
+  <p class="tipo">Obra pública adjudicada sin competencia real (un solo oferente)</p>
   <p class="valor grande" id="t-hero-valor">—</p>
   <p class="nota" id="t-hero-nota">—</p>
 </section>
 <dl class="cab-grid cifras" id="t-tiles"></dl>
 
 <section class="caja principal">
-  <h2>Donde esta la plata en riesgo</h2>
-  <p class="nota">Un contrato puede presentar varios indicios a la vez, asi que
+  <h2>Dónde está la plata en riesgo</h2>
+  <p class="nota">Un contrato puede presentar varios indicios a la vez, así que
      <b>las barras no se suman entre si</b>: cada una se compara contra el total
      del universo, no contra las otras.</p>
   <div id="t-indicios"></div>
@@ -774,35 +804,35 @@ def pagina_tablero():
   <form class="filtros" id="t-filtros-territorio">
     <div><label for="t-f-dep">Departamento</label>
       <select id="t-f-dep"><option value="">Todos</option></select></div>
-    <div><label for="t-f-min">Minimo de contratos</label>
+    <div><label for="t-f-min">Mínimo de contratos</label>
       <select id="t-f-min"><option value="20">20</option><option value="40">40</option>
         <option value="80">80</option></select></div>
   </form>
 </section>
 
 <section class="caja">
-  <h2>Municipios: por que la tasa cruda enganha</h2>
+  <h2>Municipios: por qué la tasa cruda engaña</h2>
   <p class="nota">Un municipio con 4 contratos y 2 marcados da 50% y encabeza cualquier
      lista sin significar nada. La tasa ajustada corrige eso con encogimiento bayesiano
-     empirico. Se muestran <b>las dos</b>, siempre.</p>
+     empírico. Se muestran <b>las dos</b>, siempre.</p>
   <div id="t-leyenda-municipios"></div>
   <div id="t-municipios"></div>
   <details class="tbl"><summary>Ver tabla</summary><div id="t-tbl-municipios"></div></details>
 </section>
 
 <section class="caja">
-  <h2>Departamentos: tamano del contrato vs. falta de competencia</h2>
-  <p class="nota">Eje horizontal en escala logaritmica porque el gasto va de miles de
-     millones a cientos de billones. El tamano del punto es el numero de contratos.</p>
+  <h2>Departamentos: tamaño del contrato vs. falta de competencia</h2>
+  <p class="nota">Eje horizontal en escala logarítmica porque el gasto va de miles de
+     millones a cientos de billones. El tamaño del punto es el número de contratos.</p>
   <div id="t-departamentos"></div>
   <details class="tbl"><summary>Ver tabla</summary><div id="t-tbl-departamentos"></div></details>
 </section>
 
 <section class="caja">
   <h2>Red de proveedores</h2>
-  <p class="nota">Empresas unidas por una llave que deberia ser unica: la misma cuenta
+  <p class="nota">Empresas unidas por una llave que debería ser única: la misma cuenta
      bancaria, el mismo representante legal o el mismo domicilio. Cuando un mismo grupo
-     concentra la obra <b>y</b> su interventoria, el que vigila y el que construye son
+     concentra la obra <b>y</b> su interventoría, el que vigila y el que construye son
      la misma red.</p>
   <form class="filtros" id="t-filtros-red">
     <div><label for="t-f-cl">Grupo</label><select id="t-f-cl"></select></div>
@@ -818,8 +848,8 @@ def pagina_tablero():
   <ul class="lista-lim" id="t-limitaciones"></ul>
 </section>
 """
-    return pagina("Tablero", "Vision agregada de los indicios de riesgo en la contratacion "
-                  "de obra publica: por indicio, por territorio y por red de proveedores.",
+    return pagina("Tablero", "Visión agregada de los indicios de riesgo en la contratación "
+                  "de obra pública: por indicio, por territorio y por red de proveedores.",
                   cuerpo, "/tablero/", js='<script type="module" src="/static/tablero.js"></script>',
                   clase="pg-tablero")
 
@@ -830,18 +860,127 @@ def pagina_datos(archivos):
                  for n, desc, k in archivos)
     cuerpo = f"""
 <header class="cab"><h1>Datos</h1>
-<p class="bajada">Si el proyecto es publico, la gente tiene que poder llevarse los datos.
+<p class="bajada">Si el proyecto es público, la gente tiene que poder llevarse los datos.
    Estos archivos son los que alimentan el sitio, ya saneados de identificadores
-   personales. <a href="/metodologia/#privacidad">Que se quito y por que</a></p></header>
+   personales. <a href="/metodologia/#privacidad">Qué se quitó y por qué</a></p></header>
 <section class="caja"><ul class="descargas">{li}</ul>
 <p class="nota">Fuente primaria: SECOP II, Colombia Compra Eficiente. Fronteras: DANE.
-   Estos CSV son derivados; para reproducir el analisis desde cero, empiece por la fuente.</p>
+   Estos CSV son derivados; para reproducir el análisis desde cero, empiece por la fuente.</p>
 </section>"""
     return pagina("Datos", "Descarga de los datos derivados de Plomada en CSV y GeoJSON.",
                   cuerpo, "/datos/", clase="pg-texto")
 
 
 # -------------------------------------------------------------------------- main
+_API = None
+
+
+def api():
+    """(modulo api_tablero, cliente) — importado una sola vez.
+
+    pipeline/ tiene su PROPIO build.py (el del warehouse): dejar su ruta en
+    sys.path despues del import haria que el "import build" de
+    test_privacy.py resuelva ese modulo por error en vez de este archivo. Se
+    agrega y se quita al toque.
+    """
+    global _API
+    if _API is None:
+        sys.path.insert(0, str(PIPELINE))
+        try:
+            import api_tablero
+            from api_cliente import ApiCliente
+        finally:
+            sys.path.remove(str(PIPELINE))
+        _API = (api_tablero, ApiCliente())
+    return _API
+
+
+def datos_del_build(api_tablero, cli):
+    """Lo que el build necesita del API para las paginas que sigue rindiendo
+    en servidor (portada, mapa, metodologia). Devuelve
+    (glosario, municipios, departamentos, top_contratos, ids).
+
+    `ids` sale de recorrer los 12.678 atipicos (64 llamadas de 200, ~25 s).
+    Ese mismo recorrido deja el score medio y el umbral que la metodologia
+    necesita, asi que no cuesta ninguna llamada extra.
+    """
+    def seguro(nombre, fn, vacio):
+        """Cada pieza degrada por separado, en vez de reventar en la primera.
+
+        Que el build TERMINE no significa que se publique. Si el API estaba
+        caido, la portada queda en "sin dato", el sitemap sin fichas y la
+        metodologia sin banderas -- y test_privacy.py lo detecta y borra
+        site/. Eso es deliberado: en un despliegue estatico, un build que
+        falla deja en pie el despliegue anterior, que es preferible a
+        reemplazarlo por un sitio vacio. La degradacion a "sin dato" es para
+        el visitante cuando el API se cae DESPUES de publicar, no para
+        publicar un cascaron.
+        """
+        try:
+            return fn(cli)
+        except Exception as e:                      # noqa: BLE001 - se reporta y sigue
+            print(f"aviso: el API no pudo dar {nombre} ({e}); esa parte queda sin dato. "
+                  "Si esto se repite en varias piezas, el build terminara pero "
+                  "test_privacy.py no dejara publicar.", file=sys.stderr)
+            return vacio
+
+    return (seguro("el glosario de banderas", api_tablero.banderas, {}),
+            seguro("los municipios", api_tablero.municipios_todos, []),
+            seguro("los departamentos", api_tablero.departamentos, []),
+            seguro("los contratos destacados", api_tablero.top_contratos, []),
+            seguro("el listado de atipicos", api_tablero.todos_los_atipicos, []))
+
+
+def agregados_de(filas):
+    """score medio y umbral (el minimo de puntos crudos) sobre los atipicos."""
+    if not filas:
+        return {"score_medio": None, "umbral": None}
+    return {
+        "score_medio": sum(c.get("score") or 0 for c in filas) / len(filas),
+        "umbral": min((c.get("puntos_crudos") or 0) for c in filas),
+    }
+
+
+def shell_ficha():
+    """Una sola pagina para las 12.678 fichas. El cuerpo lo pinta
+    static/ficha.js con GET /v1/contratos/{id}, derivando el id del slug.
+
+    El aviso "Indicio, no acusacion" se queda AQUI, en el HTML estatico, no
+    en el JS: es la salvedad que no puede depender de que una llamada de red
+    funcione. Si el API no responde, el visitante igual la ve.
+
+    Leaflet entra en TODAS las fichas, no solo en las que tienen mapa: el
+    shell es uno solo para 12.678 contratos y aqui todavia no se sabe cual
+    se va a pedir. Eso no dispara ninguna peticion a Esri -- el bundle es
+    local (static/vendor/leaflet/) y las tiles siguen siendo click-to-load
+    dentro de mapa-satelital.js.
+    """
+    cuerpo = f"""
+{aviso_fijo("Este contrato está marcado por patrones detectados en datos públicos. "
+            "No afirma que alguien haya obrado de forma irregular.")}
+<p id="ficha-estado" class="nota" aria-live="polite">Cargando el contrato…</p>
+<div id="ficha" hidden></div>
+"""
+    return pagina("Contrato", "Ficha de un contrato de obra pública con las señales de riesgo "
+                  "detectadas sobre datos del SECOP II. Indicio para revisión, no acusación.",
+                  cuerpo, "/contrato/", head=LEAFLET_CSS,
+                  js=LEAFLET_JS + '<script type="module" src="/static/ficha.js"></script>',
+                  clase="pg-ficha")
+
+
+def shell_municipio():
+    """Idem para los 721 municipios: static/municipio.js lo hidrata."""
+    cuerpo = """
+<p id="mun-estado" class="nota" aria-live="polite">Cargando el municipio…</p>
+<div id="municipio" hidden></div>
+"""
+    return pagina("Municipio", "Contratos de obra pública marcados en un municipio, "
+                  "ordenados por señales de riesgo. Indicio para revisión, no acusación.",
+                  cuerpo, "/municipio/",
+                  js='<script type="module" src="/static/municipio.js"></script>',
+                  clase="pg-municipio")
+
+
 def cifras_universo(datos_api):
     """Las cifras del universo que antes estaban escritas a mano en
     pagina_metodologia() y portada() (5.975.627, $209 billones, 11.121,
@@ -890,15 +1029,7 @@ def escribir_datos_tablero():
     faltaba out_web/, solo que ahora la causa es "el API esta vacio", no
     "no se corrio el pipeline local".
     """
-    # pipeline/ tiene su PROPIO build.py (el del warehouse) -- dejar su ruta
-    # en sys.path despues de este import haria que el "import build" de
-    # test_privacy.py mas adelante resuelva ese modulo por error en vez de
-    # este mismo archivo. Se agrega y se quita al toque.
-    sys.path.insert(0, str(PIPELINE))
-    try:
-        import api_tablero
-    finally:
-        sys.path.remove(str(PIPELINE))
+    api_tablero, _ = api()
 
     destino = SITE / "datos"
     destino.mkdir(parents=True, exist_ok=True)
@@ -926,33 +1057,16 @@ def main():
     shutil.copytree(RAIZ / "static", SITE / "static")
     datos_api = escribir_datos_tablero()
 
-    glos = D.glosario()
-    geocache = D.cargar_geocache()
-    contratos = list(D.contratos())
-    muns, deps, admins = D.municipios(), D.departamentos(), D.administraciones()
-    if not contratos:
-        sys.exit(f"{D.OUT}/ vacio. Corra: python3 gen_synthetic.py (o revise $PLOMADA_OUT)")
+    api_tablero, cli = api()
+    glos, muns, deps, tops, filas = datos_del_build(api_tablero, cli)
+    ids = [c["id_contrato"] for c in filas]
 
-    por_mun = defaultdict(list)
-    for c in contratos:
-        por_mun[(c["departamento"], c["ciudad"])].append(c)
-    por_prov_mun = defaultdict(list)
-    for c in contratos:
-        por_prov_mun[(c["departamento"], c["ciudad"], c.get("proveedor"))].append(c)
+    # 7.1 — UNA ficha, no 12.678: el contenido lo trae static/ficha.js del
+    # API, derivando el id del propio slug de la URL.
+    escribir("contrato/index.html", shell_ficha())
 
-    # 7.1
-    for c in contratos:
-        hermanos = [x for x in por_prov_mun[(c["departamento"], c["ciudad"], c.get("proveedor"))]
-                    if x["id_contrato"] != c["id_contrato"]]
-        escribir(url_contrato(c).strip("/") + "/index.html", ficha_contrato(c, glos, hermanos, geocache))
-
-    # municipios
-    orden_mun = sorted(muns, key=lambda m: -m["tasa_ajustada"])
-    puesto = {(m["departamento"], m["ciudad"]): i for i, m in enumerate(orden_mun, 1)}
-    for m in muns:
-        k = (m["departamento"], m["ciudad"])
-        escribir(url_municipio(*k).strip("/") + "/index.html",
-                 pagina_municipio(m, por_mun.get(k, []), puesto[k], len(muns)))
+    # municipios: idem, un solo shell que static/municipio.js hidrata
+    escribir("municipio/index.html", shell_municipio())
 
     # tablero (B2)
     escribir("tablero/index.html", pagina_tablero())
@@ -960,60 +1074,53 @@ def main():
     # 7.2
     escribir("mapa/index.html", pagina_mapa(deps, muns))
 
-    # 7.3 — indice slim, ya saneado
-    indice = []
-    for c in contratos:
-        p = D.publicar(c)
-        indice.append({
-            "u": url_contrato(c), "d": D.titulo(p.get("descripcion")) or "Objeto no publicado",
-            "e": D.titulo(p.get("entidad")), "dep": p.get("departamento"), "mun": p.get("ciudad"),
-            "munv": p.get("_ciudad") or "Sin municipio definido", "pv": D.titulo(p.get("proveedor")),
-            "a": p.get("anio"), "per": p.get("periodo_gobierno"), "t": p.get("tipo_contrato"),
-            "m": p.get("modalidad"), "v": p.get("valor_plausible") or 0,
-            "s": p.get("score") or 0, "nf": p.get("n_banderas_fuertes") or 0,
-            "f": [k for k, v in p.items() if k.startswith("f_") and v],
-            "id": p.get("id_contrato"), "url": p.get("_url") or "",
-        })
-    escribir_json("datos/contratos.json", indice)
-    escribir_json("datos/banderas.json", {k: {kk: vv for kk, vv in v.items()} for k, v in glos.items()})
-    facetas = {
-        "departamento": sorted({c["departamento"] for c in contratos}),
-        "municipio": sorted({c["ciudad"] for c in contratos}),
-        "entidad": sorted({c["entidad"] for c in contratos}),
-        "anio": sorted({c["anio"] for c in contratos if c.get("anio")}),
-        "periodo": sorted({c["periodo_gobierno"] for c in contratos if c.get("periodo_gobierno")}),
-        "tipo": sorted({c["tipo_contrato"] for c in contratos}),
-        "modalidad": sorted({c["modalidad"] for c in contratos}),
-    }
-    escribir("buscar/index.html", pagina_buscar(glos, facetas))
+    # 7.3 — el indice de 8,5 MB desaparecio: buscar.js consulta el API.
+    escribir_json("datos/banderas.json", glos)
+
+    # Geocodificacion para el mapa satelital de la ficha. El API no devuelve
+    # coordenadas, asi que ficha.js las busca aqui con la misma clave que usa
+    # data.coords_contrato(). Si geo/geocache.json no existe, se publica el
+    # cache vacio y la ficha muestra "sin geocodificar" en vez de fallar.
+    escribir_json("datos/geocache.json", D.cargar_geocache())
+    escribir("buscar/index.html", pagina_buscar())
 
     # 7.4
-    umbral = min((c.get("puntos_crudos") or 0) for c in contratos)
-    cifras = {"n_municipios": len(muns), "n_admin": len(admins),
-              "score_medio": sum(c.get("score") or 0 for c in contratos) / len(contratos)}
+    # n_admin (entidad x periodo de gobierno) no es derivable del API:
+    # ContratoResumen no trae periodo_gobierno. Queda en None y D.entero()
+    # imprime "sin dato" -- antes que inventarlo.
+    cifras = {"n_municipios": len(muns), "n_admin": None}
+    cifras.update(agregados_de(filas))
     cifras.update(cifras_universo(datos_api))
-    escribir("metodologia/index.html", pagina_metodologia(glos, cifras, umbral))
+    escribir("metodologia/index.html", pagina_metodologia(glos, cifras, cifras["umbral"]))
 
     # portada
-    top_contratos = sorted(contratos, key=lambda c: (-(c.get("n_banderas_fuertes") or 0),
-                                                     -(c.get("score") or 0)))[:6]
-    escribir("index.html", portada(muns, cifras, top_contratos))
+    escribir("index.html", portada(muns, cifras, tops))
 
-    # descargas saneadas
-    archivos = exportar_csvs(contratos, muns, deps, admins, glos)
-    escribir("datos/index.html", pagina_datos(archivos))
+    # descargas: los CSV completos ya no se generan aqui. El API los sirve,
+    # pero `formato=csv` respeta `limite<=200`, asi que no hay descarga masiva
+    # de una sola llamada: el buscador arma el CSV paginando (buscar.js).
+    escribir("datos/index.html", pagina_datos([]))
 
-    # sitemap + robots
+    # sitemap + robots. Las fichas se hidratan en el navegador, pero SIGUEN
+    # teniendo URL propia y entrando al sitemap: es lo que las mantiene
+    # compartibles y rastreables (restriccion 2.3 del plan).
     urls = ["/", "/tablero/", "/mapa/", "/buscar/", "/metodologia/", "/datos/"] + \
-           [url_contrato(c) for c in contratos] + \
+           [f"/contrato/{D.slug(i)}/" for i in ids] + \
            [url_municipio(m["departamento"], m["ciudad"]) for m in muns]
     escribir("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n'
              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
              + "".join(f"<url><loc>{h(u)}</loc></url>" for u in urls) + "</urlset>")
     escribir("robots.txt", "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n")
 
-    print(f"site/: {len(contratos)} fichas, {len(muns)} municipios, {len(glos)} banderas, "
-          f"{len(urls)} URLs.")
+    # Regla de reescritura para el host estatico: sin esto, /contrato/<slug>/
+    # devuelve 404 porque no existe un archivo ahi. Formato _redirects, que
+    # entienden Netlify y Cloudflare Pages. Si el host es otro, hay que
+    # traducirla (Vercel: rewrites en vercel.json).
+    escribir("_redirects", "/contrato/*   /contrato/index.html   200\n"
+                           "/municipio/*  /municipio/index.html  200\n")
+
+    print(f"site/: shells dinamicos, {len(ids)} fichas en el sitemap, "
+          f"{len(muns)} municipios, {len(glos)} banderas, {len(urls)} URLs.")
 
     # La prueba de privacidad tumba el build. Si algo prohibido llego a un archivo,
     # no queda nada que alguien pueda publicar por error.

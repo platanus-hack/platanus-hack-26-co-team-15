@@ -526,18 +526,36 @@ main#principal { flex: 1; }
 .nav::-webkit-scrollbar { display: none; }
 .nav a { white-space: nowrap; }
 
-/* ─── contenedor de pagina ──────────────────────────────────────────── */
+/* ─── contenedor de pagina ──────────────────────────────────────────────
+   El hueco entre secciones mayores se declara en --pl-gap, no directo en
+   `gap`, porque hay hijos de main que NO son secciones mayores (las migas,
+   el aviso fijo) y necesitan restarlo. Sin la variable, la unica forma de
+   apretarlos seria un numero magico que se desincroniza del `gap` real.
+
+   La separacion visible entre dos secciones es --pl-gap MAS el padding-top
+   de .caja (que ademas dibuja la regla de 2px). Por eso ninguno de los dos
+   lleva el escalon grande: 48 + 32 = 80px en escritorio ya es una pausa
+   editorial larga. Cuando ambos llevaban el escalon mayor daba 144px, casi
+   una pantalla de movil en blanco entre un titulo y el siguiente. */
 main#principal {
+  --pl-gap: var(--space-8);
   max-width: 1100px; margin-inline: auto; width: 100%;
-  padding-inline: var(--space-4); padding-block: var(--pl-space-16) var(--pl-space-24);
-  display: flex; flex-direction: column; gap: var(--pl-space-16);
+  padding-inline: var(--space-4); padding-block: var(--pl-space-12);
+  display: flex; flex-direction: column; gap: var(--pl-gap);
 }
 @media (min-width: 768px) {
-  main#principal { padding-inline: var(--space-8); gap: var(--pl-space-24); }
+  main#principal { padding-inline: var(--space-8); --pl-gap: var(--pl-space-12); }
 }
+/* La banda de cierre sangra a todo el ancho y es lo ultimo de la portada:
+   si main conserva su padding inferior, queda una franja de fondo entre el
+   rojo y la regla del pie que parece un error de maquetacion. Va pegada. */
+main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
 
-/* ─── migas ────────────────────────────────────────────────────────── */
+/* ─── migas ────────────────────────────────────────────────────────────
+   No son una seccion mayor: van pegadas al aviso de arriba y al titulo de
+   abajo, no separadas por la pausa entre secciones. */
 .migas {
+  margin-block: calc(var(--space-4) - var(--pl-gap));
   font-size: var(--pl-text-sm);
   color: color-mix(in srgb, var(--color-text) 60%, transparent);
   display: flex; flex-wrap: wrap; gap: var(--space-1);
@@ -572,11 +590,23 @@ main#principal {
 
 /* ─── caja: bloque de seccion mayor, separado por una regla de 2px ────── */
 .caja {
-  padding-top: var(--pl-space-12);
+  padding-top: var(--space-8);
   border-top: var(--pl-regla) solid var(--color-divider);
   display: flex; flex-direction: column; gap: var(--space-4);
 }
 .caja:first-child { border-top: 0; padding-top: 0; }
+/* La franja de cifras ya cierra con su propia regla de 2px. Si la seccion
+   que sigue dibuja la suya, quedan dos reglas paralelas separadas por el
+   hueco entre bloques y se lee como un error, no como una pausa. */
+.cab-grid.cifras + .caja { border-top: 0; }
+/* Cuando .dos-col ya es de dos columnas las cajas van lado a lado, no una
+   debajo de otra: la regla horizontal sobra, y ademas solo le tocaba a la
+   segunda (la primera es :first-child), que quedaba subrayada y arrancando
+   mas abajo que su vecina. Apiladas en movil la regla si separa, y ahi se
+   conserva. */
+@media (min-width: 768px) {
+  .dos-col > .caja { border-top: 0; padding-top: 0; }
+}
 .caja h2 { font-size: var(--pl-text-2xl); }
 .caja h3 { font-size: var(--pl-text-xl); margin-top: var(--space-4); }
 .caja.principal { gap: var(--space-3); }
@@ -596,6 +626,15 @@ main#principal {
 
 /* ─── numeros tabulares en toda celda/valor numerico ───────────────────── */
 .table .num, .cifras, .valor, .score-num, .grande { font-variant-numeric: tabular-nums; }
+
+/* Las celdas de nombre llevan <a>Municipio</a><small>Departamento</small>.
+   Sin esta regla el <small> hereda el display inline y sale pegado al
+   enlace ("El BagreAntioquia"): es la linea secundaria de la celda, no
+   parte del enlace. */
+.table td small {
+  display: block; font-size: var(--pl-text-xs); font-weight: 400;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
 
 /* ─── franja de cifras (.cab-grid, .cifras, .dato) ─────────────────────
    Usada en portada, ficha, municipio, metodologia y tablero: 4 celdas
@@ -670,7 +709,7 @@ main#principal {
 .cierre {
   width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
   background: var(--color-accent); color: var(--color-bg);
-  padding-block: var(--pl-space-16);
+  padding-block: var(--pl-space-12);
 }
 .cierre-inner {
   max-width: 1100px; margin-inline: auto; padding-inline: var(--space-4);
@@ -701,7 +740,7 @@ main#principal {
 [id^="t-tbl-"] { overflow-x: auto; }
 
 /* ─── ficha de contrato ────────────────────────────────────────────── */
-.ficha { display: flex; flex-direction: column; gap: var(--pl-space-12); }
+.ficha { display: flex; flex-direction: column; gap: var(--space-8); }
 .ficha-cab { display: flex; flex-direction: column; gap: var(--space-2); }
 .ficha-cab .tipo {
   font-size: var(--pl-text-xs); letter-spacing: 0.08em; text-transform: uppercase;
@@ -772,7 +811,7 @@ main#principal {
 }
 
 /* ─── dos columnas (dinero / personas) ─────────────────────────────── */
-.dos-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--pl-space-12); }
+.dos-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-8) var(--space-6); }
 @media (min-width: 768px) { .dos-col { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .fuentes { font-size: var(--pl-text-sm); margin: 0; }
 
@@ -785,6 +824,11 @@ main#principal {
    se pide (200 en la pestana de red) pero nunca se ve. Bug real, encontrado
    probando la ficha con el inspector abierto. */
 #mapa-satelital { min-height: 320px; }
+/* ...pero mientras SIGUE siendo el placeholder no: el aviso y el boton
+   ocupan ~120px y los otros 200px quedaban como un recuadro vacio debajo
+   del boton. Un id+clase gana al id solo, asi que el placeholder se ajusta
+   a su contenido y los 320px vuelven solos en cuanto el JS quita la clase. */
+#mapa-satelital.mapa-placeholder { min-height: 0; }
 .mapa-placeholder {
   border: 1px solid var(--color-divider); padding: var(--space-4);
   display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start;
@@ -874,7 +918,7 @@ main#principal {
 .pie {
   border-top: var(--pl-regla) solid var(--color-divider);
   max-width: 1100px; margin-inline: auto; width: 100%;
-  padding: var(--pl-space-12) var(--space-4) var(--pl-space-16);
+  padding: var(--space-8) var(--space-4) var(--pl-space-12);
   display: flex; flex-direction: column; gap: var(--space-3);
 }
 @media (min-width: 768px) { .pie { padding-inline: var(--space-8); } }

@@ -56,7 +56,7 @@ export function dibujar(contenedorSvg, contenedorTabla, datos) {
       ["Sin competencia", plata(d.sin_competencia) + " (" + pct(p) + ")"],
       ["En riesgo", plata(d.en_riesgo)],
       ["Regalias", plata(d.regalias)],
-      ["Tasa atipicos ajustada", d.tasa_ajustada == null ? "sin dato" : pct(d.tasa_ajustada)],
+      ["Tasa atípicos ajustada", d.tasa_ajustada == null ? "sin dato" : pct(d.tasa_ajustada)],
     ]);
     s.appendChild(hit);
   });

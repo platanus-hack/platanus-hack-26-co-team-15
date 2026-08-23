@@ -29,8 +29,8 @@ onMounted(async () => {
     valor.value = plata(t.valor)
     const share = meta && meta.valor_total ? pct(t.valor / meta.valor_total) : null
     nota.value =
-      (share ? `${share} del universo de obra publica analizado. ` : '') +
-      'Indicio, no acusacion.'
+      (share ? `${share} del universo de obra pública analizado. ` : '') +
+      'Indicio, no acusación.'
     estado.value = 'listo'
   } catch (e) {
     console.error('cifra-lider:', e)
@@ -41,7 +41,7 @@ onMounted(async () => {
 
 <template>
   <section v-if="estado === 'listo'" class="cifra-lider">
-    <p class="tipo">Obra publica adjudicada sin competencia real (un solo oferente)</p>
+    <p class="tipo">Obra pública adjudicada sin competencia real (un solo oferente)</p>
     <p class="valor">{{ valor }}</p>
     <p class="nota">{{ nota }}</p>
   </section>

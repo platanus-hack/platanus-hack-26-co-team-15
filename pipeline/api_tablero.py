@@ -79,6 +79,68 @@ def _red(api):
     return red
 
 
+def banderas(api):
+    """Glosario de banderas desde /v1/banderas (reemplaza D.glosario(), que
+    leia out/banderas_glosario.csv). Devuelve {bandera: {...}} como el local.
+
+    Se descarta el campo `evidencia` del API: no trae un dato, trae el NOMBRE
+    de la columna que dispara cada bandera, y para varias ese nombre es
+    doc_ordenador / doc_supervisor / doc_proveedor. Publicarlo hace saltar a
+    test_columnas_prohibidas -- con razon: D.PROHIBIDAS barre los nombres de
+    columna, no solo los valores. El glosario local nunca tuvo ese campo y el
+    front solo usa bandera/peso/grupo/glosa.
+    """
+    utiles = ("bandera", "peso", "grupo", "glosa", "capa")
+    return {b["bandera"]: {k: b[k] for k in utiles if k in b}
+            for b in api.listar("/v1/banderas")}
+
+
+def municipios_todos(api):
+    """Los 721, no los 60 del tablero: el mapa y el ranking de portada los
+    necesitan completos."""
+    return api.listar("/v1/municipios", params={"min_contratos": 0})
+
+
+def departamentos(api):
+    """Los 34, con n_atipicos y valor_atipico derivados.
+
+    El modelo Departamento del API no trae esas dos columnas, pero si trae
+    con que reconstruirlas sin perder exactitud:
+      - tasa_cruda es n_atipicos/n_contratos por definicion, asi que
+        round(n_contratos * tasa_cruda) recupera el entero original.
+      - en_riesgo es el valor de los contratos atipicos, que es lo que el
+        mapa pinta como valor_atipico.
+    """
+    filas = api.listar("/v1/departamentos")
+    for d in filas:
+        d.setdefault("n_atipicos", round((d.get("n_contratos") or 0) * (d.get("tasa_cruda") or 0)))
+        d.setdefault("valor_atipico", d.get("en_riesgo") or 0)
+    return filas
+
+
+def top_contratos(api, n=6):
+    """Los n contratos con mas senales, para las tarjetas de portada. El
+    listado no trae `descripcion` (§4.2 del plan), asi que se pide el detalle
+    de esos n -- son seis llamadas, no vale la pena optimizarlas."""
+    datos, _ = api.obtener("/v1/contratos", params={
+        "solo_atipicos": True, "orden": "-riesgo", "limite": n})
+    for c in datos:
+        try:
+            detalle, _ = api.obtener("/v1/contratos/" + c["id_contrato"])
+            c["descripcion"] = detalle.get("descripcion")
+        except ApiError:
+            c["descripcion"] = None
+    return datos
+
+
+def todos_los_atipicos(api):
+    """Los 12.678 atipicos en formato ContratoResumen. 64 llamadas de 200,
+    ~25 s. De aqui salen el sitemap (que mantiene las fichas rastreables
+    aunque su contenido se hidrate en el navegador) y los agregados que la
+    metodologia publica (score medio, umbral)."""
+    return api.listar("/v1/contratos", params={"solo_atipicos": True})
+
+
 def construir(cliente=None):
     """Devuelve {nombre_archivo: objeto | None}. Cada archivo se resuelve por
     separado: que uno falle no tumba a los demas (una entidad de red caida a

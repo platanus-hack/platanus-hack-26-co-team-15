@@ -74,7 +74,9 @@ function _numero(valor) {
 }
 
 // separador de miles '.', decimal ',' (formato es-CO). Espejo de _num().
-function _num(x, dec) {
+// exportada para evidencia.js, que replica el `_num(x, 2)` con que data.py
+// imprime el indice de concentracion del ordenador
+export function _num(x, dec) {
   const negativo = x < 0;
   const abs = Math.abs(x);
   const fijo = abs.toFixed(dec);

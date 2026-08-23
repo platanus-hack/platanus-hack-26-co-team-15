@@ -66,19 +66,21 @@ function iniciar(D) {
   const sinComp = T(D, "Adjudicado sin competencia real");
   porId("t-hero-valor").textContent = plata(sinComp.valor);
   porId("t-hero-nota").textContent =
-    `${pct(sinComp.valor / universo.valor)} de los ${plata(universo.valor)} de obra publica ` +
+    `${pct(sinComp.valor / universo.valor)} de los ${plata(universo.valor)} de obra pública ` +
     `analizada · ${entero(sinComp.n_contratos)} contratos`;
 
+  // Los strings de T(...) son la clave `concepto` de titulares.json tal como
+  // la emite el API: son datos, no rotulos, y por eso van sin tilde.
   const atip = T(D, "Clasificado atipico (indicio fuerte o 6+ puntos)");
   const conRed = T(D, "Con indicio fuerte de red");
   const ambas = T(D, "Con indicios de tramite Y de red");
   const tiles = [
-    ["Obra publica analizada", plata(universo.valor), `${entero(universo.n_contratos)} contratos`],
-    ["Clasificados atipicos", entero(atip.n_contratos),
+    ["Obra pública analizada", plata(universo.valor), `${entero(universo.n_contratos)} contratos`],
+    ["Clasificados atípicos", entero(atip.n_contratos),
       `${plata(atip.valor)} · umbral: indicio fuerte o 6 puntos`],
     ["Con indicio fuerte de red", entero(conRed.n_contratos), plata(conRed.valor)],
-    ["Atipicos por tramite y por red", entero(ambas.n_contratos), "los primeros de la fila"],
-    ["Grupos economicos detectados", entero(D.meta.n_clusters), "empresas unidas por una llave unica"],
+    ["Atípicos por trámite y por red", entero(ambas.n_contratos), "los primeros de la fila"],
+    ["Grupos económicos detectados", entero(D.meta.n_clusters), "empresas unidas por una llave única"],
   ];
   porId("t-tiles").replaceChildren(...tiles.map(([l, v, n]) => dato(l, v, n)));
 
