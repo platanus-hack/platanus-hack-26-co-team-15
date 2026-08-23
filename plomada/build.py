@@ -93,8 +93,10 @@ def nav(ruta_actual):
     enlaces = "".join(
         f'<a href="{h(u)}"{" aria-current=\"page\"" if ruta_actual.rstrip("/") == u.rstrip("/") else ""}>{h(t)}</a>'
         for u, t in NAV_ENLACES)
+    actual = ' aria-current="page"' if ruta_actual.rstrip("/") == "/asistente" else ""
+    cta = f'<a class="btn btn-primary nav-cta" href="/asistente/"{actual}>Asistente</a>'
     return (f'<header class="nav"><a class="nav-brand" href="/">Plomada</a>'
-            f'{enlaces}{BOTON_TEMA}</header>')
+            f'{enlaces}{cta}{BOTON_TEMA}</header>')
 
 
 # --------------------------------------------------------- islas de Vue (T1)
@@ -826,8 +828,9 @@ def pagina_tablero():
      contratos marcados, por indicio, por territorio y por red de proveedores.</p>
 </header>
 
-<p class="nota vacio" id="t-error" hidden>No se pudieron cargar los datos del tablero.
-  Corra <code>pipeline/export_web.py</code> y <code>plomada/build.py</code> otra vez.</p>
+<p class="nota vacio" id="t-error" hidden>El tablero se quedó sin plomada: no se pudieron
+  cargar los datos. Corra <code>pipeline/export_web.py</code> y <code>plomada/build.py</code>
+  otra vez.</p>
 
 <section class="caja hero" id="t-hero">
   <p class="tipo">Obra pública adjudicada sin competencia real (un solo oferente)</p>
