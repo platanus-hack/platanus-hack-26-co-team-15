@@ -77,6 +77,18 @@ def test_valores_prohibidos():
     # doc_proveedor solo esta prohibido cuando el proveedor es persona natural
     valores_num |= {r["doc_proveedor"] for r in fuente
                     if r.get("doc_proveedor") and not D.es_persona_juridica(r.get("proveedor"))}
+    # Con datos reales, doc_ordenador/doc_supervisor/doc_replegal a veces vienen
+    # vacios de identidad personal y la fuente (SECOP II) rellena esas columnas
+    # con el NIT de la propia entidad -- no es una cedula que se este colando,
+    # es el mismo numero que nit_entidad ya publica legitimamente en esa misma
+    # ficha (D.publicar() si expone nit_entidad). Excluirlos evita cientos de
+    # falsos positivos sin dejar de proteger ninguna cedula real: si un valor
+    # nunca aparece como nit_entidad de nadie, sigue prohibido.
+    nits_entidad = {r["nit_entidad"] for r in fuente if r.get("nit_entidad")}
+    valores_num -= nits_entidad
+    # Placeholders de "sin dato" en la fuente (todo el mismo digito repetido:
+    # '000000', '111111111', ...) no identifican a nadie; tambien se excluyen.
+    valores_num = {v for v in valores_num if len(set(v)) > 1}
 
     for p in artefactos():
         t = p.read_text(encoding="utf-8", errors="replace")
@@ -150,10 +162,22 @@ PROHIBIDO = re.compile(r"\b(corrupt\w*|fraude\w*|fraudulent\w*|delito\w*|delicti
                        r"robo|robos|rob[oó]|saque\w*|culpable\w*|criminal\w*|"
                        r"soborn\w*|pill[oa]s?)\b", re.I)
 
+# 'criminal' tambien es parte legitima del nombre de unidades de policia o CTI
+# citadas TAL CUAL como vienen en `entidad`/`descripcion` de la fuente (SECOP
+# II) -- p.ej. "Seccion de Analisis Criminal", "Seccional Investigacion
+# Criminal". Ahi no es que Plomada este acusando a nadie: es el nombre oficial
+# de la entidad o del objeto del contrato. Solo se descarta esa frase puntual;
+# 'criminal' usado de cualquier otra forma sigue prohibido.
+_CRIMINAL_INSTITUCIONAL = re.compile(r"(?:investigaci[oó]n|an[aá]lisis)\s+criminal", re.I)
+
+
+def _vocabulario_prohibido(texto):
+    return set(PROHIBIDO.findall(_CRIMINAL_INSTITUCIONAL.sub(" ", texto)))
+
 
 def test_vocabulario():
     for p in SITE.rglob("*.html"):
-        for m in set(PROHIBIDO.findall(texto_visible(p.read_text(encoding="utf-8")))):
+        for m in _vocabulario_prohibido(texto_visible(p.read_text(encoding="utf-8"))):
             fallos.append(f"LENGUAJE: '{m}' en {p.relative_to(SITE)}")
 
 
@@ -264,7 +288,7 @@ def test_valor_plausible():
         t = (SITE / f"contrato/{D.slug(c['id_contrato'])}/index.html").read_text(encoding="utf-8")
         check("falla de publicacion" in t,
               f"{c['id_contrato']} no explica que el valor publicado es imposible")
-    total_pub = sum(c["valor_plausible"] for c in cs)
+    total_pub = sum(c["valor_plausible"] or 0 for c in cs)
     total_bruto = sum(c["valor"] or 0 for c in cs)
     check(total_pub < total_bruto / 1000,
           "el saneado deberia ser ordenes de magnitud menor que el bruto en estos datos")
@@ -363,7 +387,7 @@ def test_vocabulario_json():
     texto editorial que se mueva a un JSON que el cliente pinta quedaria
     invisible al escaner sin este test."""
     for p in SITE.rglob("*.json"):
-        for m in set(PROHIBIDO.findall(p.read_text(encoding="utf-8", errors="replace"))):
+        for m in _vocabulario_prohibido(p.read_text(encoding="utf-8", errors="replace")):
             fallos.append(f"LENGUAJE: '{m}' en {p.relative_to(SITE)}")
 
 
