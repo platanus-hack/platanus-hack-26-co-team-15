@@ -146,6 +146,9 @@ def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase="", cabecera
 <meta property="og:title" content="{h(titulo)} — {SITIO_NOMBRE}">
 <meta property="og:description" content="{h(descripcion)}">
 <meta property="og:type" content="article">
+<link rel="icon" type="image/png" href="/static/favicon-32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/static/favicon.png" sizes="any">
+<link rel="apple-touch-icon" href="/static/favicon.png">
 <link rel="stylesheet" href="/static/estilo.css">
 {TEMA_INLINE}
 <script>window.PLOMADA_API_URL={json.dumps(API_URL)};</script>
