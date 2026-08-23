@@ -170,9 +170,23 @@ PROHIBIDO = re.compile(r"\b(corrupt\w*|fraude\w*|fraudulent\w*|delito\w*|delicti
 # 'criminal' usado de cualquier otra forma sigue prohibido.
 _CRIMINAL_INSTITUCIONAL = re.compile(r"(?:investigaci[oó]n|an[aá]lisis)\s+criminal", re.I)
 
+# El API real (GET /v1/meta -> limitaciones) trae el mismo tipo de aviso que
+# ya usa contenido.py: "Riesgo no es fraude: son indicios para priorizar
+# investigacion." Esa frase EXISTE justamente para negar la acusacion, no
+# para hacerla -- es el mismo patron que el AVISO fijo del sitio ("No afirma
+# que persona o entidad alguna haya obrado de forma irregular"). Bloquearla
+# por contener la palabra seria censurar la propia salvedad que el sitio
+# necesita mostrar. Solo se descarta la negacion puntual ("no es/implica/
+# significa <palabra>"); la palabra sola, sin negar, sigue prohibida.
+_NEGACION = re.compile(
+    r"no\s+(?:es|son|implica\w*|significa\w*)\s+(?:corrupt\w*|fraude\w*|fraudulent\w*|"
+    r"delito\w*|delictiv\w*|robo\w*|rob[oó]|saque\w*|culpable\w*|criminal\w*|"
+    r"soborn\w*|pill[oa]s?)", re.I)
+
 
 def _vocabulario_prohibido(texto):
-    return set(PROHIBIDO.findall(_CRIMINAL_INSTITUCIONAL.sub(" ", texto)))
+    limpio = _NEGACION.sub(" ", _CRIMINAL_INSTITUCIONAL.sub(" ", texto))
+    return set(PROHIBIDO.findall(limpio))
 
 
 def test_vocabulario():

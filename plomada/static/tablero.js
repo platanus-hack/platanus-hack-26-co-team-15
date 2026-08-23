@@ -1,14 +1,14 @@
 /* Orquestador de /tablero/ (Tanda B, B2). Hace fetch de datos/*.json (los
- * deja ahi copiar_datos_tablero() de build.py, leyendo out_web/ -- Tanda A),
- * reparte los datos y llama a cada modulo de graficos/ (B3). No dibuja nada
- * el mismo: cada grafico es su propia unidad con entrada de datos clara,
- * este archivo solo es el pegamento de la pagina (en fase 2, el componente
- * padre que le pasa props a cada hijo).
+ * deja ahi escribir_datos_tablero() de build.py, leyendo el API real de
+ * Plomada -- pipeline/api_tablero.py), reparte los datos y llama a cada
+ * modulo de graficos/ (B3). No dibuja nada el mismo: cada grafico es su
+ * propia unidad con entrada de datos clara, este archivo solo es el
+ * pegamento de la pagina (en fase 2, el componente padre que le pasa props
+ * a cada hijo).
  *
- * Si un JSON no esta (no se corrio pipeline/export_web.py, o no hay
- * warehouse) el tablero degrada avisando, nunca revienta: el resto del
- * sitio ya sigue ese patron (D.OUT en data.py, copiar_datos_tablero() en
- * build.py).
+ * Si un JSON no esta (el API todavia no tiene datos, o no respondio) el
+ * tablero degrada avisando, nunca revienta: el resto del sitio ya sigue ese
+ * patron (D.OUT en data.py, escribir_datos_tablero() en build.py).
  */
 import { plata, pct, entero } from "./formato.js";
 import * as Indicios from "./graficos/indicios.js";
@@ -16,8 +16,12 @@ import * as Municipios from "./graficos/municipios.js";
 import * as Departamentos from "./graficos/departamentos.js";
 import * as Red from "./graficos/red.js";
 
-const ARCHIVOS = ["titulares", "indicios", "municipios", "departamentos", "tipo_obra",
-                  "fuentes", "autosupervision", "red", "meta"];
+// tipo_obra/fuentes/autosupervision NO estan aqui a proposito: build.py los
+// sigue escribiendo en site/datos/ (quedan disponibles para descarga en
+// /datos/), pero ningun grafico de este tablero los lee. Antes de este
+// recorte, un 404 de cualquiera de los tres tumbaba el tablero ENTERO via
+// el Promise.all de abajo -- tres puntos de fallo que no rendian nada.
+const ARCHIVOS = ["titulares", "indicios", "municipios", "departamentos", "red", "meta"];
 
 function porId(id) { return document.getElementById(id); }
 

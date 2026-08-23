@@ -13,12 +13,12 @@ import data as D
 
 RAIZ = Path(__file__).parent
 SITE = RAIZ / "site"
-# pipeline/export_web.py escribe aqui (Tanda A, A4): build.py es lo UNICO
-# que escribe site/, para que test_privacy.py controle todo el artefacto
-# publicado de una sola pasada. Si no existe (no se corrio export_web.py,
-# o no hay warehouse), el tablero simplemente no trae esos JSON -- no es
-# fatal, ver copiar_datos_tablero().
-OUT_WEB = RAIZ.parent / "out_web"
+# El tablero se alimenta del API REAL de Plomada (pipeline/api_tablero.py ->
+# pipeline/api_cliente.py), nunca de out_web/ ni de fixtures locales -- ver
+# escribir_datos_tablero(). build.py sigue siendo lo UNICO que escribe
+# site/, para que test_privacy.py controle todo el artefacto publicado de
+# una sola pasada.
+PIPELINE = RAIZ.parent / "pipeline"
 SITIO_NOMBRE = "Plomada"
 LEMA = "Indicios de irregularidad en la contratacion de obra publica en Colombia"
 
@@ -587,10 +587,12 @@ def pagina_metodologia(glos, cifras, umbral):
 
 <section class="caja"><h2>El universo analizado</h2>
 <dl class="cab-grid">
-  {dato("Contratos en SECOP II", "5.975.627", "<small>de los cuales 5.123.891 son prestacion de servicios</small>")}
-  {dato("Universo de obra publica", "<b class='grande'>77.864</b>", "<small>Obra 52.355 &middot; Interventoria 13.074 &middot; Consultoria 11.482 &middot; APP 715 &middot; Concesion 238</small>")}
-  {dato("Valor total", "$209 billones")}
-  {dato("Contratos atipicos", "11.121 <span class='tenue'>(14,3%)</span>", "<small>$11,7 billones</small>")}
+  {dato("Contratos en SECOP II", "sin dato", "<small>el API no publica el total de todo SECOP II, solo el universo de obra</small>")}
+  {dato("Universo de obra publica", f"<b class='grande'>{D.entero(cifras['n_universo'])}</b>",
+        "<small>el API no desglosa por tipo de contrato (Obra/Interventoria/Consultoria/APP/Concesion)</small>")}
+  {dato("Valor total", D.plata(cifras["valor_universo"]))}
+  {dato("Contratos atipicos", f"{D.entero(cifras['n_atipicos'])} <span class='tenue'>({D.pct(cifras['pct_atipicos'])})</span>",
+        f"<small>{D.plata(cifras['valor_atipico'])}</small>")}
 </dl>
 <p class="nota">En Colombia un billon son 10<sup>12</sup> pesos. Todo el dinero de este
    sitio se suma con <code>valor_plausible</code>, la version saneada del valor
@@ -689,8 +691,10 @@ def portada(muns, cifras, top_contratos):
       '<a href="/tablero/">tablero</a>.</p>')}
 
 <dl class="cab-grid cifras">
-  {dato("Universo de obra publica", "<b class='grande'>77.864</b>", "<small>contratos, $209 billones</small>")}
-  {dato("Contratos atipicos", "<b class='grande'>11.121</b>", "<small>14,3% &middot; $11,7 billones</small>")}
+  {dato("Universo de obra publica", f"<b class='grande'>{D.entero(cifras['n_universo'])}</b>",
+        f"<small>contratos, {D.plata(cifras['valor_universo'])}</small>")}
+  {dato("Contratos atipicos", f"<b class='grande'>{D.entero(cifras['n_atipicos'])}</b>",
+        f"<small>{D.pct(cifras['pct_atipicos'])} &middot; {D.plata(cifras['valor_atipico'])}</small>")}
   {dato("Municipios en el ranking", D.entero(cifras["n_municipios"]))}
   {dato("Administraciones", D.entero(cifras["n_admin"]), "<small>entidad x periodo de gobierno</small>")}
 </dl>
@@ -838,25 +842,81 @@ def pagina_datos(archivos):
 
 
 # -------------------------------------------------------------------------- main
-def copiar_datos_tablero():
-    """Copia los JSON de pipeline/export_web.py (out_web/) a site/datos/.
+def cifras_universo(datos_api):
+    """Las cifras del universo que antes estaban escritas a mano en
+    pagina_metodologia() y portada() (5.975.627, $209 billones, 11.121,
+    14,3%...) -- ninguna calculada, y ya no coincidian con ningun corte real.
+    Ahora salen de datos_api (lo que devolvio escribir_datos_tablero(), que a
+    su vez viene del API real via pipeline/api_tablero.py).
 
-    export_web.py YA NO escribe dentro de site/ directamente (Tanda A, A4):
-    build.py sigue siendo la UNICA pluma que toca site/, asi test_privacy.py
-    barre un solo artefacto completo, no dos escritores por separado. Si
-    out_web/ no existe todavia (no se corrio export_web.py o no hay
-    warehouse), se sigue de largo: el resto del sitio se genera igual, nada
-    mas el tablero queda sin esos datos.
+    Si el API no tenia meta.json o titulares.json disponibles, cada clave
+    queda en None: D.entero()/D.plata()/D.pct() ya saben imprimir "sin dato"
+    para None, asi que la pagina degrada mostrando eso, nunca una cifra
+    vieja ni inventada.
+
+    Dos numeros del metodo viejo NO tienen equivalente en el API (el total
+    de TODO SECOP II y el desglose por tipo_contrato Obra/Interventoria/
+    Consultoria/APP/Concesion no son parte de ningun endpoint de /v1/*): esas
+    dos quedan en None a proposito, no se resuelven con datos locales.
     """
-    if not OUT_WEB.exists():
-        print(f"aviso: no existe {OUT_WEB}, el tablero queda sin datos de export_web.py "
-              "(corra pipeline/export_web.py si hace falta)", file=sys.stderr)
-        return
+    meta = datos_api.get("meta.json")
+    titulares = datos_api.get("titulares.json") or []
+    atipico = next((t for t in titulares
+                     if str(t.get("concepto", "")).startswith("Clasificado atipico")), None)
+    n_universo = meta.get("contratos") if meta else None
+    n_atipicos = meta.get("contratos_atipicos") if meta else None
+    return {
+        "n_universo": n_universo,
+        "valor_universo": meta.get("valor_total") if meta else None,
+        "n_atipicos": n_atipicos,
+        "pct_atipicos": (n_atipicos / n_universo) if n_universo else None,
+        "valor_atipico": atipico["valor"] if atipico else None,
+    }
+
+
+def escribir_datos_tablero():
+    """Escribe site/datos/*.json con datos REALES del API de Plomada
+    (pipeline/api_tablero.py -> pipeline/api_cliente.py). Ya no lee out_web/
+    ni ningun fixture local: cada archivo sale de una llamada al API en
+    https://plumb-duy6.onrender.com (o $PLOMADA_API_URL).
+
+    Si el API todavia no tiene datos cargados (base vacia,
+    'datos_no_disponibles') o no respondio, el archivo correspondiente
+    simplemente NO se escribe -- nunca se rellena con la ultima cifra local
+    conocida ni con un numero inventado. El tablero (tablero.js) y la cifra
+    de portada (CifraLider.vue) ya saben degradar cuando un /datos/*.json no
+    existe: muestran "No se pudieron cargar los datos del tablero" o el
+    enlace de respaldo al tablero. Es el mismo patron que ya usaban cuando
+    faltaba out_web/, solo que ahora la causa es "el API esta vacio", no
+    "no se corrio el pipeline local".
+    """
+    # pipeline/ tiene su PROPIO build.py (el del warehouse) -- dejar su ruta
+    # en sys.path despues de este import haria que el "import build" de
+    # test_privacy.py mas adelante resuelva ese modulo por error en vez de
+    # este mismo archivo. Se agrega y se quita al toque.
+    sys.path.insert(0, str(PIPELINE))
+    try:
+        import api_tablero
+    finally:
+        sys.path.remove(str(PIPELINE))
+
     destino = SITE / "datos"
     destino.mkdir(parents=True, exist_ok=True)
-    for f in OUT_WEB.glob("*.json"):
-        shutil.copy2(f, destino / f.name)
-    print(f"datos del tablero copiados de {OUT_WEB} a site/datos/", file=sys.stderr)
+    archivos = api_tablero.construir()
+    escritos = [n for n, datos in archivos.items() if datos is not None]
+    faltantes = [n for n, datos in archivos.items() if datos is None]
+    for nombre in escritos:
+        with open(destino / nombre, "w", encoding="utf-8") as fh:
+            json.dump(archivos[nombre], fh, ensure_ascii=False, separators=(",", ":"))
+
+    if escritos:
+        print(f"datos del tablero: {len(escritos)} archivo(s) del API real -> site/datos/ "
+              f"({', '.join(sorted(escritos))})", file=sys.stderr)
+    if faltantes:
+        print(f"aviso: el API no tiene datos disponibles para {', '.join(sorted(faltantes))} "
+              "-- el tablero mostrara que no hay datos, no una cifra local ni simulada.",
+              file=sys.stderr)
+    return archivos
 
 
 def main():
@@ -864,7 +924,7 @@ def main():
         shutil.rmtree(SITE)
     SITE.mkdir()
     shutil.copytree(RAIZ / "static", SITE / "static")
-    copiar_datos_tablero()
+    datos_api = escribir_datos_tablero()
 
     glos = D.glosario()
     geocache = D.cargar_geocache()
@@ -931,6 +991,7 @@ def main():
     umbral = min((c.get("puntos_crudos") or 0) for c in contratos)
     cifras = {"n_municipios": len(muns), "n_admin": len(admins),
               "score_medio": sum(c.get("score") or 0 for c in contratos) / len(contratos)}
+    cifras.update(cifras_universo(datos_api))
     escribir("metodologia/index.html", pagina_metodologia(glos, cifras, umbral))
 
     # portada
