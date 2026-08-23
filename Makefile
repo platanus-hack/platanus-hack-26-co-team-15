@@ -1,6 +1,6 @@
 # El entorno local del lider (Windows) no tiene make. Los comandos son
 # one-liners a proposito: si no tienes make, copia la linea de la receta.
-.PHONY: help ingest build graph test report load up down lint
+.PHONY: help ingest build graph test test-api report load api up down lint
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/'
 
@@ -43,8 +43,14 @@ test:     ## Puertas de calidad de datos (fallan el PR)
 lint:
 	ruff check pipeline api tests
 
-load:     ## Carga el warehouse a Postgres para el API
+load:     ## Carga las tablas api_* del warehouse a Postgres
 	python pipeline/load_postgres.py
+
+api:      ## Sirve la API publica en http://localhost:8000/docs (necesita DATABASE_URL)
+	uvicorn app.main:app --app-dir api --reload
+
+test-api: ## Contrato del API (no necesita Postgres); pide api/requirements-dev.txt
+	python -m pytest api/tests/ -v
 
 up:
 	docker compose up --build

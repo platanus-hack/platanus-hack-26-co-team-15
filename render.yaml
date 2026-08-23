@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: plomada-api
+    runtime: docker
+    dockerfilePath: ./api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: plomada-db
+          property: connectionString
+      - key: SELF_URL
+        value: https://plomada-api.onrender.com
+      - key: CORS_ORIGINS
+        sync: false
+
+databases:
+  - name: plomada-db
+    databaseName: plomada
+    user: plomada
+    plan: free

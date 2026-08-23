@@ -16,8 +16,10 @@ services:
   api:
     build: { context: ., dockerfile: api/Dockerfile }
     environment:
-      DATABASE_URL: postgresql+psycopg://plomada:plomada@db:5432/plomada
-      CORS_ORIGINS: http://localhost:3000
+      # Forma plana, no `postgresql+psycopg://`: la de SQLAlchemy no la
+      # parsean ni psycopg ni el ATTACH de DuckDB, y aqui no se usa SQLAlchemy.
+      DATABASE_URL: postgresql://plomada:plomada@db:5432/plomada
+      SELF_URL: http://localhost:8000
     ports: ["8000:8000"]
     depends_on:
       db: { condition: service_healthy }
@@ -28,7 +30,7 @@ services:
     build: { context: ., dockerfile: pipeline/Dockerfile }
     volumes: ["./data:/app/data", "./out:/app/out"]
     environment:
-      DATABASE_URL: postgresql+psycopg://plomada:plomada@db:5432/plomada
+      DATABASE_URL: postgresql://plomada:plomada@db:5432/plomada
     profiles: ["tools"]
     depends_on:
       db: { condition: service_healthy }

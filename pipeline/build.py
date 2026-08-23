@@ -63,11 +63,33 @@ def sql_files(prefixes=None):
     return out
 
 
+def tablas(con):
+    return {r[0] for r in con.execute("SELECT table_name FROM duckdb_tables()").fetchall()}
+
+
 def run_sql_file(con, path, allow_skip=False):
     with open(path, "r", encoding="utf-8") as fh:
         sql = fh.read()
     # las rutas de los JSONL se inyectan aqui para que el SQL sea portable
     sql = sql.replace("__RAW__", RAW.replace("\\", "/"))
+    # Un paso puede declarar de que tablas depende con una linea
+    # `-- requiere: a, b` en su cabecera. Si falta alguna y estamos en un
+    # lote, se omite con un mensaje claro en vez de reventar. Es el mismo
+    # criterio que la guardia de placeholders de abajo: los pasos con un
+    # orquestador propio (91 necesita pipeline/alertas.py) no pueden
+    # correr como SQL suelto dentro de --all.
+    req = re.search(r"^--\s*requiere:\s*(.+)$", sql, re.MULTILINE)
+    if req:
+        faltan = {t.strip() for t in req.group(1).split(",")} - tablas(con)
+        if faltan:
+            msg = (
+                "%s necesita tablas que no existen (%s): corre antes el paso "
+                "que las construye." % (os.path.basename(path), ", ".join(sorted(faltan)))
+            )
+            if allow_skip:
+                print("   omitido: %s" % msg, flush=True)
+                return
+            sys.exit(msg)
     # Algunos pasos (30_procesos_abiertos.sql y cualquier futuro paso que
     # necesite un snapshot fechado, p.ej. el satelital en 20-29) llevan un
     # placeholder que solo su propio script de orquestacion sabe rellenar

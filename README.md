@@ -23,6 +23,10 @@ como **aristas de una red de personas** y se enfoca en un solo sector —
 construcción — porque es el único donde puedes verificar físicamente si la obra
 existe.
 
+Y lo publica por una **API REST abierta** ([`API.md`](API.md)), no solo como un
+tablero: los mismos indicios se pueden filtrar, bajar en CSV o consultar desde otra
+herramienta, con la evidencia numérica de cada bandera al lado.
+
 Los campos que habilitan esto están en el dataset oficial y casi nadie los usa:
 
 | Campo del SECOP II | Para qué sirve |
@@ -62,8 +66,9 @@ python pipeline/build.py                             # ~20 s, warehouse + base.p
 python pipeline/build.py --steps 04 05 --no-export   # grafo: nodos y aristas
 python pipeline/grafo.py                             # comunidades
 python pipeline/build.py --steps 06 --no-export      # banderas de red
+python pipeline/build.py --all                       # resto de pasos, incl. 90 (API)
 python pipeline/report.py                            # rankings + CSVs en out/
-python -m pytest tests/                              # 17 puertas de calidad
+python -m pytest tests/                              # puertas de calidad
 ```
 
 Con Docker (fija Python 3.11 para todo el equipo): `docker compose up`.
@@ -356,6 +361,65 @@ superficie clara, así que lleva etiquetas directas y vista de tabla como reliev
 obligatorio. Cada gráfico tiene su gemelo en tabla, y las limitaciones viajan **con**
 los datos (`meta.json`) para que el tablero no pueda mostrar una cifra sin su salvedad.
 
+## API pública
+
+El tablero es una lectura de los datos; la API es **todas las demás**. Un periodista
+que quiere el CSV de su departamento, otra herramienta que quiere cruzar los indicios
+con su propia base, o un agente de IA que no sea Claude: ninguno tenía por dónde
+entrarle sin clonar el repo y correr 4 minutos de ingesta.
+
+```bash
+python pipeline/build.py --all          # incluye el paso 90: tablas api_*
+docker compose up -d db
+export DATABASE_URL=postgresql://plomada:plomada@localhost:5432/plomada
+python pipeline/load_postgres.py        # make load
+uvicorn app.main:app --app-dir api      # make api  ->  http://localhost:8000/docs
+```
+
+REST de solo lectura, versionada en `/v1`, sin autenticación —los datos son
+públicos— y con referencia OpenAPI en `/docs`. **Documentación completa en
+[`API.md`](API.md).**
+
+| Endpoint | Qué devuelve |
+|---|---|
+| `GET /v1/meta` | Cobertura medida de cada campo y las limitaciones |
+| `GET /v1/banderas` | Glosario de las 26 banderas con sus pesos |
+| `GET /v1/titulares` · `/indicios` · `/fuentes` · `/tipos-obra` | Las cifras del tablero |
+| `GET /v1/municipios` · `/departamentos` · `/autosupervision` | Rankings territoriales y hallazgos por entidad |
+| `GET /v1/contratos` | Búsqueda con 18 filtros, incluido `bandera` repetible |
+| `GET /v1/contratos/{id}` | Ficha con **cada bandera y la evidencia numérica que la disparó** |
+| `GET /v1/entidades` · `/entidades/{nit}` | Entidades contratantes y su perfil |
+| `GET /v1/proveedores` · `/proveedores/{doc}` | Proveedores y sus contrapartes en la red |
+| `GET /v1/red/clusters` · `/clusters/{id}` | Grupos económicos y su subgrafo |
+| `GET /v1/alertas` · `/alertas/resumen` | Licitaciones abiertas con banderas |
+
+Cuatro decisiones que la definen:
+
+1. **El aviso viaja con cada respuesta.** `meta.aviso` en JSON, `X-Plomada-Aviso` en
+   CSV. Mismo criterio que `meta.json` en el tablero: no se puede sacar una cifra sin
+   su salvedad. `GET /v1/meta` trae además las limitaciones completas.
+2. **`/v1/contratos/{id}` publica la evidencia.** Cada bandera encendida sale con su
+   peso, su glosa y el número que la disparó en ese contrato (`ev_hermanos_30d: 4`,
+   `ev_proveedores_por_cuenta: 3`). «Sin evidencia no se publica» deja de ser una
+   frase del README y pasa a ser el contrato de la API.
+3. **`?formato=csv` en todo listado.** El público objetivo es periodístico: que el
+   resultado de un filtro se abra en Excel sin escribir código es la diferencia entre
+   que se use y que no. Con BOM, porque sin él Excel en Windows rompe las tildes de
+   los nombres de entidad.
+4. **REST y MCP comparten la capa de consulta.** `api/app/consultas.py` es el único
+   sitio del servicio con SQL, y lo usan tanto los endpoints como las tools del
+   servidor MCP. Antes el MCP tenía su propia copia del umbral de «atípico»: dos
+   definiciones de la misma cifra es exactamente el bug que este proyecto se pasa el
+   README evitando.
+
+Lo que sale por HTTP lo decide `sql/90_serving.sql` (rango 90-99, reservado para
+esto desde el primer commit): materializa tablas `api_*` con las columnas enumeradas
+a mano, y `pipeline/load_postgres.py` copia esas y solo esas a Postgres. La cuenta
+bancaria no está en ninguna, y la puerta de calidad
+`test_el_snapshot_publico_no_lleva_cuentas` —que recorre exactamente las tablas con
+prefijo `api_`, y hasta ahora no verificaba nada porque no existía ninguna— por fin
+tiene qué revisar.
+
 ## Alertas pre-adjudicación (Pilar 4)
 
 Todo lo de arriba mira contratos ya firmados. Esto mira licitaciones que
@@ -436,9 +500,19 @@ cualquier paso futuro del satelital (20-29) que necesite el mismo patrón de sna
 
 ## Puertas de calidad
 
-`python -m pytest tests/` — **26 tests**. Cada uno existe porque el error
-correspondiente ya ocurrió en este proyecto y produjo números falsos. Fallan el PR,
-no son advertencias.
+`python -m pytest tests/` — **35 puertas** sobre los datos. Cada una existe porque el
+error correspondiente ya ocurrió en este proyecto y produjo números falsos. Fallan el
+PR, no son advertencias.
+
+`python -m pytest api/tests/` — **19 pruebas** sobre el contrato de la API, en su
+propio entorno (el SDK de MCP exige Python ≥3.10 y el pipeline está fijado a 3.9). No
+necesitan Postgres: la capa de consulta se sustituye por dobles, así que corren en
+cada PR. Verifican lo que es responsabilidad de la API y no de los datos — que el
+aviso viaje en toda respuesta, que un `orden` o una `bandera` fuera de la lista blanca
+den 400 **antes** de tocar el SQL, y que ninguna respuesta pueda filtrar la cuenta
+bancaria.
+
+`python api/app/mcp/test_smoke.py` — las 7 tools del MCP contra un Postgres real.
 
 ## Contrato de datos entre frentes
 
@@ -464,13 +538,17 @@ todos.
    `platanus-hack-project.jsonc` sigue vacío) y conectar ahí el `alertas.json`
    diario que ya genera `.github/workflows/alertas-diarias.yml`, en vez de
    dejarlo como artefacto descargable.
-5. Capa de serving (`api/`, Postgres): `pipeline/load_postgres.py` ya carga
-   `puntajes`/`titulares`/`meta` a Postgres (`make load`), y `api/app/mcp/
-   server.py` ya lee de ahí. Falta desplegar Postgres de verdad en Render
-   (disco persistente, sin exponer el puerto) — ver `MCP.md`.
+5. Capa de serving (`api/`, Postgres): construida. `sql/90_serving.sql` publica
+   las tablas `api_*`, `pipeline/load_postgres.py` las carga (`make load`) y la
+   API REST (`/v1`, ver [`API.md`](API.md)) y el servidor MCP leen de ahí por la
+   misma capa de consulta. La topología de producción está declarada en
+   [`render.yaml`](render.yaml); después de aplicar el Blueprint solo hay que
+   cargar el warehouse en la base creada.
 6. Tablero conversacional (MCP + Claude): servidor MCP y proxy de chat ya
    construidos (`api/app/mcp/server.py`, `api/app/main.py`), documentados en
-   [`MCP.md`](MCP.md). Falta el deploy a Render y conectar el front.
+   [`MCP.md`](MCP.md). El mismo servicio queda desplegado por el Blueprint.
+7. Tras aplicar el Blueprint, cargar el warehouse con
+   `pipeline/load_postgres.py` y conectar el front a la URL asignada.
 
 ## Fuentes
 

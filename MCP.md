@@ -6,13 +6,16 @@ tablero**, en vez de solo mirando gráficos y tablas. Este documento es para
 el equipo y para quien trabaje el front — no requiere leer el resto del
 código para entender qué construir y en qué orden.
 
-**Estado: servidor MCP, proxy de chat (BYOK: cada usuario usa su propia API
-key, no hay ninguna key del equipo en el servidor) y carga a Postgres
-construidos (`api/app/mcp/server.py`, `api/app/main.py`,
-`pipeline/load_postgres.py`). Falta desplegar Postgres + `api/` en Render (no
-hay Postgres disponible en este entorno de prueba para verificar el flujo
-completo) y probar contra una URL pública real — antes de conectar el
-front.** Ver "Orden de trabajo" más abajo para el detalle exacto.
+**Estado: servidor MCP (7 tools), proxy de chat (BYOK: cada usuario usa su
+propia API key, no hay ninguna key del equipo en el servidor), API REST
+pública (`/v1`, ver [`API.md`](API.md)) y carga a Postgres, todo construido y
+verificado contra un Postgres real con los datos completos. La topología de
+producción está declarada en [`render.yaml`](render.yaml): al aplicar el
+Blueprint se crean el servicio web y Postgres, y solo queda cargar el
+warehouse y probar `/chat` contra la URL pública asignada. Eso no puede
+ejecutarse desde este repositorio sin acceso a la cuenta de Render, porque
+Claude corre en la nube de Anthropic y no puede alcanzar `localhost`.** Ver
+"Orden de trabajo" más abajo.
 
 ## Por qué esta arquitectura
 
@@ -71,6 +74,11 @@ El front **nunca** habla directo con Claude ni con el servidor MCP — solo con
 `POST /chat` en `api/`. Eso es lo único que el agente del front necesita
 integrar.
 
+El mismo servicio expone además la **API REST pública** en `/v1`
+([`API.md`](API.md)), sobre las mismas tablas y con la misma capa de consulta:
+quien prefiera consultar los datos él mismo en vez de preguntarle a un modelo
+tiene por dónde, y las dos vías no pueden contradecirse.
+
 ## Piezas a construir
 
 ### 1. Servidor MCP — `api/app/mcp/server.py` (construido)
@@ -84,34 +92,46 @@ Tools implementadas hoy (cada una una consulta a Postgres acotada a
 `LIMIT_DURO = 50` filas, para no volcar tablas completas al contexto del
 modelo). Leen de Postgres vía `DATABASE_URL` — **no** de archivos locales:
 
-| Tool | Qué responde | Tabla en Postgres |
-|---|---|---|
-| `resumen_indicios` | Cifras titulares (contratos atípicos, plata en riesgo) | `titulares`, `meta` |
-| `buscar_contratos_atipicos(entidad?, departamento?, tipo_contrato?, valor_minimo?, limite=20)` | Lista de contratos marcados, con sus banderas | `puntajes` |
-| `perfil_entidad(nombre_o_nit)` | Resumen de una entidad: contratos, valor, atípicos | `puntajes` |
+| Tool | Qué responde |
+|---|---|
+| `resumen_indicios` | Cifras titulares, plata por indicio, cobertura y limitaciones |
+| `glosario_banderas` | Las 26 banderas con su peso y su glosa, para explicarlas en palabras |
+| `buscar_contratos_atipicos(entidad?, departamento?, tipo_contrato?, valor_minimo?, bandera?, limite=20)` | Lista de contratos marcados, con sus banderas |
+| `detalle_contrato(id_contrato)` | Ficha completa con la **evidencia numérica** de cada bandera |
+| `perfil_entidad(nombre_o_nit)` | Entidad: contratos, valor, atípicos, banderas frecuentes, top proveedores |
+| `buscar_proveedor(nombre_o_documento)` | Proveedor y su red: contrapartes por llave compartida |
+| `alertas_preadjudicacion(departamento?, entidad?, limite=20)` | Licitaciones abiertas con banderas |
 
-Esas tres tablas las carga `pipeline/load_postgres.py` desde
-`data/exports/puntajes.parquet` y `web/data/{titulares,meta}.json` (`make
-load`, o `python pipeline/load_postgres.py` con `DATABASE_URL` en el
-entorno). Agregar una tool nueva es: (1) una línea más en `load_postgres.py`
-si necesita una tabla que todavía no está cargada, (2) la función `@mcp.tool()`
-correspondiente. Pendientes con este patrón: `buscar_proveedor` (necesitaría
-cargar algo como `web/data/red.json`) y `alertas_preadjudicacion`
-(`web/data/alertas.json`). Repártanlas entre los dueños de cada pilar — quien
-escribió `06_banderas_grafo.sql` sabe mejor qué exponer en `buscar_proveedor`,
-quien escribió `alertas.py` sabe qué exponer en `alertas_preadjudicacion`.
+**Este archivo ya no tiene SQL propio.** Todas las tools llaman a
+`api/app/consultas.py`, la misma capa que usa la API REST (`/v1`, documentada
+en [`API.md`](API.md)) sobre las tablas `api_*` que publica
+`sql/90_serving.sql` y carga `pipeline/load_postgres.py` (`make load`).
+Antes cada frente tenía sus propias consultas y su propia copia del umbral de
+«atípico» — dos definiciones de la misma cifra, que es exactamente el bug que
+este proyecto se pasa el README evitando. Ahora el REST y el MCP no pueden dar
+respuestas distintas a la misma pregunta.
+
+La única diferencia entre los dos frentes es el techo de filas: 200 en REST,
+**50 en MCP**. Una respuesta de 200 filas es normal para un cliente HTTP y no
+lo es para el contexto de un modelo.
+
+Agregar una tool nueva es una función `@mcp.tool()` que llama a una función de
+`consultas.py`. Las dos que quedaban pendientes en la versión anterior de este
+documento (`buscar_proveedor` y `alertas_preadjudicacion`) ya están: con la
+capa compartida salieron casi gratis.
 
 Correr en local (necesita un Postgres — `docker compose up db` levanta el
 que ya está definido en `docker-compose.yml`):
 ```
-docker compose up db                                          # postgres:16-alpine en :5432
+python pipeline/build.py --all                                # incluye el paso 90 (tablas api_*)
+docker compose up -d db                                       # postgres:16-alpine en :5432
 export DATABASE_URL=postgresql://plomada:plomada@localhost:5432/plomada
-python pipeline/load_postgres.py                              # carga puntajes/titulares/meta
+python pipeline/load_postgres.py                              # carga las tablas api_*
 
 python -m venv .venv-mcp
 .venv-mcp/Scripts/pip install -r api/requirements.txt
 .venv-mcp/Scripts/python api/app/mcp/test_smoke.py           # via stdio
-.venv-mcp/Scripts/python api/app/mcp/server.py --http &      # via http, puerto 8765
+cd api && ../.venv-mcp/Scripts/python -m app.mcp.server --http &   # http, puerto 8765
 .venv-mcp/Scripts/python api/app/mcp/test_smoke.py --http
 ```
 
@@ -243,23 +263,26 @@ Todo lo que necesita saber, sin tocar nada de lo de arriba:
    error normal (no tumba el proceso). La prueba con datos reales de Postgres
    queda a cargo del equipo (ver comandos en la sección 1 de arriba).
 
-## Lo que falta — bloqueado en infraestructura, no en código
+5. ✅ **Verificado contra un Postgres real con los datos completos**
+   (77.864 contratos): `sql/90_serving.sql` publica las tablas `api_*`,
+   `pipeline/load_postgres.py` carga las 18 con sus índices, y las 7 tools
+   pasan el smoke test por **stdio y por HTTP montado en la app FastAPI**.
+   La API REST responde en `/v1` sobre esa misma base. Lo único que sigue sin
+   poder probarse en local es el round-trip completo de `/chat`, por el motivo
+   del punto 3.
 
-5. **Desplegar Postgres en Render** (ver sección 3 de arriba: disco
-   persistente, sin exponer el puerto) y correr `pipeline/load_postgres.py`
-   contra ese `DATABASE_URL` una vez.
-6. **Conseguir una URL pública** para `api/` — un túnel (ngrok, Cloudflare
-   Tunnel) para probar rápido, o ya el deploy real a Render. Ninguna
-   herramienta de túnel estaba disponible en este entorno de prueba (no hay
-   `ngrok`/`cloudflared`/`npx` instalados), así que alguien del equipo con
-   acceso a instalar herramientas o a la cuenta de Render tiene que dar este
-   paso.
-7. Con la URL pública, poner `SELF_URL=https://<esa-url>` y `DATABASE_URL`
-   como variables de entorno del servicio `api/` — **`ANTHROPIC_API_KEY` NO
-   va aquí, es BYOK** (ver sección 2) — y repetir la prueba de `/chat` con
-   una key real de prueba en el header — ahí sí se prueba el round-trip
-   completo (front → proxy → Claude → MCP → Postgres → respuesta).
-8. Widget de chat en el front, apuntando a esa URL ya desplegada, con el
+## Puesta en producción — requiere acceso a Render
+
+6. **Aplicar el Blueprint**: crear los servicios definidos en `render.yaml`.
+7. **Cargar el warehouse**: desde un entorno que tenga los datos generados,
+   ejecutar `python pipeline/load_postgres.py` usando el `DATABASE_URL` de la
+   base de Render. El contenedor de la API arranca sin datos y devuelve 503
+   deliberadamente hasta que este paso termina.
+8. **Configurar `SELF_URL`** con la URL pública del servicio web y, si aplica,
+   `CORS_ORIGINS` con el origen del front. Render expone `PORT` por defecto.
+   **`ANTHROPIC_API_KEY` NO va aquí, es BYOK** (ver sección 2).
+9. Probar el round-trip de `/chat` con una key propia de Anthropic y conectar
+   el widget del front apuntando a esa URL, con el
    input para pedir la key del usuario (ver sección 4).
 
 ## Decisiones que faltan por tomar en equipo

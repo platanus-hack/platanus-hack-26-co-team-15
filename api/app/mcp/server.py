@@ -1,49 +1,40 @@
-"""Servidor MCP de Plomada: tools de solo lectura sobre los datos ya
-publicados, para que Claude (u otra IA con soporte de MCP) pueda responder
-preguntas conversacionales desde el tablero. Ver MCP.md en la raiz del repo
-para el plan completo.
+"""Servidor MCP de Plomada: tools de solo lectura para que Claude (u otra
+IA con soporte de MCP) responda preguntas conversacionales sobre los
+datos. Ver MCP.md en la raiz del repo para el plan completo.
 
-Lee de Postgres (`DATABASE_URL`), cargado por `pipeline/load_postgres.py`
-desde `data/exports/puntajes.parquet` y `web/data/*.json`. No lee archivos
-locales: esos estan en .gitignore y no viajan con la imagen de Docker que se
-despliega en Render, asi que la fuente de datos en produccion tiene que ser
-una base de datos, no el filesystem del contenedor.
+No tiene SQL propio. Todas las tools llaman a `app.consultas`, la misma
+capa que usa la API REST (`app/routers/*`), que lee las tablas `api_*` de
+Postgres cargadas por `pipeline/load_postgres.py`. Antes este archivo
+tenia sus propias consultas y su propia copia del umbral de "atipico":
+dos definiciones de la misma cifra es exactamente el bug que este
+proyecto se pasa el README evitando.
+
+Diferencia con el REST: aqui el techo de filas es mas bajo
+(`config.limite_max_mcp`, 50). Una respuesta de 200 filas es normal para
+un cliente HTTP y no lo es para el contexto de un modelo.
 
 Requiere Python >=3.10 (el SDK oficial de `mcp` lo exige). El resto del
-pipeline esta fijado a Python 3.9 en el entorno local, por eso este servidor
-vive con su propio entorno (ver api/requirements.txt).
+pipeline esta fijado a Python 3.9 en el entorno local, por eso este
+servidor vive con su propio entorno (ver api/requirements.txt).
 
 Correr en local (stdio, para probar con un cliente MCP o el inspector):
-    DATABASE_URL=postgresql://plomada:plomada@localhost:5432/plomada python -m api.app.mcp.server
+    DATABASE_URL=postgresql://plomada:plomada@localhost:5432/plomada python -m app.mcp.server
 
 Correr como servidor HTTP (lo que necesita el connector remoto de Claude):
-    python -m api.app.mcp.server --http --port 8765
+    python -m app.mcp.server --http --port 8765
 """
 from __future__ import annotations
 
-import json
-import os
 import sys
 
-import psycopg
 from mcp.server import MCPServer
-from psycopg.rows import dict_row
 
-LIMIT_DURO = 50  # ningun tool devuelve mas filas que esto, sin importar lo que pida el modelo
+from app import consultas
+from app.config import config
 
-
-def _database_url():
-    url = os.environ.get("DATABASE_URL")
-    if not url:
-        # RuntimeError, no sys.exit(): esto corre dentro de un tool handler de
-        # un servidor de larga duracion -- sys.exit() tumbaria el proceso
-        # entero en la primera pregunta sin DATABASE_URL, no solo esa llamada.
-        raise RuntimeError(
-            "falta DATABASE_URL en el entorno; corre 'python pipeline/load_postgres.py' "
-            "contra un Postgres y apunta esta variable ahi"
-        )
-    return url
-
+# Ninguna tool devuelve mas filas que esto, sin importar lo que pida el
+# modelo: volcar una tabla al contexto no ayuda a responder.
+LIMITE = config.limite_max_mcp
 
 mcp = MCPServer(
     name="plomada",
@@ -52,16 +43,15 @@ mcp = MCPServer(
         "Datos publicos de contratacion de obra publica en Colombia (SECOP II). "
         "'Riesgo' aqui significa indicio para priorizar investigacion periodistica "
         "y control social, NUNCA prueba de fraude. No afirmes que un contrato "
-        "marcado es corrupto: di que presenta indicios y cuales son."
+        "marcado es corrupto: di que presenta indicios y cuales son. "
+        "Los mismos datos estan disponibles como API REST publica en /v1 "
+        "(documentada en API.md) si el usuario prefiere consultarlos el mismo."
     ),
 )
 
 
-def _consultar(sql, params=None):
-    with psycopg.connect(_database_url(), row_factory=dict_row) as conn:
-        with conn.cursor() as cur:
-            cur.execute(sql, params or ())
-            return cur.fetchall()
+def _tope(limite):
+    return max(1, min(int(limite or 20), LIMITE))
 
 
 @mcp.tool()
@@ -70,10 +60,14 @@ def resumen_indicios() -> dict:
     por categoria de indicio, y las limitaciones que hay que decir en voz
     alta (cobertura de datos, que NO se puede afirmar). Usa esto primero
     para dar contexto antes de responder preguntas puntuales."""
-    titulares = _consultar("SELECT * FROM titulares")
-    meta_filas = _consultar("SELECT datos FROM meta WHERE id = 1")
-    meta = json.loads(meta_filas[0]["datos"]) if meta_filas else {}
-    return {"titulares": titulares, "limitaciones": meta.get("limitaciones", [])}
+    meta = consultas.meta()
+    return {
+        "titulares": consultas.titulares(),
+        "indicios": consultas.indicios(),
+        "cobertura": meta["cobertura"],
+        "limitaciones": meta["limitaciones"],
+        "umbral_atipico": "una bandera fuerte (peso 3) o 6 puntos acumulados",
+    }
 
 
 @mcp.tool()
@@ -82,64 +76,112 @@ def buscar_contratos_atipicos(
     departamento: str | None = None,
     tipo_contrato: str | None = None,
     valor_minimo: float | None = None,
+    bandera: str | None = None,
     limite: int = 20,
 ) -> list[dict]:
     """Busca contratos marcados como atipicos (indicio fuerte, o 6+ puntos
     acumulados de banderas mas debiles). Filtros opcionales por entidad
     (coincidencia parcial), departamento, tipo_contrato (OBRA/INTERVENTORIA/
-    CONSULTORIA/CONCESION/ASOCIACION PUBLICO PRIVADA) y valor minimo en COP.
+    CONSULTORIA/CONCESION/ASOCIACION PUBLICO PRIVADA), valor minimo en COP y
+    una bandera concreta (usa `glosario_banderas` para ver los nombres).
     Devuelve como maximo 50 filas aunque se pida mas."""
-    limite = max(1, min(limite, LIMIT_DURO))
-    condiciones = ["(n_banderas_fuertes >= 1 OR puntos_crudos >= 6)"]
-    params = []
-    if entidad:
-        condiciones.append("entidad ILIKE %s")
-        params.append("%%%s%%" % entidad)
-    if departamento:
-        condiciones.append("departamento ILIKE %s")
-        params.append("%%%s%%" % departamento)
-    if tipo_contrato:
-        condiciones.append("tipo_contrato = %s")
-        params.append(tipo_contrato.upper())
-    if valor_minimo:
-        condiciones.append("valor_plausible >= %s")
-        params.append(valor_minimo)
-    sql = """
-        SELECT id_contrato, entidad, departamento, ciudad, tipo_contrato, modalidad,
-               valor_plausible, n_banderas_fuertes, puntos_crudos, proveedor,
-               anio, urlproceso
-        FROM puntajes
-        WHERE %s
-        ORDER BY n_banderas_fuertes DESC, puntos_crudos DESC, valor_plausible DESC
-        LIMIT %%s
-    """ % " AND ".join(condiciones)
-    return _consultar(sql, params + [limite])
+    filas, _ = consultas.buscar_contratos(
+        entidad=entidad,
+        departamento=departamento,
+        tipo_contrato=tipo_contrato,
+        valor_min=valor_minimo,
+        banderas=[bandera] if bandera else None,
+        solo_atipicos=True,
+        limite=_tope(limite),
+    )
+    return filas
+
+
+@mcp.tool()
+def detalle_contrato(id_contrato: str) -> dict:
+    """Ficha completa de un contrato, con cada bandera encendida y la
+    EVIDENCIA numerica que la disparo (cuantos proveedores comparten la
+    cuenta, cuantos contratos hermanos hubo en 30 dias, etc.). Usa esto
+    cuando tengas que explicar POR QUE un contrato esta marcado: sin la
+    evidencia, no lo afirmes."""
+    datos = consultas.contrato(id_contrato)
+    if datos is None:
+        return {"encontrado": False, "mensaje": "No existe el contrato '%s'" % id_contrato}
+    return {"encontrado": True, "contrato": datos}
 
 
 @mcp.tool()
 def perfil_entidad(nombre_o_nit: str) -> dict:
     """Resumen de una entidad contratante: cuantos contratos tiene, cuanto
-    ha adjudicado, y cuantos de sus contratos estan marcados como atipicos.
-    Recibe el nombre (coincidencia parcial) o el NIT exacto."""
-    # any_value() requiere Postgres >=16 (docker-compose.yml ya usa postgres:16-alpine)
-    sql = """
-        SELECT
-          any_value(entidad)                                          AS entidad,
-          nit_entidad,
-          any_value(departamento)                                     AS departamento,
-          count(*)                                                    AS n_contratos,
-          sum(valor_plausible)                                        AS valor_total,
-          sum((n_banderas_fuertes >= 1 OR puntos_crudos >= 6)::INT)    AS n_atipicos
-        FROM puntajes
-        WHERE nit_entidad = %s OR entidad ILIKE %s
-        GROUP BY nit_entidad
-        ORDER BY n_contratos DESC
-        LIMIT 5
-    """
-    filas = _consultar(sql, [nombre_o_nit, "%%%s%%" % nombre_o_nit])
+    ha adjudicado, cuantos de sus contratos estan marcados como atipicos,
+    sus banderas mas frecuentes y sus principales proveedores. Recibe el
+    nombre (coincidencia parcial) o el NIT exacto."""
+    # NIT exacto primero: si acierta, se devuelve el perfil completo.
+    detalle = consultas.entidad(nombre_o_nit)
+    if detalle:
+        return {"encontrado": True, "coincidencias": [detalle]}
+    filas, _ = consultas.buscar_entidades(texto=nombre_o_nit, limite=5)
     if not filas:
         return {"encontrado": False, "mensaje": "Ninguna entidad coincide con '%s'" % nombre_o_nit}
     return {"encontrado": True, "coincidencias": filas}
+
+
+@mcp.tool()
+def buscar_proveedor(nombre_o_documento: str) -> dict:
+    """Perfil de un proveedor y su red: cuantas obras e interventorias
+    hace, a cuantas entidades le contrata, y con que otros proveedores
+    esta unido por llaves que deberian ser unicas (cuenta bancaria,
+    representante legal, domicilio). Que un proveedor haga obra E
+    interventoria, o este unido a otro por dos o mas llaves, es el indicio
+    fuerte. La cuenta bancaria nunca se publica: solo el hecho de que se
+    comparte."""
+    detalle = consultas.proveedor(nombre_o_documento)
+    if detalle:
+        return {"encontrado": True, "coincidencias": [detalle]}
+    filas, _ = consultas.buscar_proveedores(texto=nombre_o_documento, limite=5)
+    if not filas:
+        return {"encontrado": False, "mensaje": "Ningun proveedor coincide con '%s'" % nombre_o_documento}
+    return {"encontrado": True, "coincidencias": filas}
+
+
+@mcp.tool()
+def alertas_preadjudicacion(
+    departamento: str | None = None,
+    entidad: str | None = None,
+    limite: int = 20,
+) -> dict:
+    """Licitaciones de obra publica que TODAVIA aceptan ofertas y presentan
+    banderas. A diferencia del resto de las tools, esto no mira contratos
+    firmados: mientras el proceso sigue abierto, una observacion al pliego
+    puede cambiar el resultado. Aclara siempre que solo el universo
+    'accionable' admite una observacion con efecto hoy."""
+    if not consultas.hay_alertas():
+        return {
+            "disponible": False,
+            "mensaje": (
+                "No hay un snapshot de licitaciones abiertas cargado en la base. "
+                "Dilo tal cual: no inventes procesos abiertos."
+            ),
+        }
+    filas, total = consultas.buscar_alertas(
+        universo="accionable", departamento=departamento,
+        entidad=entidad, min_banderas=1, limite=_tope(limite),
+    )
+    return {
+        "disponible": True,
+        "resumen": consultas.resumen_alertas(),
+        "accionables_con_alerta": total,
+        "procesos": filas,
+    }
+
+
+@mcp.tool()
+def glosario_banderas() -> list[dict]:
+    """Las 26 banderas con su peso (3 = indicio fuerte, 1 = contexto), su
+    grupo y que significa cada una. Usa esto para explicar en palabras que
+    quiere decir una bandera que aparece en un contrato, en vez de citar
+    el nombre de la columna."""
+    return consultas.glosario()
 
 
 def main():

@@ -29,6 +29,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW = os.path.join(ROOT, "data", "raw", "abiertos")
 DB = os.path.join(ROOT, "data", "warehouse", "plomada.duckdb")
 SQL_STAGE = os.path.join(ROOT, "sql", "30_procesos_abiertos.sql")
+# Vista de serving del API. Vive aqui y no en build.py --all porque
+# depende de `alertas`, que solo existe despues de este script.
+SQL_SERVING = os.path.join(ROOT, "sql", "91_serving_alertas.sql")
 
 
 def snapshots():
@@ -96,6 +99,12 @@ def main():
         LEFT JOIN abiertos_ayer y USING (id_del_proceso)
         """
     )
+
+    # Publica las alertas para el API (/v1/alertas). Si nadie corre esto,
+    # api_alertas no existe y el endpoint responde 503 con un mensaje
+    # claro, igual que el tablero cuando falta alertas.json.
+    with open(SQL_SERVING, "r", encoding="utf-8") as fh:
+        con.execute(fh.read())
 
     tot = con.execute("SELECT count(*) FROM alertas").fetchone()[0]
     por_universo = con.execute(

@@ -391,3 +391,137 @@ def test_emparejamiento_score_en_rango(con):
         "WHERE score IS NOT NULL AND (score < 0 OR score > 1)"
     ).fetchone()[0]
     assert mal == 0, "%d filas con score de similitud fuera de [0,1]" % mal
+
+
+# ---------------------------------------------------------------------------
+# 10. Capa de serving del API (90-99).
+# Lo que sale por HTTP es EXACTAMENTE lo que estas tablas contienen: si una
+# se desincroniza del warehouse, la API publica una cifra distinta a la del
+# tablero para la misma pregunta. La puerta de privacidad de la seccion 6
+# ya cubre estas tablas: recorre las que empiezan por `api_`.
+# ---------------------------------------------------------------------------
+def test_api_contratos_cubre_todo_el_universo(con):
+    """api_contratos sale de riesgo_total con un LEFT JOIN a tipo_obra. Si
+    ese join duplicara (tipo_obra con mas de una fila por contrato), la API
+    contaria contratos de mas y toda cifra agregada quedaria inflada."""
+    if "api_contratos" not in tablas(con):
+        pytest.skip("la capa de serving aun no se ha construido (paso 90)")
+    n_api, n_puntajes = con.execute(
+        "SELECT (SELECT count(*) FROM api_contratos), (SELECT count(*) FROM puntajes)"
+    ).fetchone()
+    assert n_api == n_puntajes, (
+        "api_contratos tiene %d filas y puntajes %d: el join con tipo_obra "
+        "esta duplicando" % (n_api, n_puntajes)
+    )
+
+
+def test_api_es_atipico_respeta_el_umbral_publicado(con):
+    """El umbral (una bandera fuerte o 6 puntos) esta publicado en el README,
+    en /v1/meta y en la respuesta de cada contrato. Materializarlo como
+    columna evita que cada consumidor lo re-derive a mano -- pero solo si
+    coincide con la definicion."""
+    if "api_contratos" not in tablas(con):
+        pytest.skip("la capa de serving aun no se ha construido (paso 90)")
+    mal = con.execute(
+        "SELECT count(*) FROM api_contratos "
+        "WHERE es_atipico IS DISTINCT FROM (n_banderas_fuertes >= 1 OR puntos_crudos >= 6)"
+    ).fetchone()[0]
+    assert mal == 0, "%d filas donde es_atipico no coincide con el umbral publicado" % mal
+
+
+def test_api_banderas_tiene_las_26_con_peso_valido(con):
+    """El glosario es lo que hace auditable el puntaje. Si una bandera se
+    agrega en 03_ranking.sql y no llega aqui, la API la devuelve encendida
+    en un contrato sin poder decir que significa."""
+    if "api_banderas" not in tablas(con):
+        pytest.skip("la capa de serving aun no se ha construido (paso 90)")
+    n, esperadas = con.execute(
+        "SELECT (SELECT count(*) FROM api_banderas), "
+        "(SELECT count(*) FROM pesos) + (SELECT count(*) FROM pesos_grafo)"
+    ).fetchone()
+    assert n == esperadas, "api_banderas tiene %d banderas y deberia tener %d" % (n, esperadas)
+    mal = con.execute(
+        "SELECT count(*) FROM api_banderas WHERE peso NOT IN (1, 2, 3) OR glosa IS NULL"
+    ).fetchone()[0]
+    assert mal == 0, "%d banderas con peso fuera de 1-3 o sin glosa" % mal
+
+
+def test_api_banderas_apunta_a_columnas_de_evidencia_que_existen(con):
+    """La ficha de contrato arma la evidencia leyendo los nombres de columna
+    de esta tabla. Un nombre mal escrito no rompe nada: simplemente hace que
+    la bandera salga SIN evidencia, que es justo lo que el proyecto dice que
+    no publica. Por eso se verifica aqui y no se descubre en produccion."""
+    if "api_banderas" not in tablas(con):
+        pytest.skip("la capa de serving aun no se ha construido (paso 90)")
+    columnas = {
+        r[0] for r in con.execute(
+            "SELECT column_name FROM duckdb_columns() WHERE table_name = 'api_contratos'"
+        ).fetchall()
+    }
+    faltan = set()
+    for (evidencia,) in con.execute(
+        "SELECT evidencia FROM api_banderas WHERE evidencia IS NOT NULL"
+    ).fetchall():
+        faltan |= {c.strip() for c in evidencia.split(",")} - columnas
+    assert not faltan, "api_banderas apunta a columnas que no existen: %s" % sorted(faltan)
+
+
+def test_api_no_publica_contratos_de_fuera_del_universo(con):
+    """Las tablas api_* son un recorte del warehouse, no una fuente nueva.
+    Cualquier id que no este en `base` seria un dato inventado."""
+    if "api_contratos" not in tablas(con):
+        pytest.skip("la capa de serving aun no se ha construido (paso 90)")
+    huerfanos = con.execute(
+        "SELECT count(*) FROM api_contratos a "
+        "WHERE NOT EXISTS (SELECT 1 FROM base b WHERE b.id_contrato = a.id_contrato)"
+    ).fetchone()[0]
+    assert huerfanos == 0, "%d contratos en la API que no estan en el universo" % huerfanos
+
+
+def test_api_clusters_solo_publica_redes_de_verdad(con):
+    """Un proveedor solo no es una red. Publicar clusters de tamano 1 daria
+    1.858 'grupos economicos' donde la mayoria es una empresa aislada."""
+    if "api_clusters" not in tablas(con):
+        pytest.skip("la capa de serving aun no se ha construido (paso 90)")
+    mal = con.execute("SELECT count(*) FROM api_clusters WHERE n_proveedores <= 1").fetchone()[0]
+    assert mal == 0, "%d clusters de un solo proveedor publicados como red" % mal
+
+
+def test_api_aristas_no_cruzan_de_cluster(con):
+    """Una arista pertenece a un cluster solo si sus DOS extremos estan en el.
+    Si se cuela una con un extremo fuera, el subgrafo que devuelve
+    /v1/red/clusters/{id} dibuja una conexion a un nodo que no esta ahi."""
+    if "api_cluster_aristas" not in tablas(con):
+        pytest.skip("la capa de serving aun no se ha construido (paso 90)")
+    mal = con.execute(
+        """
+        SELECT count(*) FROM api_cluster_aristas a
+        WHERE NOT EXISTS (SELECT 1 FROM api_cluster_nodos n
+                          WHERE n.cluster_id = a.cluster_id AND n.doc = a.doc_a)
+           OR NOT EXISTS (SELECT 1 FROM api_cluster_nodos n
+                          WHERE n.cluster_id = a.cluster_id AND n.doc = a.doc_b)
+        """
+    ).fetchone()[0]
+    assert mal == 0, "%d aristas con un extremo fuera de su propio cluster" % mal
+
+
+def test_api_limitaciones_existe_y_no_esta_vacia(con):
+    """Las limitaciones viajan CON los datos: es la razon de que meta.json y
+    /v1/meta las lleven. Una tabla vacia aqui deja al tablero y a la API
+    publicando cifras sin salvedad."""
+    if "api_limitaciones" not in tablas(con):
+        pytest.skip("la capa de serving aun no se ha construido (paso 90)")
+    n = con.execute("SELECT count(*) FROM api_limitaciones WHERE trim(texto) != ''").fetchone()[0]
+    assert n >= 5, "solo %d limitaciones publicadas; el proyecto declara al menos 8" % n
+
+
+def test_api_meta_cuadra_con_el_universo(con):
+    if "api_meta" not in tablas(con):
+        pytest.skip("la capa de serving aun no se ha construido (paso 90)")
+    m = con.execute(
+        "SELECT contratos, contratos_atipicos, cobertura_cedula_ordenador FROM api_meta"
+    ).fetchone()
+    n = con.execute("SELECT count(*) FROM api_contratos").fetchone()[0]
+    assert m[0] == n, "api_meta dice %d contratos y api_contratos tiene %d" % (m[0], n)
+    assert 0 < m[1] < m[0], "contratos_atipicos fuera de rango: %s de %s" % (m[1], m[0])
+    assert 0 < m[2] <= 1, "la cobertura debe ser una fraccion, no %s" % (m[2],)

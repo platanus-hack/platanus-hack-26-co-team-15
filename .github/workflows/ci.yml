@@ -23,3 +23,16 @@ jobs:
       - name: puertas de calidad (sin warehouse, se saltan las que lo necesitan)
         if: github.ref != 'refs/heads/main'
         run: python -m pytest tests/ -v
+
+  # Suite aparte: el API vive en su propio entorno (el SDK de MCP exige
+  # Python >=3.10 y el pipeline esta fijado a 3.9). No necesita Postgres --
+  # la capa de consulta se sustituye por dobles -- asi que corre en cada PR.
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r api/requirements-dev.txt
+      - name: contrato del API
+        run: python -m pytest api/tests/ -v
