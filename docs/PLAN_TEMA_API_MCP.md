@@ -1,14 +1,12 @@
-# Plan: tema oscuro con conmutador, enlace «API» en la navegación, y el MCP en el sitio
+# Plan: tema oscuro con conmutador, vista `/api/` y vista del asistente MCP
 
 **Este archivo es autocontenido y es la única fuente de verdad para este
-trabajo.** Fecha: 2026-08-23. Rama de trabajo: `andres_nino`.
+trabajo.** Fecha: 2026-08-23. Rama: `main` (las ramas ya se fusionaron; el
+repo tiene el sitio, el API y el MCP juntos).
 
-Supersede parcialmente a `design/PLAN_DISENO.md` y a
-`design/plomada/VALIDACION.md` en los puntos listados en §3. Donde este
-archivo y esos contradigan, manda este.
-
-No necesitas leer `PLAN_DISENO.md` para ejecutar. Si lo abres, lee antes §3 o
-vas a implementar una regla revocada.
+Supersede parcialmente a `design/PLAN_DISENO.md`, a
+`design/plomada/VALIDACION.md` y a `MCP.md` §4 en los puntos listados en §3.
+Donde este archivo y esos contradigan, manda este.
 
 Cuatro entregables, en este orden:
 
@@ -16,16 +14,54 @@ Cuatro entregables, en este orden:
 |---|---|---|---|
 | 1 | **F1** | Tokens de banda oscura + botón conmutador claro/oscuro en el nav | — |
 | 2 | **F2** | Gráficos y mapa que se re-pintan al cambiar de tono | F1 |
-| 3 | **F3** | Enlace «API» en la navegación + página `/api/` del sitio | — |
-| 4 | **F4** | El MCP en el sitio: widget de chat (BYOK) + cómo conectar un cliente propio | F3 |
+| 3 | **F3** | Enlace «API» en la navegación + **la vista `/api/`, construida desde cero** | — |
+| 4 | **F4** | **La vista `/asistente/`, construida desde cero**: chat con el MCP (BYOK) | F3 |
 
-Cada fase tiene su propio criterio de aceptación y deja el sitio publicable.
-Puedes parar al terminar cualquiera. Lee §9 (puntos de corte) antes de
-empezar.
+Cada fase deja el sitio publicable. Lee §9 (puntos de corte) antes de empezar.
 
 ---
 
-## 0. Cómo correr y verificar (lo único de arquitectura que necesitas)
+## 0. Lo primero: dos vistas que NO existen y hay que construir
+
+Esto es lo que más fácil se malinterpreta de este encargo, así que va antes
+que nada. **El backend del API y del MCP está construido y desplegado. La cara
+en el sitio no existe: hay que construirla.**
+
+Comprobado en el repo, no supuesto:
+
+```bash
+# ¿Hay algo de chat o de MCP en el sitio? -> NADA. Cero resultados.
+grep -rl "chat\|X-Anthropic\|mcp" plomada/static/ plomada/build.py plomada/contenido.py
+
+# ¿Qué vistas escribe hoy build.py? -> ocho, ninguna es /api/ ni /asistente/
+grep -n 'escribir("' plomada/build.py
+#   contrato/  municipio/  tablero/  mapa/  buscar/  metodologia/  index  datos/
+```
+
+| Pieza | Estado real |
+|---|---|
+| Servidor MCP (`api/app/mcp/server.py`, 7 tools) | **construido y desplegado** |
+| Proxy `/chat` BYOK (`api/app/main.py`) | **construido y desplegado** |
+| API REST `/v1` (20 endpoints, `api/app/routers/`) | **construido y desplegado** |
+| `API.md`, `MCP.md` | **escritos**, en la raíz del repo |
+| **Vista `/api/` en el sitio** | **NO EXISTE — se construye en F3** |
+| **Vista del asistente en el sitio** | **NO EXISTE — se construye en F4** |
+| `plomada/static/chat.js` | **NO EXISTE — se escribe en F4** |
+| Enlace «API» en el nav | **NO EXISTE — se agrega en F3** |
+
+O sea: F3 y F4 son **trabajo de front en `plomada/`**, escribiendo funciones
+`pagina_*()` nuevas en `plomada/build.py`, texto nuevo en
+`plomada/contenido.py`, un módulo JS nuevo en `plomada/static/` y estilos
+nuevos en `design/plomada/sitio.css`. **No es documentación ni configuración:
+son dos páginas que hoy no existen y que el lector tiene que poder visitar.**
+
+`MCP.md` §4 dice "para quien trabaje `web/` (o el proyecto Vercel nuevo)". Eso
+quedó viejo: **el front del proyecto es `plomada/`**. `web/index.html` es el
+tablero anterior y no se toca.
+
+---
+
+## 1. Cómo correr y verificar
 
 `plomada/static/estilo.css` es un **artefacto generado**. `design/construir.py`
 concatena, en este orden:
@@ -41,17 +77,16 @@ Como las piezas de `design/plomada/` van después del vendor, **un `:root` ahí
 sobrescribe cualquier token de Modernist sin tocar `design/modernist/`.** Ese
 es el mecanismo central de F1.
 
-La cadena de verificación completa, que se corre **al cierre de cada fase**:
+La cadena completa, que se corre **al cierre de cada fase**:
 
 ```bash
 python3 design/construir.py            # compone estilo.css; falla si queda una URL externa
 python3 plomada/build.py               # regenera plomada/site/; corre test_privacy y BORRA site/ si falla
 python3 -m pytest tests/               # puertas de calidad del repo
-python3 -m http.server -d plomada/site 8765   # y se mira en el navegador
+python3 plomada/servir.py              # (o python3 -m http.server -d plomada/site 8765) y se mira
 ```
 
-Si tocas algo en `frontend/src/**` (solo aplica si eliges la variante de isla
-de Vue en F4), además:
+Si tocas `frontend/src/**` (solo si eliges la variante de isla de Vue en F4):
 
 ```bash
 npm --prefix frontend install
@@ -64,64 +99,56 @@ recompilas, el build de Python falla. No es un test roto, es la puerta.
 
 ---
 
-## 1. Estado verificado del proyecto
+## 2. Estado verificado del proyecto
 
 Todo lo de esta sección se comprobó contra el repo y contra producción hoy
-(2026-08-23). No es suposición.
+(2026-08-23), después de la fusión de ramas.
 
-### 1.1 El sitio
+### 2.1 El repo ya está unificado
 
-- El sitio lo genera `plomada/build.py` a `plomada/site/` (en `.gitignore`).
+`main` (`ccd9d86`) tiene todo junto: el sitio `plomada/`, el sistema de diseño
+`design/`, el API `api/` completo (7 tools de MCP + los routers de `/v1`),
+`API.md` y `MCP.md` en la raíz, y `render.yaml` con la topología de tres
+servicios. **Ya no hay que ir a buscar nada a otra rama.**
+
+### 2.2 El sitio
+
+- Lo genera `plomada/build.py` a `plomada/site/` (en `.gitignore`).
   **`build.py` es el ÚNICO escritor de `site/`.**
-- Las ocho vistas (portada, `/tablero/`, `/mapa/`, `/buscar/`,
-  `/metodologia/`, `/datos/`, `/contrato/<slug>/`, `/municipio/<slug>/`) pasan
-  todas por `pagina()` (`plomada/build.py:89`): **un solo shell HTML, un solo
-  `<nav>`** (`nav()`, `plomada/build.py:54`). Cambiar el nav o el `<head>` en
-  un solo lugar cambia el sitio entero.
+- Las ocho vistas pasan todas por `pagina()` (`plomada/build.py:89`): **un
+  solo shell HTML, un solo `<nav>`** (`nav()`, `build.py:54`). Cambiar el nav
+  o el `<head>` en un solo lugar cambia el sitio entero.
 - La plantilla emite `<html lang="es">` sin `<head>` explícito; todo lo que va
   antes de `<body>` termina en el head que crea el navegador.
 - El sitio se hidrata en el navegador contra el API real
   (`window.PLOMADA_API_URL`, inyectado en `pagina()`, `build.py:102`).
-  `plomada/static/api.js` es el único módulo que habla HTTP.
+  `plomada/static/api.js` es el único módulo que habla HTTP con `/v1`.
+- Patrón a copiar para las vistas nuevas: `pagina_buscar()` (`build.py:516`)
+  es una vista que se hidrata entera en JS; `pagina_datos()` (`build.py:857`)
+  es una vista de puro texto. F3 se parece a la segunda, F4 a la primera.
 
-### 1.2 Las dos ramas están divergidas — léelo antes de tocar `api/`
+### 2.3 El API y el MCP están vivos (verificado con `curl`)
 
-- `andres_nino` (esta rama) tiene el sitio estático `plomada/` y `design/`.
-  **`origin/main` NO tiene `plomada/`.**
-- `origin/main` tiene el API y el MCP al día (`API.md`, `api/` con 7 tools) —
-  es lo que está **desplegado**. El `api/` de esta rama está **desfasado**
-  (solo 3 tools y sin `/v1`).
-- **No reconstruyas ni "arregles" `api/` en esta rama.** El trabajo de F4 es
-  de front: consume el servicio que ya existe. Si alguien necesita tocar el
-  API, va en `main`.
-
-### 1.3 El API y el MCP ya están en producción (verificado hoy)
-
-`https://plumb-duy6.onrender.com` responde. Comprobado con `curl`:
+El servicio en producción **hoy** es `https://plumb-duy6.onrender.com`:
 
 | Ruta | Estado | Nota |
 |---|---|---|
-| `GET /openapi.json` | 200 | 22 rutas; `info.title` = "Plomada API", versión 1.0.0 |
-| `GET /docs` | 200 | Swagger UI |
-| `GET /redoc` | 200 | ReDoc |
+| `GET /health` | 200 | |
+| `GET /openapi.json` | 200 | 22 rutas, `info.title` = "Plomada API", v1.0.0 |
+| `GET /docs` · `GET /redoc` | 200 | Swagger y ReDoc |
 | `GET /v1` | 200 | catálogo de endpoints |
-| `POST /chat` sin header | **422** | `{"error":{"codigo":"parametro_invalido",...,"loc":["header","X-Anthropic-Api-Key"]}}` |
-| `POST /mcp/` | 200 | `initialize` responde; ojo: **`/mcp` sin barra da 307** |
+| `POST /chat` sin header | **422** | `{"error":{"codigo":"parametro_invalido","detalle":[{"loc":["header","X-Anthropic-Api-Key"],...}]}}` |
+| `POST /mcp/` | 200 | `initialize` responde. **`/mcp` sin barra da 307** |
 
-Endpoints `/v1` publicados: `/v1`, `/v1/meta`, `/v1/banderas`, `/v1/titulares`,
+Endpoints `/v1`: `/v1`, `/v1/meta`, `/v1/banderas`, `/v1/titulares`,
 `/v1/indicios`, `/v1/municipios`, `/v1/departamentos`, `/v1/tipos-obra`,
 `/v1/fuentes`, `/v1/autosupervision`, `/v1/contratos`,
 `/v1/contratos/{id_contrato}`, `/v1/entidades`, `/v1/entidades/{nit_entidad}`,
 `/v1/proveedores`, `/v1/proveedores/{doc}`, `/v1/red/clusters`,
 `/v1/red/clusters/{cluster_id}`, `/v1/alertas`, `/v1/alertas/resumen`.
 
-**CORS está abierto (`access-control-allow-origin: *`) tanto en `/v1/*` como
-en `/chat`**, y el preflight de `/chat` ya permite el header
-`x-anthropic-api-key`. Es decir: **el widget de F4 se puede construir y probar
-hoy mismo contra producción, sin tocar Render y sin ningún blocker de
-infraestructura.**
-
-Las 7 tools que expone el MCP en producción (verificado con `tools/list`):
+Las 7 tools del MCP (verificado con `tools/list` contra producción, y coinciden
+con `api/app/mcp/server.py`):
 
 | Tool | Qué responde |
 |---|---|
@@ -133,35 +160,57 @@ Las 7 tools que expone el MCP en producción (verificado con `tools/list`):
 | `alertas_preadjudicacion` | licitaciones que todavía aceptan ofertas |
 | `glosario_banderas` | las 26 banderas con su peso |
 
-`MCP.md` (raíz) documenta el contrato de `/chat` y `API.md` (existe en
-`origin/main`, no en esta rama) documenta los `/v1`. Para leer `API.md` desde
-aquí: `git show origin/main:API.md`.
+**CORS está abierto** (`access-control-allow-origin: *`) en `/v1/*` y en
+`/chat`, y el preflight de `/chat` ya permite `x-anthropic-api-key`
+(`api/app/config.py:43` — `cors_origins` vacío significa abierto, a propósito:
+los datos son públicos). **No hay ningún blocker de infraestructura: F3 y F4
+se construyen y se prueban hoy contra producción.**
 
-### 1.4 Dónde ya está resuelto el color oscuro
+### 2.4 Dos URLs del API conviven — no hardcodees ninguna
 
-**Existe un set de tokens oscuros ya diseñado y con contraste razonado**, de
-un rebrand que quedó sin aplicar:
+`render.yaml` (recién actualizado) declara tres servicios y llama al API
+`plomada-api`, con `SELF_URL: https://plomada-api.onrender.com`. **Ese host
+todavía no existe: responde 404.** El Blueprint aún no se ha aplicado. Mientras
+tanto:
+
+- el que está vivo es `plumb-duy6.onrender.com`;
+- `render.yaml` sigue apuntando el sitio a `PLOMADA_API_URL: https://plumb-duy6.onrender.com`;
+- `plomada/build.py:25`, `plomada/static/api.js:32` y
+  `pipeline/api_cliente.py:40` tienen ese mismo host como valor por defecto.
+
+**Consecuencia para este plan:** las vistas nuevas toman la base del API de
+`API_URL` (`build.py:25`, configurable con `PLOMADA_API_URL`) y de
+`API_BASE` (`static/api.js`). **Ni una URL de API escrita a mano en el HTML
+ni en el JS nuevo.** El día que se aplique el Blueprint, se cambia una
+variable de entorno y las dos vistas se mudan solas.
+
+Vale la pena avisarlo en el PR: `SELF_URL` y `PLOMADA_API_URL` de `render.yaml`
+apuntan hoy a hosts distintos. No lo arregles desde este plan (es decisión de
+quien maneje Render), pero no construyas nada que dependa de que coincidan.
+
+### 2.5 Dónde ya está resuelto el color oscuro
+
+Existe un set de tokens oscuros ya diseñado y con contraste razonado, de un
+rebrand que quedó sin aplicar:
 
 ```
 /home/rarechimera87/Server/Backups/Plumb-rebrand-2026-08-22/copias/design/PLAN_REBRAND.md   §3
 ```
 
-Ese plan proponía **banda oscura única, sin conmutador**. Este plan pide otra
-cosa (dos tonos con conmutador), así que **no lo apliques tal cual**: lo que
-se reutiliza son los **valores de token** de su §3, transplantados a un
-bloque `[data-tema="oscuro"]`. Los valores ya están copiados en §4.2 de este
-documento — no necesitas abrir el backup, pero está ahí si quieres el
-razonamiento largo de cada decisión (inversión de la rampa neutra, sombras,
-glow).
+Ese plan proponía **banda oscura única, sin conmutador**. Aquí se pide otra
+cosa (dos tonos con conmutador), así que **no lo apliques tal cual**: lo que se
+reutiliza son los **valores de token**, transplantados a un bloque
+`[data-tema="oscuro"]`. Ya están copiados en §4.2 — no necesitas abrir el
+backup, pero ahí está el razonamiento largo.
 
-Ese backup también contiene un cambio de tipografía (Instrument Serif) y una
-paleta categórica nueva. **Nada de eso entra en este plan.** Fuera de alcance.
+Ese backup también trae un cambio de tipografía (Instrument Serif) y una
+paleta categórica nueva. **Nada de eso entra aquí.** Fuera de alcance.
 
 ---
 
-## 2. Restricciones inviolables
+## 3. Restricciones inviolables
 
-Violar cualquiera de estas tumba el build, el test o el proyecto.
+Violar cualquiera tumba el build, el test o el proyecto.
 
 1. **Cero dependencias externas en tiempo de carga.** Sin CDN, sin Google
    Fonts, sin npm en runtime. `design/construir.py` hace `sys.exit` si queda
@@ -170,57 +219,52 @@ Violar cualquiera de estas tumba el build, el test o el proyecto.
 2. **`design/modernist/` no se edita. Ni un carácter.** Todo va en
    `design/plomada/`. `git diff design/modernist/` debe quedar vacío.
 3. **`plomada/static/estilo.css` no se edita a mano.** Lo genera
-   `python3 design/construir.py`. Está commiteado, así que sí hay que
-   commitear el regenerado — pero nunca editarlo.
+   `python3 design/construir.py`. Está commiteado: hay que commitear el
+   regenerado, nunca editarlo.
 4. **`plomada/build.py` es el único escritor de `plomada/site/`.**
 5. **Cifras reales únicamente.** Prohibido inventar métricas o ejemplos con
    números falsos. Si falta un dato: `—` con nota "sin dato".
 6. **Vocabulario prohibido.** `corrupt*`, `fraude*`, `fraudulent*`, `delito*`,
    `delictiv*` y similares tumban el build
-   (`plomada/test_privacy.py::test_vocabulario`, y sus gemelos
-   `test_vocabulario_json` y `test_vocabulario_fuentes` que barren
-   `site/**/*.json` y `frontend/src/**`). El tono es **"indicio, no
-   acusación"** y la salvedad viaja pegada a cada cifra. **Esto aplica a todo
-   el texto nuevo de las fases 3 y 4**, incluido el texto de bienvenida del
-   widget de chat.
-7. **Sin `v-html`** en componentes Vue (`test_sin_v_html`), y sin `innerHTML`
-   con texto que venga del API o del modelo. En F4 el texto del asistente se
-   inserta con `textContent`, nunca como HTML.
+   (`test_vocabulario`, más `test_vocabulario_json` que barre `site/**/*.json`
+   y `test_vocabulario_fuentes` que barre `frontend/src/**`). El tono es
+   **"indicio, no acusación"**. **Aplica a todo el texto nuevo de F3 y F4**,
+   incluido el mensaje de bienvenida del asistente.
+7. **Sin `v-html`** (`test_sin_v_html`) y sin `innerHTML` con texto que venga
+   del API o del modelo. En F4 la respuesta del asistente se inserta con
+   `textContent`, nunca como HTML.
 8. **Leyenda siempre visible** en todo gráfico de 2+ series, y cada gráfico
    conserva su gemelo en tabla. F2 no puede romper esto.
 9. **El satelital de Esri sigue siendo click-to-load.**
 
----
-
-## 3. Reglas del repo que este plan REVOCA
+### Reglas que este plan REVOCA
 
 | Regla revocada | Dónde está escrita | Reemplazo |
 |---|---|---|
-| "Banda clara. No hay modo oscuro en esta fase. No agregar `prefers-color-scheme`." | `design/PLAN_DISENO.md` §1.4 (líneas 51–52) | **Dos bandas con conmutador explícito.** `prefers-color-scheme` se usa **solo** para elegir el tono inicial de un visitante que nunca eligió; a partir de su primer clic manda su elección. |
+| "Banda clara. No hay modo oscuro en esta fase. No agregar `prefers-color-scheme`." | `design/PLAN_DISENO.md` §1.4 (líneas 51–52) | **Dos bandas con conmutador explícito.** `prefers-color-scheme` se usa **solo** para el tono inicial de quien nunca eligió; tras su primer clic manda su elección. |
 | "Modo oscuro: DECIDIDO, queda fuera de la fase 1." | `design/plomada/VALIDACION.md` §3 (líneas 71–75) | Se ejecuta ahora. |
-| Comentario "se pierde en esta fase a propósito… recuperarlo exige un set de tokens oscuros" | `design/plomada/dataviz.css` líneas 25–27 | El set existe (§4.2). Reescribe ese comentario. |
+| Comentario "se pierde en esta fase a propósito… recuperarlo exige un set de tokens oscuros" | `design/plomada/dataviz.css` líneas 25–27 | El set existe (§4.2). Reescribe el comentario. |
+| "Widget de chat… para quien trabaje `web/` (o el proyecto Vercel nuevo)" | `MCP.md` §4 | El front es `plomada/`. El widget se construye como una **vista propia del sitio** (F4). |
 
-**Actualiza los tres archivos** al cerrar F1: `PLAN_DISENO.md` §1.4,
-`VALIDACION.md` §3 y el comentario de `dataviz.css`. Si los dejas
-contradiciendo el código, el próximo que lea el repo implementa la regla
+**Actualiza esos cuatro archivos** al cerrar la fase correspondiente. Si los
+dejas contradiciendo el código, el próximo que lea el repo implementa la regla
 vieja.
 
-Lo que **no** cambia: mono acento (no se introducen hues nuevos), radio 0,
-reglas de 2px, flush left, tipografía Archivo. Esto es un cambio de **banda de
-color**, no un rebranding.
+Lo que **no** cambia: mono acento (sin hues nuevos), radio 0, reglas de 2px,
+flush left, tipografía Archivo. Esto es un cambio de **banda de color**, no un
+rebranding.
 
 ---
 
 ## 4. F1 — Tokens de banda oscura y conmutador
 
-La fase de mayor impacto y la más barata. Si solo alcanzas a hacer una, que
-sea esta.
+La fase de mayor impacto y la más barata. Si solo alcanzas a hacer una, esta.
 
 ### 4.1 Una quinta pieza de CSS: `design/plomada/tema.css`
 
 No metas los tokens oscuros dentro de `sitio.css` (ya tiene 491 líneas de
 layout y se vuelve imposible de auditar). Crea una pieza nueva y **regístrala
-en el build**:
+en el build**.
 
 **Editar `design/construir.py`:**
 
@@ -238,23 +282,21 @@ def main():
               sitio.strip(), tema.strip(), ""]
 ```
 
-**`tema.css` va de ÚLTIMO**, después de `sitio.css`. Razón: `sitio.css`
-declara tokens `--pl-*` en `:root` y algunos colores derivados; el bloque de
-tema tiene que poder ganarle a todo lo anterior sin depender de
-especificidad accidental.
+**`tema.css` va de ÚLTIMO**, después de `sitio.css`: `sitio.css` declara
+tokens `--pl-*` y colores derivados, y el bloque de tema tiene que poder
+ganarle a todo lo anterior sin depender de especificidad accidental.
 
-Actualiza también, en el mismo commit:
-- la constante `CABECERA` de `construir.py` (la lista de "cuatro piezas" pasa
-  a cinco), porque esa cabecera se escribe literal en `estilo.css` y hoy dice
-  "cuatro";
-- el docstring de `construir.py`, que enumera las piezas;
+En el mismo commit actualiza:
+- la constante `CABECERA` de `construir.py` (dice "cuatro piezas", pasan a cinco)
+  — se escribe literal en `estilo.css`;
+- el docstring de `construir.py`, que las enumera;
 - `design/VENDOR.md`, si menciona la composición de cuatro piezas.
 
 ### 4.2 El contenido de `design/plomada/tema.css`
 
-Estructura: el tono claro **no se redefine** (Modernist ya es claro; tocarlo
-sería duplicar el sistema). Solo se declara el bloque oscuro, colgado del
-atributo `data-tema` del `<html>`.
+El tono claro **no se redefine** (Modernist ya es claro; tocarlo duplicaría el
+sistema). Solo se declara el delta oscuro, colgado del atributo `data-tema`
+del `<html>`.
 
 ```css
 /* ═══════════════════════════════════════════════════════════════════════
@@ -277,7 +319,7 @@ atributo `data-tema` del `<html>`.
 :root[data-tema="oscuro"] {
   color-scheme: dark;   /* scrollbars y controles nativos acompanan */
 
-  /* fondo y superficies: negro calido, tenido al hue del acento, escalonado */
+  /* fondo y superficies: negro calido, tenido al hue del acento */
   --color-bg:      #14100f;
   --color-surface: #1c1715;
 
@@ -344,27 +386,27 @@ tiene un solo hex** — todos sus `--viz-*` son `var(--color-*)` (verificado:
 `--viz-seq-1..5: var(--color-accent-500..900)`,
 `--viz-sin-dato: var(--color-neutral-300)`). Al re-tokenizar, los cinco
 gráficos y la coropleta se re-colorean solos. **No dupliques tokens `--viz-*`
-en `tema.css`.** Lo único que hay que hacer en `dataviz.css` es corregir el
-comentario obsoleto de las líneas 25–27 (§3).
+en `tema.css`.** Lo único que se toca en `dataviz.css` es el comentario
+obsoleto de las líneas 25–27.
 
-**Después de escribir el bloque, corre este grep y revisa cada uso a ojo en el
-navegador.** La inversión de la rampa es lo más fácil de arruinar y son ~19
+Después de escribir el bloque, corre este grep y **revisa cada uso a ojo en el
+navegador**. La inversión de la rampa es lo más fácil de arruinar; son ~19
 usos, acotados:
 
 ```bash
 grep -n 'color-neutral-' design/modernist/styles.css design/plomada/*.css
 ```
 
-Atención específica a `.aviso-fijo`, que usa `accent-100` de fondo y
-`accent-800` de texto: con esta rampa queda relleno `#2b120c` sobre texto
-`#ffa593`, que es correcto — pero confírmalo, porque es el componente que
-lleva la salvedad legal y **tiene que ser legible siempre**.
+Atención a `.aviso-fijo`, que usa `accent-100` de fondo y `accent-800` de
+texto: con esta rampa queda relleno `#2b120c` con texto `#ffa593`, que es
+correcto — pero **confírmalo**, porque es el componente que lleva la salvedad
+legal y tiene que ser legible siempre.
 
 ### 4.3 El atributo `data-tema` y el script anti-parpadeo
 
 Sin esto, una recarga en modo oscuro pinta medio segundo de blanco. El script
-tiene que ser **inline y síncrono, en el `<head>`, antes de que el navegador
-pinte**. No puede ser un `<script src>` diferido.
+tiene que ser **inline y síncrono, en el `<head>`, antes del primer pintado**.
+No puede ser un `<script src>` diferido.
 
 **Editar `plomada/build.py`, función `pagina()` (línea 89).** Después de
 `<link rel="stylesheet" href="/static/estilo.css">` y antes de la línea de
@@ -373,8 +415,8 @@ pinte**. No puede ser un `<script src>` diferido.
 ```python
 # Script anti-parpadeo: fija data-tema ANTES del primer pintado. Inline y
 # sincrono a proposito -- un <script src> diferido dejaria un flash blanco
-# en cada recarga en modo oscuro. Va en pagina(), o sea en las ocho vistas
-# a la vez, porque el shell es uno solo.
+# en cada recarga en modo oscuro. Va en pagina(), o sea en TODAS las vistas
+# a la vez (las ocho de hoy mas /api/ y /asistente/), porque el shell es uno.
 TEMA_INLINE = (
     '<script>(function(){try{'
     "var t=localStorage.getItem('plomada:tema');"
@@ -385,25 +427,24 @@ TEMA_INLINE = (
 )
 ```
 
-Reglas que este script codifica y que el resto de la fase respeta:
+Reglas que este script codifica:
 
-- **Clave de `localStorage`: `plomada:tema`.** Valores válidos: `"claro"` |
-  `"oscuro"`. Cualquier otra cosa se ignora y se cae al sistema. (El prefijo
-  `plomada:` es el mismo que ya usa `static/api.js` en `sessionStorage`.)
+- **Clave de `localStorage`: `plomada:tema`.** Valores válidos `"claro"` |
+  `"oscuro"`; cualquier otra cosa se ignora y se cae al sistema. (El prefijo
+  `plomada:` es el que ya usa `static/api.js` en `sessionStorage`.)
 - **Sin elección guardada → manda `prefers-color-scheme`.** Con elección
-  guardada → manda la elección, siempre, incluso si el sistema dice lo
-  contrario.
+  guardada → manda la elección, siempre.
 - **El `try/catch` no es decorativo:** en modo privado de algunos navegadores
-  `localStorage` lanza al leer. Si lanza, se queda claro y el sitio funciona.
-- Sin JS: no hay atributo, el sitio queda claro. Degradación aceptada y
-  documentada. **No** agregues un `@media (prefers-color-scheme: dark)` suelto
-  para cubrir ese caso: duplicaría todo el bloque de tokens y crearía dos
-  fuentes de verdad que se desincronizan.
+  `localStorage` lanza al leer. Si lanza, queda claro y el sitio funciona.
+- Sin JS: no hay atributo, el sitio queda claro. Degradación aceptada. **No**
+  agregues un `@media (prefers-color-scheme: dark)` suelto para cubrirlo:
+  duplicaría el bloque de tokens y crearía dos fuentes de verdad que se
+  desincronizan.
 
 ### 4.4 El botón, en `nav()`
 
-**Editar `plomada/build.py`, función `nav()` (línea 54).** El botón va al
-final, después de los enlaces:
+**Editar `plomada/build.py`, función `nav()` (línea 54).** Va al final,
+después de los enlaces:
 
 ```python
 BOTON_TEMA = (
@@ -418,31 +459,27 @@ BOTON_TEMA = (
 Accesibilidad, no negociable:
 
 - Es un `<button type="button">`, **no** un `<a>` ni un `<div>`. Se enfoca con
-  Tab y se activa con Enter y con Espacio gratis.
-- `aria-pressed` refleja el estado ("¿está activado el tono oscuro?") y lo
-  actualiza el JS en cada cambio. El HTML lo emite en `false` porque el
-  servidor no sabe el tema del lector; el JS lo corrige al montar, antes de
-  cualquier interacción.
+  Tab y se activa con Enter y Espacio gratis.
+- `aria-pressed` refleja el estado y lo actualiza el JS en cada cambio. El HTML
+  lo emite en `false` porque el servidor no sabe el tema del lector; el JS lo
+  corrige al montar, antes de cualquier interacción.
 - El texto visible cambia con el estado: en claro dice **"Tono oscuro"** (la
-  acción, no el estado), en oscuro dice **"Tono claro"**. Si prefieres solo
-  icono, entonces `.nav-tema-texto` se vuelve texto solo para lectores de
-  pantalla (clase visually-hidden) — **nunca un botón sin nombre accesible**.
+  acción, no el estado), en oscuro **"Tono claro"**. Si prefieres solo icono,
+  `.nav-tema-texto` pasa a ser texto para lectores de pantalla — **nunca un
+  botón sin nombre accesible**.
 - El icono se dibuja **en CSS** (un círculo con `box-shadow` que se vuelve
-  luna en oscuro) o se agrega un `<symbol>` a `plomada/static/iconos.svg`, que
-  hoy solo tiene `id="info"`. **No** metas un SVG externo ni una fuente de
-  iconos: restricción 1.
+  luna) o se agrega un `<symbol>` a `plomada/static/iconos.svg`, que hoy solo
+  tiene `id="info"`. **No** metas un SVG externo ni una fuente de iconos.
 
-`.nav` de Modernist tiene `overflow-x: auto` (en `sitio.css`) y
-`.nav-brand { margin-right: auto }`, así que el botón cae a la derecha de los
-enlaces y a 320px entra en el scroll horizontal del propio nav. En F3 se le
-suma un enlace más («API»); **revisa el nav a 320px al cerrar F3, no antes**.
+`.nav` tiene `overflow-x: auto` (en `sitio.css`) y
+`.nav-brand { margin-right: auto }`, así que el botón cae a la derecha y a
+320px entra en el scroll horizontal del propio nav. En F3 se le suma el enlace
+«API»: **revisa el nav a 320px al cerrar F3, no antes**.
 
 ### 4.5 `plomada/static/tema.js`
 
-Módulo nuevo. `plomada/build.py` ya copia `static/` entero a `site/`, así que
-no hay que registrar nada; solo cargarlo. **Se carga en `pagina()` para las
-ocho vistas** (junto al `{js}` del shell, o como un `<script type="module"
-src="/static/tema.js"></script>` fijo antes de `</body>`).
+Módulo nuevo. `build.py` ya copia `static/` entero a `site/`, así que no hay
+que registrar nada; solo cargarlo desde `pagina()` para todas las vistas.
 
 Contrato del módulo — respétalo, F2 depende de él:
 
@@ -453,8 +490,8 @@ Contrato del módulo — respétalo, F2 depende de él:
  *
  * Emite un evento 'plomada:tema' en document cuando el tono cambia, con
  * detail = { tema: 'claro' | 'oscuro' }. Los graficos y el mapa se
- * resuscriben a eso para re-leer los tokens --viz-* (ver F2 del plan). El
- * CSS no necesita el evento: los tokens cambian solos.
+ * suscriben a eso para re-leer los tokens --viz-* (F2). El CSS no necesita
+ * el evento: los tokens cambian solos.
  */
 const CLAVE = 'plomada:tema';
 
@@ -472,50 +509,49 @@ export function aplicar(tema) {
 // ... el listener del click llama aplicar(temaActual() === 'oscuro' ? 'claro' : 'oscuro')
 ```
 
-Detalle que hay que implementar y que se olvida siempre: **si el lector nunca
-eligió, el sitio debe seguir al sistema en vivo.** Suscríbete a
-`matchMedia('(prefers-color-scheme: dark)')` con `addEventListener('change',
-…)` y aplica el cambio **solo si `localStorage` no tiene un valor guardado**.
-En cuanto el lector pulsa el botón una vez, esa suscripción deja de mandar.
+Detalle que se olvida siempre: **si el lector nunca eligió, el sitio debe
+seguir al sistema en vivo.** Suscríbete a
+`matchMedia('(prefers-color-scheme: dark)')` con `addEventListener('change', …)`
+y aplica el cambio **solo si `localStorage` no tiene valor guardado**. En
+cuanto el lector pulsa el botón una vez, esa suscripción deja de mandar.
 
 ### 4.6 CSS del botón, en `design/plomada/sitio.css`
 
-Va en `sitio.css` (es un componente de página), no en `tema.css` (que es solo
-tokens). Junto al bloque `─── nav ───` que ya existe:
+Va en `sitio.css` (es un componente de página), no en `tema.css` (solo tokens).
+Junto al bloque `─── nav ───` que ya existe:
 
-- Hereda tipografía y tamaño de `.nav a` (14px), pero **no** hereda sus reglas:
-  `.nav a` no aplica a un `<button>`. Escribe `.nav-tema` explícito.
+- Hereda tipografía y tamaño de `.nav a` (14px) pero **no** sus reglas: `.nav a`
+  no aplica a un `<button>`. Escribe `.nav-tema` explícito.
 - `background: none; border: 0; color: inherit; cursor: pointer;` y
-  `white-space: nowrap` (igual que `.nav a`, para el scroll a 320px).
-- Hover y `:focus-visible` como los enlaces del nav (`color: var(--color-accent)`),
-  con un `outline: 2px solid` visible en las dos bandas.
+  `white-space: nowrap` (como `.nav a`, para el scroll a 320px).
+- Hover y `:focus-visible` como los enlaces del nav
+  (`color: var(--color-accent)`), con `outline: 2px solid` visible en las dos
+  bandas.
 - Alto de toque mínimo 44px en móvil (padding, no `height` fija).
-- Transición: usa `--pl-dur` / `--pl-ease` que ya existen en `sitio.css`.
+- Transición con `--pl-dur` / `--pl-ease`, que ya existen.
   **Respeta `@media (prefers-reduced-motion: reduce)`**: sin transición.
 
-Opcional y recomendado: una transición corta de `background-color` y `color`
-en `body` para que el cambio no sea un salto seco. Máximo `--pl-dur` (140ms),
-y también dentro del guard de `prefers-reduced-motion`.
+Opcional y recomendado: transición corta de `background-color` y `color` en
+`body` para que el cambio no sea un salto seco. Máximo `--pl-dur` (140ms), y
+también dentro del guard de `prefers-reduced-motion`.
 
 ### Aceptación de F1
 
-- [ ] Los tres comandos de §0 en verde. `git diff design/modernist/` vacío.
+- [ ] Los comandos de §1 en verde. `git diff design/modernist/` vacío.
 - [ ] `estilo.css` regenerado y commiteado; su cabecera dice "cinco piezas".
 - [ ] Las ocho vistas cargan en oscuro **sin un solo bloque blanco huérfano**.
 - [ ] Recarga en oscuro: **cero destello blanco**.
-- [ ] La elección sobrevive a: recargar, navegar a otra vista, cerrar y
-      reabrir la pestaña.
-- [ ] Un lector sin elección guardada ve el tono de su sistema; al cambiar el
-      tono del sistema con la página abierta, la página lo sigue.
-- [ ] Después de pulsar el botón, el tono del sistema ya no lo pisa.
-- [ ] Ningún texto por debajo de **4,5:1** contra su fondo en ninguna de las
-      dos bandas (revisa especialmente `.aviso-fijo`, `.migas`, `.tenue`,
-      `.nota`, y todos los `color-mix(... 50%/55%/60% ...)` de `sitio.css`,
-      que sobre negro adelgazan mucho más que sobre hueso).
-- [ ] El botón se alcanza con Tab, se activa con Enter y con Espacio, y su
+- [ ] La elección sobrevive a recargar, navegar, y cerrar y reabrir la pestaña.
+- [ ] Sin elección guardada, el sitio sigue el tono del sistema **en vivo**.
+- [ ] Tras pulsar el botón, el tono del sistema ya no lo pisa.
+- [ ] Ningún texto por debajo de **4,5:1** contra su fondo en ninguna banda.
+      Revisa `.aviso-fijo`, `.migas`, `.tenue`, `.nota`, y todos los
+      `color-mix(... 50%/55%/60% ...)` de `sitio.css`: sobre negro adelgazan
+      mucho más que sobre hueso.
+- [ ] El botón se alcanza con Tab, se activa con Enter y Espacio, y su
       `aria-pressed` cambia.
 - [ ] `PLAN_DISENO.md` §1.4, `VALIDACION.md` §3 y el comentario de
-      `dataviz.css` actualizados (§3).
+      `dataviz.css` actualizados.
 
 ---
 
@@ -523,14 +559,14 @@ y también dentro del guard de `prefers-reduced-motion`.
 
 **El problema, verificado:** el CSS cambia solo, pero los gráficos **no**.
 Todos leen los tokens con `getComputedStyle` **una vez, al dibujar**, y pintan
-SVG con los valores ya resueltos. Al conmutar el tono quedan con los colores
-de la banda anterior — texto oscuro sobre fondo oscuro.
+SVG con los valores ya resueltos. Al conmutar quedan con los colores de la
+banda anterior — texto oscuro sobre fondo oscuro.
 
-Los tres puntos exactos donde se leen los tokens:
+Los tres puntos exactos:
 
 | Archivo | Qué hace |
 |---|---|
-| `plomada/static/graficos/comun.js:17` | `export function tonosViz()` — la lee cada gráfico al inicio de su `dibujar()` |
+| `plomada/static/graficos/comun.js:17` | `export function tonosViz()` — la llama cada gráfico al inicio de su `dibujar()` |
 | `plomada/static/mapa.js:16` | `function leerTonosViz()`, cacheada en `var TONO = leerTonosViz()` **al cargar el módulo** |
 | `plomada/static/graficos/{municipios,departamentos,indicios,red}.js` | cada uno hace `const T = tonosViz()` dentro de su `dibujar()` |
 
@@ -539,10 +575,9 @@ llamarlo.** No hay que refactorizar los gráficos.
 
 ### 5.1 Tablero — `plomada/static/tablero.js`
 
-Ya tiene las dos funciones de re-dibujo que usa al cambiar un filtro:
+Ya tiene las funciones de re-dibujo que usa al cambiar un filtro:
 `dibujarTerritorio(D)` (línea 120) y `dibujarRed(D)` (línea 137), más
-`Indicios.dibujar(...)` en el arranque. Suscribe exactamente lo mismo al
-evento:
+`Indicios.dibujar(...)` en el arranque. Suscribe lo mismo al evento:
 
 ```js
 document.addEventListener('plomada:tema', () => {
@@ -554,13 +589,13 @@ document.addEventListener('plomada:tema', () => {
 });
 ```
 
-Cuidado con el alcance de `D` (los datos cargados): hoy vive dentro de
-`cargar()`. Registra el listener **dentro de ese mismo alcance**, después de
-que `D` exista — no en el tope del módulo.
+Cuidado con el alcance de `D` (los datos cargados): vive dentro de `cargar()`.
+Registra el listener **dentro de ese alcance**, después de que `D` exista, no
+en el tope del módulo.
 
 Verifica que re-dibujar no duplique nodos: los `dibujar()` deben limpiar su
-contenedor antes de pintar (hoy lo hacen porque el cambio de filtro ya
-funciona; confírmalo, no lo asumas).
+contenedor antes de pintar (hoy lo hacen, porque el cambio de filtro ya
+funciona — confírmalo, no lo asumas).
 
 ### 5.2 Mapa — `plomada/static/mapa.js`
 
@@ -570,18 +605,17 @@ capa de Leaflet:
 
 ```js
 document.addEventListener('plomada:tema', function () {
-  TONO = leerTonosViz();          // reasignar, no crear una variable nueva
-  if (capa) capa.setStyle(estilo); // estilo(f) ya usa TONO por closure
+  TONO = leerTonosViz();           // reasignar, no crear una variable nueva
+  if (capa) capa.setStyle(estilo);  // estilo(f) ya usa TONO por closure
   // si hay un departamento seleccionado, re-aplicar su estilo de seleccion
-  // y repintar la leyenda de la coropleta si esta dibujada con colores
-  // resueltos en JS
+  // y repintar la leyenda si esta dibujada con colores resueltos en JS
 });
 ```
 
-`estilo(f)` (línea 37) lee `TONO` por closure, así que con reasignar la
-variable y llamar `setStyle` la coropleta entera se recolorea. **La coropleta
-no tiene tile layer** (`mapa.js` nunca llama `L.tileLayer`): es GeoJSON sobre
-el fondo de la página, así que el fondo se oscurece gratis.
+`estilo(f)` (línea 37) lee `TONO` por closure, así que con reasignar y llamar
+`setStyle` la coropleta entera se recolorea. **La coropleta no tiene tile
+layer** (`mapa.js` nunca llama `L.tileLayer`): es GeoJSON sobre el fondo de la
+página, así que el fondo se oscurece gratis.
 
 El mapa **satelital** de la ficha (`mapa-satelital.js`, tiles de Esri) es una
 foto: no tiene tema y no se toca. Lo que sí hay que revisar es el marco, los
@@ -589,14 +623,14 @@ controles y el texto de atribución alrededor.
 
 ### 5.3 Leaflet
 
-`plomada/static/vendor/leaflet/leaflet.css` es **vendor**: no se edita
-(VENDOR.md). Sus controles (`.leaflet-control-zoom`, `.leaflet-popup`,
-`.leaflet-control-attribution`) traen fondo blanco y texto oscuro fijos. En
+`plomada/static/vendor/leaflet/leaflet.css` es **vendor**: no se edita. Sus
+controles (`.leaflet-control-zoom`, `.leaflet-popup`,
+`.leaflet-control-attribution`) traen fondo blanco y texto oscuro fijos: en
 banda oscura quedan como parches blancos.
 
 Solución: **overrides en `design/plomada/sitio.css`**, colgados de
-`:root[data-tema="oscuro"]` y escritos con `var(--color-*)`, nunca con hex.
-Es el mismo mecanismo que ya usa el proyecto para no parchear el vendor.
+`:root[data-tema="oscuro"]` y escritos con `var(--color-*)`, nunca con hex. Es
+el mismo mecanismo que ya usa el proyecto para no parchear el vendor.
 
 ### 5.4 Islas de Vue
 
@@ -608,145 +642,170 @@ manifiesto.
 
 ### Aceptación de F2
 
-- [ ] Conmutar el tono **estando en `/tablero/`**: los cinco gráficos se
-      re-pintan y quedan legibles, con su leyenda y su tabla gemela intactas.
-- [ ] Conmutar el tono **estando en `/mapa/`**: la coropleta cambia de rampa,
-      los bordes de departamento se ven, y el panel lateral acompaña.
-- [ ] Los controles de Leaflet (zoom, atribución, popups) no quedan como
-      parches blancos.
-- [ ] Conmutar varias veces seguidas no duplica nodos ni deja tooltips
-      colgados.
-- [ ] Conmutar con un filtro aplicado **conserva el filtro** (no se re-carga
-      desde el API: solo se re-dibuja).
-- [ ] Las ocho vistas, no solo tablero y mapa: ficha de contrato, municipio,
-      buscador y metodología también tienen elementos pintados en JS.
+- [ ] Conmutar en `/tablero/`: los cinco gráficos se re-pintan legibles, con
+      leyenda y tabla gemela intactas.
+- [ ] Conmutar en `/mapa/`: la coropleta cambia de rampa, los bordes de
+      departamento se ven, el panel lateral acompaña.
+- [ ] Los controles de Leaflet no quedan como parches blancos.
+- [ ] Conmutar varias veces seguidas no duplica nodos ni deja tooltips colgados.
+- [ ] Conmutar con un filtro aplicado **conserva el filtro** (solo re-dibuja,
+      no re-consulta el API).
+- [ ] Todas las vistas, no solo tablero y mapa: ficha de contrato, municipio,
+      buscador y metodología también pintan cosas en JS.
 
 ---
 
-## 6. F3 — Enlace «API» en la navegación
+## 6. F3 — Construir la vista `/api/` y ponerla en la navegación
 
-### 6.1 Decisión: el enlace apunta a una página del sitio, `/api/`
+**Esta vista no existe. Se construye entera en esta fase.** No es documentación
+en Markdown: es una página del sitio, generada por `build.py`, que un lector
+visita en `https://<sitio>/api/`.
 
-Dos opciones y por qué se elige la primera:
+### 6.1 Decisión: el enlace del nav apunta a una vista del sitio, no al Swagger
 
 | Opción | Veredicto |
 |---|---|
-| **A. Nav → `/api/`, una página del sitio que documenta y enlaza a `/docs`, `/v1` y `/mcp`** | **Elegida.** El nav sale del sitio en cero enlaces hoy; el primero no debería mandar a un Swagger crudo sin la marca ni el aviso "indicio, no acusación". Además el API está en Render free tier y puede tardar 30–60 s en despertar: un enlace directo desde el nav se vería como un sitio caído. La página local carga instantánea y avisa. Y es donde vive, en F4, la sección del MCP. |
-| B. Nav → `https://plumb-duy6.onrender.com/docs` en pestaña nueva | Rechazada por lo anterior. Se conserva **dentro** de `/api/` como enlace destacado, que es donde tiene sentido. |
+| **A. Nav → `/api/`, vista propia que documenta y enlaza a `/docs`, `/v1` y `/mcp/`** | **Elegida.** El nav no sale del sitio en ningún enlace hoy; el primero no debería mandar a un Swagger crudo, sin la marca ni el aviso "indicio, no acusación". Además el API está en Render free tier y tarda 30–60 s en despertar: un enlace directo desde el nav parecería un sitio caído. La vista local carga instantánea y avisa. Y es donde cuelga, en F4, la entrada al asistente. |
+| B. Nav → `https://…/docs` en pestaña nueva | Rechazada por lo anterior. Se conserva **dentro** de `/api/` como enlace destacado. |
 
 ### 6.2 Cambios en `plomada/build.py`
 
-1. **`NAV_ENLACES`** (línea 48): agregar `("/api/", "API")`. Ponlo **después
-   de `/datos/`** — «Datos» es descargas para lectores, «API» es acceso
+1. **`NAV_ENLACES`** (línea 48): agregar `("/api/", "API")`, **después de
+   `/datos/`** — «Datos» son descargas para lectores, «API» es acceso
    programático; el orden va de más general a más técnico.
-2. **`pagina_api()`**: función nueva, con el mismo patrón que
-   `pagina_datos()` / `pagina_metodologia()`. Devuelve
-   `pagina(titulo="API", descripcion=..., cuerpo=..., ruta="/api/")`.
+2. **`pagina_api()`**: función nueva, con el patrón de `pagina_datos()`
+   (`build.py:857`) y `pagina_metodologia()` (`build.py:584`). Devuelve
+   `pagina(titulo="API", descripcion=…, cuerpo=…, ruta="/api/")`.
 3. **`main()`**: `escribir("api/index.html", pagina_api())`.
 4. **Sitemap** (línea 1107): agregar `"/api/"` a la lista de URLs estáticas.
    Si no, la página existe pero no se indexa.
 5. **Texto largo → `plomada/contenido.py`**, no incrustado en `build.py`. Ese
-   archivo existe justamente para que el texto editorial se corrija sin tocar
-   código. Añade ahí las constantes (`API_INTRO`, `API_ENDPOINTS`, …).
+   archivo existe para que el texto editorial se corrija sin tocar código.
+   Añade ahí las constantes (`API_INTRO`, `API_CONVENCIONES`, …).
 
-### 6.3 Qué contiene `/api/`
+### 6.3 Qué contiene la vista
 
-Todo esto es **verificable contra producción**: no inventes ni un endpoint ni
-un campo. La referencia canónica es `API.md`, que está en `origin/main`
-(`git show origin/main:API.md > /tmp/API.md` para leerlo), y el
-`openapi.json` en vivo.
+Todo verificable contra producción: **no inventes ni un endpoint ni un campo**.
+La referencia canónica es `API.md`, **que ahora está en la raíz del repo** (ya
+no hay que sacarlo de otra rama), y el `openapi.json` en vivo.
 
 1. **Qué es y qué no.** Datos 100% públicos del SECOP II, solo lectura, sin
    autenticación. Repetir la salvedad: **indicio para priorizar revisión, no
-   acusación**. Usa el bloque `aviso_fijo()` que ya existe en `build.py:78` —
-   no escribas un aviso nuevo.
-2. **Empezar en 30 segundos:** dos o tres `curl` reales, copiables. Por
-   ejemplo `GET /v1/meta` y `GET /v1/contratos?departamento=SANTANDER&limite=5`.
-   Verifica que devuelvan lo que dices antes de publicarlos.
+   acusación**. Usa el bloque `aviso_fijo()` que ya existe (`build.py:78`) — no
+   escribas un aviso nuevo.
+2. **Empezar en 30 segundos:** dos o tres `curl` reales y copiables (por
+   ejemplo `GET /v1/meta` y
+   `GET /v1/contratos?departamento=SANTANDER&limite=5`). **Córrelos antes de
+   publicarlos.**
 3. **Convenciones:** el sobre `{datos, meta}`, los errores
    `{error:{codigo,mensaje,detalle}}`, la paginación (`limite` tope 200,
-   `desplazamiento`, `meta.paginacion.total`), y `?formato=csv` en los
-   listados.
-4. **Tabla de los 20 endpoints `/v1`** (lista exacta en §1.3), una línea por
-   endpoint. No dupliques `API.md` entero: enlaza a `/docs` para el detalle.
+   `desplazamiento`, `meta.paginacion.total`) y `?formato=csv` en los listados.
+4. **Tabla de los 20 endpoints `/v1`** (lista exacta en §2.3), una línea cada
+   uno. No dupliques `API.md` entero: enlaza a `/docs` para el detalle.
 5. **Advertencia de cold start.** Render free tier: la primera llamada puede
-   tardar 30–60 s. Dilo en la página, con el mismo tono con que
-   `static/api.js` ya avisa "el servicio está despertando".
-6. **Enlaces salientes** (`rel="noopener"`, y marca visualmente que salen del
-   sitio): `/docs` (Swagger), `/redoc`, `/openapi.json`, `/v1` (catálogo).
-7. **Un hueco reservado para la sección de MCP**, que llena F4.
+   tardar 30–60 s. Dilo, con el mismo tono con que `static/api.js` ya avisa
+   "el servicio está despertando".
+6. **Enlaces salientes** (`rel="noopener"`, marcados visualmente como que salen
+   del sitio): `/docs`, `/redoc`, `/openapi.json`, `/v1`.
+7. **La sección del MCP y la entrada al asistente**, que llena F4 (§7.1).
 
 Detalles de implementación:
 
-- La base del API **no se hardcodea en el HTML**: sale de `API_URL`
-  (`build.py:25`), que ya es configurable por entorno
-  (`PLOMADA_API_URL`) y ya se inyecta como `window.PLOMADA_API_URL`. Si mañana
-  el servicio se mueve, la página se mueve con él.
-- Los ejemplos de `curl` van en `<pre><code>`, y las URLs dentro se construyen
-  con la misma `API_URL` interpolada en Python, no escritas a mano.
+- **La base del API no se hardcodea en el HTML**: sale de `API_URL`
+  (`build.py:25`), configurable con `PLOMADA_API_URL`. Los `curl` de ejemplo se
+  construyen interpolando esa variable en Python, no escribiéndola a mano.
+  Razón concreta: `render.yaml` ya declara un host futuro distinto (§2.4).
 - **Escapa todo con `h()`.** `test_privacy.py` revisa que no haya markup crudo.
-- Vocabulario: cero palabras prohibidas (§2.6). "Indicio", "señal",
-  "atípico", "riesgo" sí; el resto no.
+- Vocabulario: cero palabras prohibidas (§3.6).
 
 ### Aceptación de F3
 
-- [ ] «API» aparece en el nav de las ocho vistas y marca `aria-current="page"`
+- [ ] **`/api/` existe**: `plomada/site/api/index.html` se genera y abre en el
+      navegador.
+- [ ] «API» aparece en el nav de todas las vistas y marca `aria-current="page"`
       en `/api/`.
-- [ ] `/api/` se ve bien **en claro y en oscuro**, incluidos los bloques de
-      código (contraste del `<pre>` sobre `--color-surface`).
+- [ ] Se ve bien **en claro y en oscuro**, incluidos los `<pre>` de código.
 - [ ] Cada `curl` de la página, copiado y pegado, funciona.
-- [ ] Cada endpoint listado existe en `openapi.json`. Cero endpoints
-      inventados.
+- [ ] Cada endpoint listado existe en `openapi.json`. Cero endpoints inventados.
+- [ ] Ninguna URL de API escrita a mano en el HTML generado: todas salen de
+      `API_URL`.
 - [ ] `/api/` está en `sitemap.xml`.
-- [ ] El nav a **320px** sigue usable con el enlace nuevo más el botón de tono
-      (scroll horizontal propio del `.nav`, sin solapamientos).
-- [ ] `python3 plomada/build.py` pasa `test_privacy` (vocabulario incluido).
+- [ ] El nav a **320px** sigue usable con el enlace nuevo más el botón de tono.
+- [ ] `python3 plomada/build.py` pasa `test_privacy`.
 
 ---
 
-## 7. F4 — El MCP en el sitio
+## 7. F4 — Construir la vista del asistente (MCP)
 
 **Antes de escribir una línea: el servidor MCP no hay que construirlo.** Está
-desplegado, vivo y verificado (§1.3): 7 tools en
-`https://plumb-duy6.onrender.com/mcp/`. `MCP.md` describe su arquitectura y el
-contrato de `/chat`; su §4 («Widget de chat en el front») es literalmente el
-encargo de esta fase, y su lista de pendientes 5–7 (Postgres, URL pública,
-variables de entorno) **ya está cerrada** — eso es lo que este plan actualiza
-respecto a `MCP.md`, que quedó escrito antes del despliegue.
+en `api/app/mcp/server.py`, desplegado y verificado: 7 tools en
+`https://plumb-duy6.onrender.com/mcp/` (§2.3). Lo que falta es **la vista**, y
+hay que construirla desde cero: hoy no hay una sola línea de chat en
+`plomada/` (§0).
 
-Lo que falta es la **cara de esto en el sitio**, en dos piezas:
+Dos piezas.
 
-### 7.1 Pieza A — Sección «Conecta tu propio cliente» en `/api/`
+### 7.1 Pieza A — Sección «Conecta tu propio cliente» dentro de `/api/`
 
 La más barata y la que más valor entrega por línea escrita. Un bloque en la
-página de F3 que explique que los mismos datos están disponibles como servidor
-MCP, para quien use Claude Desktop, Claude Code, o cualquier cliente con
+vista de F3 que explique que los mismos datos están disponibles como servidor
+MCP, para quien use Claude Desktop, Claude Code o cualquier cliente con
 soporte de MCP remoto.
 
 Contenido, todo verificado:
 
-- **URL del servidor:** `https://plumb-duy6.onrender.com/mcp/` — **con barra
-  final**. Sin ella el servicio responde 307 y algunos clientes no siguen el
-  redirect en un POST. Dilo explícitamente en la página.
-- **Transporte:** streamable-http. Sin autenticación: es de solo lectura sobre
-  datos públicos.
-- **Tabla de las 7 tools** con una línea de qué responde cada una (§1.3).
+- **URL del servidor:** `{API_URL}/mcp/` — **con barra final**. Sin ella el
+  servicio responde 307 y algunos clientes no siguen el redirect en un POST.
+  Dilo explícitamente en la página.
+- **Transporte:** streamable-http. Sin autenticación: solo lectura sobre datos
+  públicos.
+- **Tabla de las 7 tools** con una línea de qué responde cada una (§2.3).
 - **Un bloque de configuración copiable** para el cliente. Escríbelo contra la
-  forma que documente el cliente al que apuntes; no lo inventes de memoria.
-  Si no puedes verificar el formato exacto de un cliente, publica **solo la
-  URL y el transporte** y enlaza a la documentación del cliente — es
-  preferible a publicar un JSON que no funcione.
+  forma que documente el cliente al que apuntes; no lo inventes de memoria. Si
+  no puedes verificar el formato exacto, publica **solo la URL y el
+  transporte** y enlaza a la documentación del cliente: mejor eso que un JSON
+  que no funcione.
 - **La misma salvedad de siempre:** el servidor declara en sus `instructions`
   que "riesgo" es indicio, no prueba. Decirlo también en la página.
-- Enlace a `MCP.md` en GitHub para el detalle de arquitectura.
+- Enlaces a `MCP.md` y `API.md` en GitHub para el detalle de arquitectura.
 
 Esta pieza **no necesita JavaScript**: es HTML generado por `build.py`. Si el
 tiempo se acaba, esto solo ya cumple "el MCP está en el sitio".
 
-### 7.2 Pieza B — Widget de chat (BYOK)
+### 7.2 Pieza B — La vista `/asistente/`
 
-El contrato ya está fijado por el servicio y **verificado hoy contra
-producción**:
+**Decisión: el chat es una vista propia con URL propia, no un widget flotante
+pegado en una esquina.** Razones, en orden:
+
+1. Es la tesis del sitio: *"cada contrato, municipio y búsqueda tiene una URL
+   real y compartible"* (`build.py`, docstring). Un asistente que solo existe
+   como burbuja no se puede enlazar, ni compartir, ni entrar al sitemap.
+2. El flujo BYOK necesita espacio: pedir la key, explicar de dónde sale,
+   explicar que Plomada no cobra nada. En una burbuja de 320×400 eso es un
+   embudo apretado.
+3. Es una vista más que pasa por `pagina()`, así que hereda nav, pie, aviso
+   legal y tema sin trabajo extra.
+
+**No** va en el nav (ya entra «API» en F3; siete entradas es demasiado). Se
+llega desde: un enlace destacado en `/api/` (pieza A), y un botón en
+`/tablero/` («Pregúntale a los datos»), que es donde el lector tiene cifras
+delante y le nacen las preguntas.
+
+Construcción, en paralelo a `pagina_buscar()` (`build.py:516`), que es la vista
+del sitio que más se le parece (shell estático + hidratación en JS):
+
+1. **`pagina_asistente()`** en `plomada/build.py` → `pagina(titulo="Asistente",
+   …, ruta="/asistente/")`, con el fallback sin JS pre-renderizado (un mensaje
+   que explique que el asistente necesita JavaScript y enlace a `/buscar/` y
+   `/api/` como alternativas).
+2. **`escribir("asistente/index.html", pagina_asistente())`** en `main()`.
+3. **`"/asistente/"` al sitemap** (línea 1107).
+4. **`plomada/static/chat.js`**, módulo nuevo.
+5. **Texto editorial en `plomada/contenido.py`** (`ASISTENTE_INTRO`,
+   `ASISTENTE_KEY_AYUDA`, …).
+6. **Estilos en `design/plomada/sitio.css`**, con tokens, cero hex.
+
+#### El contrato del backend, ya verificado contra producción
 
 | | |
 |---|---|
@@ -754,80 +813,85 @@ producción**:
 | **Header obligatorio** | `X-Anthropic-Api-Key: <la key del usuario>` |
 | **Body** | `{"mensaje": "...", "historial": [{"role":"user"\|"assistant","content":"..."}]}` |
 | **Respuesta** | stream SSE: líneas `data: {"delta":"..."}` hasta un `data: {"done":true}`, o `data: {"error":"..."}` |
-| **Sin el header** | HTTP **422** con `{"error":{"codigo":"parametro_invalido","detalle":[{"loc":["header","X-Anthropic-Api-Key"],...}]}}` |
+| **Sin el header** | HTTP **422** con `{"error":{"codigo":"parametro_invalido","detalle":[{"loc":["header","X-Anthropic-Api-Key"],…}]}}` |
 | **Key inválida** | evento SSE `{"error":"Tu API key de Anthropic no es valida"}` |
-| **CORS** | abierto (`*`), preflight ya permite `x-anthropic-api-key` |
+| **CORS** | abierto (`*`); el preflight ya permite `x-anthropic-api-key` |
 
-**BYOK: cada usuario usa su propia API key.** No existe una key del equipo en
-el servidor y no debe existir una en el front. Reglas que no se negocian:
+#### BYOK: cada usuario usa su propia API key
+
+No existe una key del equipo en el servidor y **no debe existir una en el
+front**. Reglas que no se negocian:
 
 - Se pide **una vez**, en un `<input type="password">`, con un enlace
   explicando de dónde se saca (`console.anthropic.com/settings/keys`).
-- Se guarda en **`localStorage`**, nunca en una cookie, nunca en el servidor,
+- Se guarda en **`localStorage`**, nunca en cookie, nunca en el servidor,
   nunca en la URL.
 - Se manda en el header de cada `/chat`. Si vuelve 422 o el evento de key
   inválida, **se borra la guardada y se vuelve a pedir** — no reintentar en
   silencio.
-- Se dice en la interfaz, en una línea, que Plomada no gestiona el cobro de
-  nadie: cada quien ve su consumo en su cuenta de Anthropic.
-- **Nunca loguear la key**, ni en `console.log` ni en un mensaje de error.
+- Una línea visible: Plomada no gestiona el cobro de nadie; cada quien ve su
+  consumo en su cuenta de Anthropic.
+- **Nunca loguear la key**, ni en `console.log` ni dentro de un mensaje de
+  error.
+- Un botón para **olvidar la key guardada**. Es la contraparte honesta de
+  pedirla.
 
-Implementación:
+#### Implementación de `chat.js`
 
-- **Dónde vive:** un widget acoplable, montado **en `/tablero/` y en `/api/`**
-  para empezar (donde hay cifras que preguntar y donde se explica el MCP). No
-  lo pongas en las ocho vistas de entrada: es una superficie nueva y conviene
-  verla funcionando en dos antes de esparcirla.
-- **Cómo se implementa:** JS plano en `plomada/static/chat.js`, siguiendo el
-  patrón de los otros módulos de `static/`. **Recomendado sobre la isla de
-  Vue**: el widget es un formulario más un stream, no necesita reactividad
-  profunda, y evita el ciclo de recompilar el bundle y el manifiesto en cada
-  ajuste. Si aun así prefieres una isla, va en `frontend/src/componentes/` y
-  **hay que correr `npm --prefix frontend run build`** en cada cambio.
-- **Un solo módulo habla HTTP.** `static/api.js` es hoy ese módulo para
-  `/v1`. `/chat` no encaja en `pedir()` (es SSE, no JSON envuelto), así que
-  `chat.js` puede hacer su propio `fetch` — pero **toma `API_BASE` de
-  `api.js`**, no releas `window.PLOMADA_API_URL` por tu cuenta.
+- **JS plano**, siguiendo el patrón de los otros módulos de `static/`.
+  **Recomendado sobre la isla de Vue**: es un formulario más un stream, no
+  necesita reactividad profunda, y evita recompilar el bundle y el manifiesto
+  en cada ajuste. Si aun así prefieres una isla, va en
+  `frontend/src/componentes/` y **hay que correr
+  `npm --prefix frontend run build`** en cada cambio.
+- **Toma la base del API de `API_BASE` de `static/api.js`.** No releas
+  `window.PLOMADA_API_URL` por tu cuenta y no escribas el host a mano (§2.4).
+  `/chat` no encaja en `pedir()` (es SSE, no el sobre `{datos, meta}`), así que
+  `chat.js` hace su propio `fetch` — pero la **base** es la misma.
 - **Leer el stream** con `fetch` + `response.body.getReader()` y un
   `TextDecoder`, partiendo por `\n\n` y quitando el prefijo `data: `.
-  `EventSource` **no sirve**: no permite mandar headers ni hacer POST.
-  Acumula el buffer entre chunks — un evento SSE puede llegar partido.
-- **Renderizar el texto del modelo con `textContent`, jamás `innerHTML`.**
-  Restricción §2.7. Si quieres saltos de línea, `white-space: pre-wrap` en CSS.
+  `EventSource` **no sirve**: no permite headers ni POST. Acumula el buffer
+  entre chunks — un evento SSE puede llegar partido.
+- **Renderizar el texto del modelo con `textContent`, jamás `innerHTML`**
+  (§3.7). Para saltos de línea, `white-space: pre-wrap` en CSS.
 - **Historial en el navegador**, mandado completo en cada request (decisión ya
-  tomada en `MCP.md` §"Decisiones que faltan"). Pon un tope de turnos y avisa
-  al truncar.
+  tomada en `MCP.md`). Pon un tope de turnos y avisa al truncar.
 - **Estados que hay que dibujar**, no solo el feliz:
   - sin key → pedirla;
   - key inválida / 422 → mensaje claro y volver a pedirla;
-  - error de red → "el asistente no está disponible ahora" (mismo criterio
-    que el resto del sitio ante un API caído);
-  - **cold start**: el API duerme. Si no hay primer `delta` a los ~3 s,
-    muestra "el servicio está despertando" — `static/api.js` ya tiene ese
-    patrón (`AVISO_DESPERTANDO`), cópialo;
-  - `abort` al cerrar el widget o al enviar otra pregunta: cancela el
-    `fetch` con un `AbortController`.
-- **Estética:** hereda tokens; **tiene que verse en las dos bandas**. No
-  escribas un solo hex.
+  - error de red → "el asistente no está disponible ahora";
+  - **cold start**: si no hay primer `delta` a los ~3 s, "el servicio está
+    despertando". `static/api.js` ya tiene ese patrón
+    (`AVISO_DESPERTANDO = 3000`): cópialo, no lo reinventes;
+  - `abort` al enviar otra pregunta o al salir: cancela con `AbortController`.
 - **Accesibilidad:** el área de respuesta es `aria-live="polite"`; el input
-  tiene `<label>`; se puede cerrar con Escape; el foco vuelve al disparador al
-  cerrar.
-- **Aviso permanente:** el widget muestra `AVISO_CORTO` de `contenido.py`
-  ("Indicio para revisión, no acusación") pegado, siempre visible. Una
-  respuesta del modelo es una cifra más y lleva la misma salvedad que las
-  demás.
+  tiene `<label>`; Enter envía y Shift+Enter hace salto de línea; el foco va al
+  input al cargar.
+- **Aviso permanente:** la vista muestra `AVISO_CORTO` de `contenido.py`
+  ("Indicio para revisión, no acusación") siempre visible. Una respuesta del
+  modelo es una cifra más y lleva la misma salvedad que las demás.
+- **Preguntas de arranque** (3 o 4 sugeridas, clicables) para que la vista no
+  sea un cuadro de texto vacío. Escríbelas contra las tools que existen —
+  "¿qué contratos atípicos hay en Santander?" funciona porque existe
+  `buscar_contratos_atipicos`; no sugieras nada que ninguna tool pueda
+  responder.
 
 ### Aceptación de F4
 
-- [ ] `/api/` documenta el servidor MCP con la URL correcta **con barra
-      final** y las 7 tools reales.
+- [ ] **`/asistente/` existe**: `plomada/site/asistente/index.html` se genera,
+      abre, y está en el sitemap.
+- [ ] Se llega desde `/api/` y desde `/tablero/`.
+- [ ] Sin JavaScript, la vista muestra el fallback y no una página en blanco.
+- [ ] `/api/` documenta el servidor MCP con la URL correcta **con barra final**
+      y las 7 tools reales.
 - [ ] Con una API key válida, una pregunta como "¿cuántos contratos atípicos
-      hay en Santander?" devuelve una respuesta en streaming que **cita datos
+      hay en Santander?" devuelve respuesta en streaming que **cita datos
       reales** (se nota porque el modelo llamó a las tools).
-- [ ] Sin key: se pide. Con key basura: mensaje claro y se vuelve a pedir.
-      Con el API apagado: mensaje de no disponible, sin excepción en consola.
-- [ ] La key **no aparece** en ningún log, ni en la URL, ni en el DOM.
-- [ ] El widget se ve bien en claro y en oscuro, y en móvil.
+- [ ] Sin key: se pide. Con key basura: mensaje claro y se vuelve a pedir. Con
+      el API apagado: mensaje de no disponible, sin excepción en consola.
+- [ ] La key **no aparece** en ningún log, ni en la URL, ni en el DOM. El botón
+      de olvidarla funciona.
+- [ ] La vista se ve bien en claro y en oscuro, y en móvil.
 - [ ] `python3 plomada/build.py` pasa `test_privacy`, incluido
       `test_vocabulario_fuentes` si tocaste `frontend/src/**`.
 - [ ] Si tocaste `frontend/src/**`: bundle y `MANIFIESTO.txt` regenerados.
@@ -838,39 +902,41 @@ Implementación:
 
 Para que no se te vaya el tiempo:
 
-- **No** reconstruir el servidor MCP ni el proxy `/chat`. Están desplegados.
-- **No** sincronizar `api/` de esta rama con `origin/main`. Es trabajo de otra
-  rama y no bloquea nada de aquí.
+- **No** reconstruir el servidor MCP, el proxy `/chat` ni los routers `/v1`.
+  Están construidos y desplegados. En F3 y F4 **solo se consumen**.
+- **No** tocar `api/`, `pipeline/`, `sql/` ni `render.yaml`. Todo el trabajo es
+  `plomada/` + `design/` + `docs/`.
+- **No** aplicar el Blueprint de Render ni migrar de `plumb-duy6` a
+  `plomada-api`. Es decisión de quien maneje la cuenta. Este plan solo exige
+  que nada quede hardcodeado para que esa migración sea una variable de entorno.
 - **No** el rebranding del backup (Instrument Serif, radios suaves, paleta
-  categórica). Este plan cambia la **banda de color**, no el sistema.
-- **No** tocar `design/modernist/`.
+  categórica). Esto cambia la **banda de color**, no el sistema.
+- **No** tocar `design/modernist/` ni `web/index.html` (el tablero anterior).
 - **No** soporte para Gemini (`MCP.md` lo deja fuera de v1 con razón).
-- **No** rate limiting de `/chat`. Con BYOK cada quien paga lo suyo; no es
-  urgente.
-- **No** persistir el historial de chat en el servidor.
+- **No** rate limiting de `/chat` ni historial en servidor.
 
 ---
 
 ## 9. Puntos de corte y orden de commits
 
-El orden **F1 → F2 → F3 → F4** no es negociable en un punto: **F2 depende de
-F1** (sin el evento `plomada:tema` no hay a qué suscribirse). F3 es
-independiente y puede adelantarse si conviene; F4 depende de que exista la
-página de F3.
+**F2 depende de F1** (sin el evento `plomada:tema` no hay a qué suscribirse).
+**F4 depende de F3** (la sección de MCP y la entrada al asistente viven en la
+vista `/api/`). F3 es independiente de F1–F2 y puede adelantarse si conviene,
+pero entonces revísala después en oscuro.
 
 | Si paras después de… | El sitio queda… |
 |---|---|
-| **F1** | Publicable. Dos tonos, conmutador funcionando. Los gráficos del tablero y el mapa se ven con los colores de la banda anterior hasta recargar — **feo pero no roto**. Si vas a parar aquí, es aceptable; si vas a parar antes de F2 sabiéndolo, deja el botón igual: recargar arregla el gráfico. |
-| **F2** | Publicable y coherente. Es el corte natural del trabajo de tema. |
-| **F3** | Publicable. Nav con «API» y una página que ya sirve sola. |
-| **F4 pieza A** | Publicable. El MCP documentado, sin widget. **Este es el corte recomendado si el tiempo aprieta.** |
+| **F1** | Publicable. Dos tonos, conmutador funcionando. Los gráficos y el mapa se ven con los colores de la banda anterior hasta recargar — **feo pero no roto**. |
+| **F2** | Publicable y coherente. Corte natural del trabajo de tema. |
+| **F3** | Publicable. Nav con «API» y una vista que ya sirve sola. |
+| **F4 pieza A** | Publicable. El MCP documentado y conectable desde cualquier cliente, sin chat en el sitio. **Corte recomendado si el tiempo aprieta.** |
 | **F4 pieza B** | Todo el encargo. |
 
-Un commit por fase, mínimo. En cada commit incluye el `estilo.css`
-regenerado si tocaste CSS (está commiteado y el build lo verifica), y
-**nunca** `plomada/site/` (está en `.gitignore`).
+Un commit por fase, mínimo. En cada commit incluye el `estilo.css` regenerado
+si tocaste CSS (está commiteado y el build lo verifica), y **nunca**
+`plomada/site/` (está en `.gitignore`).
 
-### Checklist final, antes de dar el trabajo por hecho
+### Checklist final
 
 ```bash
 python3 design/construir.py
@@ -878,9 +944,10 @@ python3 plomada/build.py
 python3 -m pytest tests/
 git diff --stat design/modernist/          # tiene que salir vacío
 git status --porcelain                     # ningún site/ ni artefacto suelto
+ls plomada/site/api/index.html plomada/site/asistente/index.html   # las dos vistas nuevas
 ```
 
 Y a ojo, en el navegador, en las dos bandas: `/`, `/tablero/`, `/mapa/`,
-`/buscar/`, `/metodologia/`, `/datos/`, `/api/`, una ficha de contrato y una
-de municipio. Ocho vistas más las dos dinámicas, dos tonos: son veinte
+`/buscar/`, `/metodologia/`, `/datos/`, **`/api/`**, **`/asistente/`**, una
+ficha de contrato y una de municipio. Diez vistas por dos tonos: veinte
 pantallas. Míralas.
