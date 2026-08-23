@@ -1,0 +1,766 @@
+{
+ "exacta": {
+  "KM 1 Via Buenaventura - Zona Rural, Buenaventura, Valle del Cauca, Colombia": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "exacta_arcgis"
+  },
+  "KM 1 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 10 Via Puerres - Zona Rural, Puerres, Narino, Colombia": {
+   "lat": 0.88335,
+   "lon": -77.50344,
+   "precision": "exacta_arcgis"
+  },
+  "KM 10 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 11 Via Quibdo - Zona Rural, Quibdo, Choco, Colombia": {
+   "lat": 5.6908311,
+   "lon": -76.659068,
+   "precision": "exacta_arcgis"
+  },
+  "KM 11 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 11 Via Soledad - Zona Rural, Soledad, Atlantico, Colombia": {
+   "lat": 10.8878586,
+   "lon": -74.8032804,
+   "precision": "exacta_arcgis"
+  },
+  "KM 11 Via Uribia - Zona Rural, Uribia, La Guajira, Colombia": {
+   "lat": 11.715748,
+   "lon": -72.2658724,
+   "precision": "exacta_arcgis"
+  },
+  "KM 12 Via Monteria - Zona Rural, Monteria, Cordoba, Colombia": {
+   "lat": 8.6764214,
+   "lon": -75.8075526,
+   "precision": "exacta_arcgis"
+  },
+  "KM 12 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 12 Via Sogamoso - Zona Rural, Sogamoso, Boyaca, Colombia": {
+   "lat": 5.7183144,
+   "lon": -72.9309844,
+   "precision": "exacta_arcgis"
+  },
+  "KM 13 Via Barrancabermeja - Zona Rural, Barrancabermeja, Santander, Colombia": {
+   "lat": 7.06217,
+   "lon": -73.85433,
+   "precision": "exacta_arcgis"
+  },
+  "KM 13 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 14 Via Bogota D.C. - Zona Rural, Bogota D.C., Bogota D.C., Colombia": {
+   "lat": 4.31465,
+   "lon": -74.18077,
+   "precision": "exacta_arcgis"
+  },
+  "KM 14 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 15 Via Cartagena - Zona Rural, Cartagena, Bolivar, Colombia": {
+   "lat": 10.3874496,
+   "lon": -75.52247,
+   "precision": "exacta_arcgis"
+  },
+  "KM 15 Via Florencia - Zona Rural, Florencia, Caqueta, Colombia": {
+   "lat": 1.6175445,
+   "lon": -75.6066955,
+   "precision": "exacta_arcgis"
+  },
+  "KM 15 Via Ipiales - Zona Rural, Ipiales, Narino, Colombia": {
+   "lat": 0.8232528,
+   "lon": -77.6353371,
+   "precision": "exacta_arcgis"
+  },
+  "KM 15 Via Sincelejo - Zona Rural, Sincelejo, Sucre, Colombia": {
+   "lat": 9.3002135,
+   "lon": -75.3956027,
+   "precision": "exacta_arcgis"
+  },
+  "KM 15 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 16 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 17 Via Quibdo - Zona Rural, Quibdo, Choco, Colombia": {
+   "lat": 5.6908311,
+   "lon": -76.659068,
+   "precision": "exacta_arcgis"
+  },
+  "KM 17 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 18 Via Cartagena - Zona Rural, Cartagena, Bolivar, Colombia": {
+   "lat": 10.3874496,
+   "lon": -75.52247,
+   "precision": "exacta_arcgis"
+  },
+  "KM 18 Via Inirida - Zona Rural, Inirida, Guainia, Colombia": {
+   "lat": 3.8651683,
+   "lon": -67.9266056,
+   "precision": "exacta_arcgis"
+  },
+  "KM 18 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 19 Via San Jose del Guaviare - Zona Rural, San Jose del Guaviare, Guaviare, Colombia": {
+   "lat": 2.5623928,
+   "lon": -72.6403445,
+   "precision": "exacta_arcgis"
+  },
+  "KM 19 Via Santa Marta - Zona Rural, Santa Marta, Magdalena, Colombia": {
+   "lat": 11.2319728,
+   "lon": -74.2007449,
+   "precision": "exacta_arcgis"
+  },
+  "KM 19 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 19 Via Valledupar - Zona Rural, Valledupar, Cesar, Colombia": {
+   "lat": 10.4690257,
+   "lon": -73.2570353,
+   "precision": "exacta_arcgis"
+  },
+  "KM 2 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 20 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 20 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 21 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 22 Via Cucuta - Zona Rural, Cucuta, Norte de Santander, Colombia": {
+   "lat": 7.8862388,
+   "lon": -72.4913939,
+   "precision": "exacta_arcgis"
+  },
+  "KM 22 Via Quibdo - Zona Rural, Quibdo, Choco, Colombia": {
+   "lat": 5.6908311,
+   "lon": -76.659068,
+   "precision": "exacta_arcgis"
+  },
+  "KM 22 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 22 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 23 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 24 Via Cucuta - Zona Rural, Cucuta, Norte de Santander, Colombia": {
+   "lat": 7.8862388,
+   "lon": -72.4913939,
+   "precision": "exacta_arcgis"
+  },
+  "KM 24 Via Monteria - Zona Rural, Monteria, Cordoba, Colombia": {
+   "lat": 8.5794206,
+   "lon": -75.728383,
+   "precision": "exacta_arcgis"
+  },
+  "KM 24 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 24 Via Soledad - Zona Rural, Soledad, Atlantico, Colombia": {
+   "lat": 10.8878586,
+   "lon": -74.8032804,
+   "precision": "exacta_arcgis"
+  },
+  "KM 24 Via Tunja - Zona Rural, Tunja, Boyaca, Colombia": {
+   "lat": 5.53859,
+   "lon": -73.36638,
+   "precision": "exacta_arcgis"
+  },
+  "KM 25 Via Bogota D.C. - Zona Rural, Bogota D.C., Bogota D.C., Colombia": {
+   "lat": 4.31465,
+   "lon": -74.18077,
+   "precision": "exacta_arcgis"
+  },
+  "KM 25 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 25 Via Tunja - Zona Rural, Tunja, Boyaca, Colombia": {
+   "lat": 5.53859,
+   "lon": -73.36638,
+   "precision": "exacta_arcgis"
+  },
+  "KM 26 Via Buenaventura - Zona Rural, Buenaventura, Valle del Cauca, Colombia": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "exacta_arcgis"
+  },
+  "KM 26 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 26 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 27 Via Puerres - Zona Rural, Puerres, Narino, Colombia": {
+   "lat": 0.88335,
+   "lon": -77.50344,
+   "precision": "exacta_arcgis"
+  },
+  "KM 27 Via Santa Marta - Zona Rural, Santa Marta, Magdalena, Colombia": {
+   "lat": 11.2319728,
+   "lon": -74.2007449,
+   "precision": "exacta_arcgis"
+  },
+  "KM 27 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 27 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 28 Via Puerto Gaitan - Zona Rural, Puerto Gaitan, Meta, Colombia": {
+   "lat": 4.3117059,
+   "lon": -72.0793454,
+   "precision": "exacta_arcgis"
+  },
+  "KM 28 Via Saravena - Zona Rural, Saravena, Arauca, Colombia": {
+   "lat": 6.95319,
+   "lon": -71.87516,
+   "precision": "exacta_arcgis"
+  },
+  "KM 28 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 29 Via Buenaventura - Zona Rural, Buenaventura, Valle del Cauca, Colombia": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "exacta_arcgis"
+  },
+  "KM 29 Via Cartagena - Zona Rural, Cartagena, Bolivar, Colombia": {
+   "lat": 10.3874496,
+   "lon": -75.52247,
+   "precision": "exacta_arcgis"
+  },
+  "KM 29 Via Cucuta - Zona Rural, Cucuta, Norte de Santander, Colombia": {
+   "lat": 7.8862388,
+   "lon": -72.4913939,
+   "precision": "exacta_arcgis"
+  },
+  "KM 29 Via Manizales - Zona Rural, Manizales, Caldas, Colombia": {
+   "lat": 5.0676781,
+   "lon": -75.5098239,
+   "precision": "exacta_arcgis"
+  },
+  "KM 29 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 3 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 30 Via Bogota D.C. - Zona Rural, Bogota D.C., Bogota D.C., Colombia": {
+   "lat": 4.31465,
+   "lon": -74.18077,
+   "precision": "exacta_arcgis"
+  },
+  "KM 30 Via Cartagena - Zona Rural, Cartagena, Bolivar, Colombia": {
+   "lat": 10.3874496,
+   "lon": -75.52247,
+   "precision": "exacta_arcgis"
+  },
+  "KM 30 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 31 Via Buenaventura - Zona Rural, Buenaventura, Valle del Cauca, Colombia": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "exacta_arcgis"
+  },
+  "KM 31 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 31 Via Uribia - Zona Rural, Uribia, La Guajira, Colombia": {
+   "lat": 11.715748,
+   "lon": -72.2658724,
+   "precision": "exacta_arcgis"
+  },
+  "KM 31 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via Buenaventura - Zona Rural, Buenaventura, Valle del Cauca, Colombia": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via Mitu - Zona Rural, Mitu, Vaupes, Colombia": {
+   "lat": 1.2559718,
+   "lon": -70.2330339,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via Mocoa - Zona Rural, Mocoa, Putumayo, Colombia": {
+   "lat": 1.14893,
+   "lon": -76.64775,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via Neiva - Zona Rural, Neiva, Huila, Colombia": {
+   "lat": 2.9323,
+   "lon": -75.28688,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 32 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 33 Via Barrancabermeja - Zona Rural, Barrancabermeja, Santander, Colombia": {
+   "lat": 7.06217,
+   "lon": -73.85433,
+   "precision": "exacta_arcgis"
+  },
+  "KM 33 Via Pereira - Zona Rural, Pereira, Risaralda, Colombia": {
+   "lat": 4.812216,
+   "lon": -75.6920466,
+   "precision": "exacta_arcgis"
+  },
+  "KM 33 Via San Andres - Zona Rural, San Andres, Archipielago de San Andres Providencia y Santa Catalina, Colombia": {
+   "lat": 12.54793,
+   "lon": -81.71665,
+   "precision": "exacta_arcgis"
+  },
+  "KM 33 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 33 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 34 Via Ibague - Zona Rural, Ibague, Tolima, Colombia": {
+   "lat": 4.420139264564,
+   "lon": -75.183847189669,
+   "precision": "exacta_arcgis"
+  },
+  "KM 34 Via Puerto Gaitan - Zona Rural, Puerto Gaitan, Meta, Colombia": {
+   "lat": 4.3117059,
+   "lon": -72.0793454,
+   "precision": "exacta_arcgis"
+  },
+  "KM 34 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 35 Via Neiva - Zona Rural, Neiva, Huila, Colombia": {
+   "lat": 2.9323,
+   "lon": -75.28688,
+   "precision": "exacta_arcgis"
+  },
+  "KM 35 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 35 Via Soledad - Zona Rural, Soledad, Atlantico, Colombia": {
+   "lat": 10.8878586,
+   "lon": -74.8032804,
+   "precision": "exacta_arcgis"
+  },
+  "KM 36 Via Popayan - Zona Rural, Popayan, Cauca, Colombia": {
+   "lat": 2.444511,
+   "lon": -76.6145619,
+   "precision": "exacta_arcgis"
+  },
+  "KM 36 Via Quibdo - Zona Rural, Quibdo, Choco, Colombia": {
+   "lat": 5.6908311,
+   "lon": -76.659068,
+   "precision": "exacta_arcgis"
+  },
+  "KM 36 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 36 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 37 Via Leticia - Zona Rural, Leticia, Amazonas, Colombia": {
+   "lat": -4.2155963,
+   "lon": -69.9390649,
+   "precision": "exacta_arcgis"
+  },
+  "KM 37 Via Puerres - Zona Rural, Puerres, Narino, Colombia": {
+   "lat": 0.88335,
+   "lon": -77.50344,
+   "precision": "exacta_arcgis"
+  },
+  "KM 37 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 38 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 38 Via Yopal - Zona Rural, Yopal, Casanare, Colombia": {
+   "lat": 5.34017,
+   "lon": -72.39424,
+   "precision": "exacta_arcgis"
+  },
+  "KM 38 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 39 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 39 Via Sogamoso - Zona Rural, Sogamoso, Boyaca, Colombia": {
+   "lat": 5.7183144,
+   "lon": -72.9309844,
+   "precision": "exacta_arcgis"
+  },
+  "KM 4 Via Sincelejo - Zona Rural, Sincelejo, Sucre, Colombia": {
+   "lat": 9.3002135,
+   "lon": -75.3956027,
+   "precision": "exacta_arcgis"
+  },
+  "KM 4 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 4 Via Uribia - Zona Rural, Uribia, La Guajira, Colombia": {
+   "lat": 11.715748,
+   "lon": -72.2658724,
+   "precision": "exacta_arcgis"
+  },
+  "KM 40 Via Bogota D.C. - Zona Rural, Bogota D.C., Bogota D.C., Colombia": {
+   "lat": 4.31465,
+   "lon": -74.18077,
+   "precision": "exacta_arcgis"
+  },
+  "KM 40 Via Cumaribo - Zona Rural, Cumaribo, Vichada, Colombia": {
+   "lat": 4.44448,
+   "lon": -69.80027,
+   "precision": "exacta_arcgis"
+  },
+  "KM 40 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 5 Via Armenia - Zona Rural, Armenia, Quindio, Colombia": {
+   "lat": 4.5328876,
+   "lon": -75.6778603,
+   "precision": "exacta_arcgis"
+  },
+  "KM 5 Via Ibague - Zona Rural, Ibague, Tolima, Colombia": {
+   "lat": 4.420139264564,
+   "lon": -75.183847189669,
+   "precision": "exacta_arcgis"
+  },
+  "KM 5 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 6 Via Saravena - Zona Rural, Saravena, Arauca, Colombia": {
+   "lat": 6.95319,
+   "lon": -71.87516,
+   "precision": "exacta_arcgis"
+  },
+  "KM 6 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 6 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 7 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 7 Via el Bagre - Zona Rural, El Bagre, Antioquia, Colombia": {
+   "lat": 7.59662,
+   "lon": -74.80488,
+   "precision": "exacta_arcgis"
+  },
+  "KM 8 Via Santa Marta - Zona Rural, Santa Marta, Magdalena, Colombia": {
+   "lat": 11.2319728,
+   "lon": -74.2007449,
+   "precision": "exacta_arcgis"
+  },
+  "KM 8 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  },
+  "KM 9 Via Popayan - Zona Rural, Popayan, Cauca, Colombia": {
+   "lat": 2.444511,
+   "lon": -76.6145619,
+   "precision": "exacta_arcgis"
+  },
+  "KM 9 Via Soacha - Zona Rural, Soacha, Cundinamarca, Colombia": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "exacta_arcgis"
+  }
+ },
+ "municipio": {
+  "Amazonas|Leticia": {
+   "lat": -4.2155963,
+   "lon": -69.9390649,
+   "precision": "cabecera_municipal"
+  },
+  "Antioquia|El Bagre": {
+   "lat": 7.704953112293,
+   "lon": -74.66050764261,
+   "precision": "cabecera_municipal"
+  },
+  "Arauca|Saravena": {
+   "lat": 6.906407977131,
+   "lon": -71.850707362469,
+   "precision": "cabecera_municipal"
+  },
+  "Archipielago de San Andres Providencia y Santa Catalina|San Andres": {
+   "lat": 12.54793,
+   "lon": -81.71665,
+   "precision": "cabecera_municipal"
+  },
+  "Atlantico|Soledad": {
+   "lat": 10.8878586,
+   "lon": -74.8032804,
+   "precision": "cabecera_municipal"
+  },
+  "Bogota D.C.|Bogota D.C.": {
+   "lat": 4.6596802,
+   "lon": -74.0664222,
+   "precision": "cabecera_municipal"
+  },
+  "Bolivar|Cartagena": {
+   "lat": 10.4025344,
+   "lon": -75.5020994,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Sogamoso": {
+   "lat": 5.7183144,
+   "lon": -72.9309844,
+   "precision": "cabecera_municipal"
+  },
+  "Boyaca|Tunja": {
+   "lat": 5.53859,
+   "lon": -73.36638,
+   "precision": "cabecera_municipal"
+  },
+  "Caldas|Manizales": {
+   "lat": 5.0676781,
+   "lon": -75.5098239,
+   "precision": "cabecera_municipal"
+  },
+  "Caqueta|Florencia": {
+   "lat": 1.6175445,
+   "lon": -75.6066955,
+   "precision": "cabecera_municipal"
+  },
+  "Casanare|Yopal": {
+   "lat": 5.34017,
+   "lon": -72.39424,
+   "precision": "cabecera_municipal"
+  },
+  "Cauca|Popayan": {
+   "lat": 2.444511,
+   "lon": -76.6145619,
+   "precision": "cabecera_municipal"
+  },
+  "Cesar|Valledupar": {
+   "lat": 10.4690257,
+   "lon": -73.2570353,
+   "precision": "cabecera_municipal"
+  },
+  "Choco|Quibdo": {
+   "lat": 5.6908311,
+   "lon": -76.659068,
+   "precision": "cabecera_municipal"
+  },
+  "Cordoba|Monteria": {
+   "lat": 8.742688,
+   "lon": -75.8844118,
+   "precision": "cabecera_municipal"
+  },
+  "Cundinamarca|Soacha": {
+   "lat": 4.5821231,
+   "lon": -74.2115336,
+   "precision": "cabecera_municipal"
+  },
+  "Guainia|Inirida": {
+   "lat": 3.8651683,
+   "lon": -67.9266056,
+   "precision": "cabecera_municipal"
+  },
+  "Guaviare|San Jose del Guaviare": {
+   "lat": 2.5623928,
+   "lon": -72.6403445,
+   "precision": "cabecera_municipal"
+  },
+  "Huila|Neiva": {
+   "lat": 2.9323,
+   "lon": -75.28688,
+   "precision": "cabecera_municipal"
+  },
+  "La Guajira|Uribia": {
+   "lat": 11.715748,
+   "lon": -72.2658724,
+   "precision": "cabecera_municipal"
+  },
+  "Magdalena|Santa Marta": {
+   "lat": 11.2319728,
+   "lon": -74.2007449,
+   "precision": "cabecera_municipal"
+  },
+  "Meta|Puerto Gaitan": {
+   "lat": 4.005931524814,
+   "lon": -71.631098430182,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Ipiales": {
+   "lat": 0.8232528,
+   "lon": -77.6353371,
+   "precision": "cabecera_municipal"
+  },
+  "Narino|Puerres": {
+   "lat": 0.826617410902,
+   "lon": -77.322390483592,
+   "precision": "cabecera_municipal"
+  },
+  "Norte de Santander|Cucuta": {
+   "lat": 7.8862388,
+   "lon": -72.4913939,
+   "precision": "cabecera_municipal"
+  },
+  "Putumayo|Mocoa": {
+   "lat": 1.14893,
+   "lon": -76.64775,
+   "precision": "cabecera_municipal"
+  },
+  "Quindio|Armenia": {
+   "lat": 4.5328876,
+   "lon": -75.6778603,
+   "precision": "cabecera_municipal"
+  },
+  "Risaralda|Pereira": {
+   "lat": 4.812216,
+   "lon": -75.6920466,
+   "precision": "cabecera_municipal"
+  },
+  "Santander|Barrancabermeja": {
+   "lat": 7.06217,
+   "lon": -73.85433,
+   "precision": "cabecera_municipal"
+  },
+  "Sucre|Sincelejo": {
+   "lat": 9.3002135,
+   "lon": -75.3956027,
+   "precision": "cabecera_municipal"
+  },
+  "Tolima|Ibague": {
+   "lat": 4.4449323,
+   "lon": -75.2434283,
+   "precision": "cabecera_municipal"
+  },
+  "Valle del Cauca|Buenaventura": {
+   "lat": 3.8776163,
+   "lon": -77.0073647,
+   "precision": "cabecera_municipal"
+  },
+  "Vaupes|Mitu": {
+   "lat": 1.2559718,
+   "lon": -70.2330339,
+   "precision": "cabecera_municipal"
+  },
+  "Vichada|Cumaribo": {
+   "lat": 4.262699324437,
+   "lon": -69.521787654165,
+   "precision": "cabecera_municipal"
+  }
+ }
+}

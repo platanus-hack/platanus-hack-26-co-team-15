@@ -1,0 +1,5 @@
+# GENERADO por 'npm run build' (frontend/scripts/manifiesto.mjs) — NO EDITAR A MANO.
+# Verificado por plomada/test_privacy.py::test_bundle_corresponde_a_fuentes.
+generado: 2026-08-22T23:52:20.800Z
+archivos-fuente: 2
+hash-fuentes: 969aad7806800d49b75f421817d8e298cea51ef43b22b42eadd15d45b4908992

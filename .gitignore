@@ -5,6 +5,7 @@ data/raw/
 data/warehouse/
 data/exports/
 out/
+out_web/
 __pycache__/
 *.pyc
 .venv/
@@ -13,3 +14,9 @@ node_modules/
 .env
 .env.local
 web/data/
+
+# Frontend unificado (plomada). Artefactos derivados y entorno local:
+# site/ lo regenera `python3 plomada/build.py`; .venv es solo para geocode.py.
+plomada/.venv/
+plomada/site/
+plomada/__pycache__/

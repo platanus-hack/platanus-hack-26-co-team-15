@@ -1,23 +1,30 @@
 """Exporta el warehouse a JSON estatico para el tablero web.
 
 Uso:  python pipeline/export_web.py
-Salida: web/data/*.json
+Salida: out_web/*.json (en la raiz del repo). plomada/build.py copia ese
+directorio a site/datos/ — este script YA NO escribe dentro de site/
+directamente: build.py tiene que seguir siendo lo unico que escribe ahi,
+porque es lo que le da a plomada/test_privacy.py control sobre TODO el
+artefacto publicado (Tanda A, item A4).
 
 Sin API ni build step: el tablero es un solo HTML que lee estos archivos.
 Es un prototipo funcional que el equipo puede portar a Next.js despues; la
 forma de los JSON es a proposito la misma que tendran los endpoints
 (/titulares, /municipios, /departamentos, /red).
+
+`duckdb` se importa DENTRO de main(), a proposito: `sanear_red()` de aqui
+abajo es una funcion pura (sin base de datos) y tiene que poder importarse
+y probarse (ver tests/test_privacidad_red.py) en un equipo sin duckdb
+instalado, sin que el modulo entero truene al importarlo.
 """
 from __future__ import annotations
 
 import json
 import os
 
-import duckdb
-
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB = os.path.join(ROOT, "data", "warehouse", "plomada.duckdb")
-OUT = os.path.join(ROOT, "web", "data")
+OUT = os.path.join(ROOT, "out_web")
 
 TOP_CLUSTERS = 40
 
@@ -35,10 +42,101 @@ def write(name, obj):
     print("   %-26s %7.1f KB" % (name, os.path.getsize(path) / 1024))
 
 
+# --------------------------------------------------------------- privacidad
+# plomada/data.py clasifica doc_proveedor como PROHIBIDA_CONDICIONAL (solo se
+# publica si el proveedor es persona juridica). El grafo de red no aplicaba
+# ese filtro en absoluto: publicaba el 'doc' (NIT o cedula) crudo en cada
+# nodo, y doc_a/doc_b crudos en cada arista. Esta funcion cierra esa fuga.
+#
+# NO se usa un hash del documento. Un NIT o cedula colombiana tiene 9-10
+# digitos (baja entropia): un sha256 pelado de eso se revierte por fuerza
+# bruta en segundos — es ofuscacion, no anonimizacion. En su lugar, un id
+# secuencial asignado EN EL MOMENTO DE EXPORTAR ("n0", "n1", ...): al grafo
+# solo le hace falta que la identidad sea consistente DENTRO del cluster que
+# se esta exportando (para que una arista apunte al nodo correcto), no que
+# sobreviva entre corridas del pipeline. Si algun dia hace falta que el
+# mismo proveedor tenga el mismo id entre corridas, la solucion es un HMAC
+# con llave guardada FUERA del repo — nunca un hash pelado del documento.
+def sanear_red(nodos, aristas):
+    """Funcion pura: recibe filas crudas (nodos con 'doc', aristas con
+    'doc_a'/'doc_b') y devuelve (nodos_saneados, aristas_saneadas) listas
+    para publicar. No toca la base de datos ni el disco -- por eso se puede
+    probar con filas fabricadas a mano, sin duckdb ni warehouse.
+
+    nodos_saneados: cada fila pierde 'doc' y gana 'id' ("n0", "n1", ...).
+    aristas_saneadas: 'doc_a'/'doc_b' se reemplazan por 'a'/'b' con esos
+    mismos ids. Una arista que mencione un doc que no vino en `nodos` se
+    descarta (no se le puede asignar un id consistente, y ya se estaba
+    filtrando por fuera antes de esta funcion).
+    """
+    ids: dict = {}
+    nodos_saneados = []
+    for n in nodos:
+        n2 = dict(n)
+        doc = n2.pop("doc")
+        ids.setdefault(doc, f"n{len(ids)}")
+        n2["id"] = ids[doc]
+        nodos_saneados.append(n2)
+
+    aristas_saneadas = []
+    for a in aristas:
+        doc_a, doc_b = a["doc_a"], a["doc_b"]
+        if doc_a not in ids or doc_b not in ids:
+            continue
+        aristas_saneadas.append({
+            "a": ids[doc_a], "b": ids[doc_b],
+            "peso": a["peso"], "tipos": list(a["tipos"]),
+        })
+    return nodos_saneados, aristas_saneadas
+
+
+def construir_red(con):
+    """Un subgrafo por cluster, solo los mas relevantes, ya saneado con
+    sanear_red(). Separado de main() para que la consulta y el saneamiento
+    queden en un solo lugar, en orden."""
+    ids_clusters = [r["cluster_id"] for r in rows(con, """
+        SELECT cluster_id FROM clusters_perfil
+        WHERE n_proveedores > 1 AND NOT tiene_entidad_publica
+        ORDER BY (obra_e_interventoria::INT) DESC, valor_total DESC
+        LIMIT %d""" % TOP_CLUSTERS)]
+
+    red = []
+    for cid in ids_clusters:
+        nodos_crudos = rows(con, """
+            SELECT p.doc, p.nombre, p.n_obra, p.n_interventoria, p.n_contratos,
+                   coalesce(p.valor_total, 0) AS valor, p.n_entidades
+            FROM clusters c JOIN nodos_proveedor p ON p.doc = c.doc_proveedor
+            WHERE c.cluster_id = ?
+            ORDER BY p.valor_total DESC""", [cid])
+        docs = {n["doc"] for n in nodos_crudos}
+        aristas_crudas = [
+            a for a in rows(con, """
+                SELECT doc_a, doc_b, peso, tipos FROM aristas_prov_1x
+                WHERE doc_a IN (SELECT doc_proveedor FROM clusters WHERE cluster_id = ?)
+                  AND doc_b IN (SELECT doc_proveedor FROM clusters WHERE cluster_id = ?)""",
+                [cid, cid])
+            if a["doc_a"] in docs and a["doc_b"] in docs
+        ]
+        nodos, aristas = sanear_red(nodos_crudos, aristas_crudas)
+        perfil = rows(con, "SELECT * FROM clusters_perfil WHERE cluster_id = ?", [cid])[0]
+        red.append({
+            "id": cid,
+            "n_obra": perfil["n_obra"],
+            "n_interventoria": perfil["n_interventoria"],
+            "valor": perfil["valor_total"] or 0,
+            "vigila_y_construye": bool(perfil["obra_e_interventoria"]),
+            "nodos": nodos,
+            "aristas": aristas,
+        })
+    return red
+
+
 def main():
+    import duckdb  # perezoso a proposito, ver docstring del modulo
+
     os.makedirs(OUT, exist_ok=True)
     con = duckdb.connect(DB, read_only=True)
-    print("exportando a web/data/")
+    print("exportando a out_web/")
 
     write("titulares.json", rows(con, """
         SELECT concepto, n_contratos, coalesce(valor, 0) AS valor FROM titulares"""))
@@ -85,42 +183,7 @@ def main():
                coalesce(valor_auto, 0) AS valor_auto
         FROM entidades_autosupervision ORDER BY valor_auto DESC"""))
 
-    # ---- Red: un subgrafo por cluster, solo los mas relevantes ----
-    ids = [r["cluster_id"] for r in rows(con, """
-        SELECT cluster_id FROM clusters_perfil
-        WHERE n_proveedores > 1 AND NOT tiene_entidad_publica
-        ORDER BY (obra_e_interventoria::INT) DESC, valor_total DESC
-        LIMIT %d""" % TOP_CLUSTERS)]
-
-    red = []
-    for cid in ids:
-        nodos = rows(con, """
-            SELECT p.doc, p.nombre, p.n_obra, p.n_interventoria, p.n_contratos,
-                   coalesce(p.valor_total, 0) AS valor, p.n_entidades
-            FROM clusters c JOIN nodos_proveedor p ON p.doc = c.doc_proveedor
-            WHERE c.cluster_id = ?
-            ORDER BY p.valor_total DESC""", [cid])
-        docs = {n["doc"] for n in nodos}
-        aristas = [
-            {"a": a["doc_a"], "b": a["doc_b"], "peso": a["peso"], "tipos": list(a["tipos"])}
-            for a in rows(con, """
-                SELECT doc_a, doc_b, peso, tipos FROM aristas_prov_1x
-                WHERE doc_a IN (SELECT doc_proveedor FROM clusters WHERE cluster_id = ?)
-                  AND doc_b IN (SELECT doc_proveedor FROM clusters WHERE cluster_id = ?)""",
-                [cid, cid])
-            if a["doc_a"] in docs and a["doc_b"] in docs
-        ]
-        perfil = rows(con, "SELECT * FROM clusters_perfil WHERE cluster_id = ?", [cid])[0]
-        red.append({
-            "id": cid,
-            "n_obra": perfil["n_obra"],
-            "n_interventoria": perfil["n_interventoria"],
-            "valor": perfil["valor_total"] or 0,
-            "vigila_y_construye": bool(perfil["obra_e_interventoria"]),
-            "nodos": nodos,
-            "aristas": aristas,
-        })
-    write("red.json", red)
+    write("red.json", construir_red(con))
 
     # Metadatos: cobertura y limitaciones viajan CON los datos, para que el
     # tablero no pueda mostrar una cifra sin su salvedad al lado.
@@ -137,12 +200,19 @@ def main():
         "cobertura": {
             "cedula_ordenador": cov[2] / cov[0],
             "cedula_supervisor": cov[3] / cov[0],
-            "cuenta_bancaria": cov[4] / cov[0],
+            # NUNCA "cuenta_bancaria": ese nombre literal esta en D.PROHIBIDAS
+            # (plomada/data.py) y test_privacy.py barre TODOS los artefactos
+            # buscando ese substring, sin importar si es un valor o (como aqui)
+            # solo el nombre de una metrica de cobertura. Encontrado probando
+            # copiar_datos_tablero() con un out_web/meta.json fabricado a mano
+            # (Tanda B): con este nombre, el build se borraba SIEMPRE que
+            # existiera un warehouse real, sin ninguna fuga de verdad.
+            "pct_con_cuenta": cov[4] / cov[0],
             "unido_a_proceso": cov[5] / cov[0],
         },
         "n_clusters": con.execute("SELECT count(*) FROM clusters_perfil").fetchone()[0],
         "limitaciones": [
-            "Riesgo no es fraude: son indicios para priorizar investigacion.",
+            "Un indicio no es una acusacion: son senales para priorizar investigacion.",
             "Solo SECOP II. No incluye SECOP I ni entidades que publican mal.",
             "La cedula del ordenador del gasto esta en el 64,5% de los contratos y la del supervisor en el 54,3%: el analisis de red cubre esa fraccion.",
             "La cuenta bancaria esta en el 23,7%: las redes detectadas son un piso, no un censo.",

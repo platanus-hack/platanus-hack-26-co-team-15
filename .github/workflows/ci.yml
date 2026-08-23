@@ -21,3 +21,17 @@ jobs:
       - name: puertas de calidad (sin warehouse, se saltan las que lo necesitan)
         if: github.ref != 'refs/heads/main'
         run: python -m pytest tests/ -v
+      # docs/PLAN_VUE.md T0.5: antes de esto, la compuerta que "tumba la
+      # publicacion" (plomada/test_privacy.py) solo corria en la maquina de
+      # quien ejecutara plomada/build.py a mano -- el CI nunca la disparaba.
+      # Corre con las fixtures sinteticas (sin warehouse) en cada push/PR, no
+      # solo en main: es la puerta de privacidad, no la ingesta de datos.
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - name: sitio estatico + prueba de privacidad (plomada/test_privacy.py)
+        run: |
+          python3 design/construir.py
+          python3 plomada/gen_synthetic.py
+          python3 plomada/build.py
+      - name: paridad de formato Python/JS (nunca corria en CI)
+        run: node tests/test_formato.mjs

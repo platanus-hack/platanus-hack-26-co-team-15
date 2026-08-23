@@ -1,0 +1,506 @@
+[
+  {
+    "fn": "plata",
+    "args": [
+      0
+    ],
+    "esperado": "$0"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      999999
+    ],
+    "esperado": "$999.999"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      1000000
+    ],
+    "esperado": "$1 millon"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      1500000
+    ],
+    "esperado": "$1,5 millones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      999999999
+    ],
+    "esperado": "$1.000 millones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      1000000000
+    ],
+    "esperado": "$1 mil millones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      63500000000
+    ],
+    "esperado": "$63,5 mil millones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      500000000000
+    ],
+    "esperado": "$500 mil millones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      999999999999
+    ],
+    "esperado": "$1.000 mil millones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      1000000000000
+    ],
+    "esperado": "$1 billon"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      2000000000000
+    ],
+    "esperado": "$2 billones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      209043881234567
+    ],
+    "esperado": "$209 billones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      6e+18
+    ],
+    "esperado": "$6.000.000 billones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      -1000000000000
+    ],
+    "esperado": "$-1 billon"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      -63500000000
+    ],
+    "esperado": "$-63,5 mil millones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      null
+    ],
+    "esperado": "sin dato"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      ""
+    ],
+    "esperado": "sin dato"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      "abc"
+    ],
+    "esperado": "sin dato"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      null,
+      true
+    ],
+    "esperado": "sin dato"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      500000,
+      true
+    ],
+    "esperado": "$500.000"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      "1500000"
+    ],
+    "esperado": "$1,5 millones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      1050000000
+    ],
+    "esperado": "$1,1 mil millones"
+  },
+  {
+    "fn": "plata",
+    "args": [
+      1950000000000
+    ],
+    "esperado": "$1,9 billones"
+  },
+  {
+    "fn": "pct",
+    "args": [
+      0
+    ],
+    "esperado": "0,0%"
+  },
+  {
+    "fn": "pct",
+    "args": [
+      0.5
+    ],
+    "esperado": "50,0%"
+  },
+  {
+    "fn": "pct",
+    "args": [
+      1
+    ],
+    "esperado": "100,0%"
+  },
+  {
+    "fn": "pct",
+    "args": [
+      0.12345,
+      2
+    ],
+    "esperado": "12,35%"
+  },
+  {
+    "fn": "pct",
+    "args": [
+      -0.2
+    ],
+    "esperado": "-20,0%"
+  },
+  {
+    "fn": "pct",
+    "args": [
+      null
+    ],
+    "esperado": "sin dato"
+  },
+  {
+    "fn": "pct",
+    "args": [
+      ""
+    ],
+    "esperado": "sin dato"
+  },
+  {
+    "fn": "pct",
+    "args": [
+      "abc"
+    ],
+    "esperado": "sin dato"
+  },
+  {
+    "fn": "pct",
+    "args": [
+      "0.3"
+    ],
+    "esperado": "30,0%"
+  },
+  {
+    "fn": "entero",
+    "args": [
+      0
+    ],
+    "esperado": "0"
+  },
+  {
+    "fn": "entero",
+    "args": [
+      1234567
+    ],
+    "esperado": "1.234.567"
+  },
+  {
+    "fn": "entero",
+    "args": [
+      -42
+    ],
+    "esperado": "-42"
+  },
+  {
+    "fn": "entero",
+    "args": [
+      null
+    ],
+    "esperado": "sin dato"
+  },
+  {
+    "fn": "entero",
+    "args": [
+      ""
+    ],
+    "esperado": "sin dato"
+  },
+  {
+    "fn": "entero",
+    "args": [
+      "abc"
+    ],
+    "esperado": "sin dato"
+  },
+  {
+    "fn": "entero",
+    "args": [
+      "42"
+    ],
+    "esperado": "42"
+  },
+  {
+    "fn": "entero",
+    "args": [
+      3.6
+    ],
+    "esperado": "4"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "GOBERNACION DEL CHOCO"
+    ],
+    "esperado": "Gobernacion del Choco"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "E.S.E. HOSPITAL SAN RAFAEL"
+    ],
+    "esperado": "E.S.E. Hospital San Rafael"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "CONCESIONES DE CUNDINAMARCA - ICCU"
+    ],
+    "esperado": "Concesiones de Cundinamarca - ICCU"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "SERVICIO NACIONAL DE APRENDIZAJE - SENA"
+    ],
+    "esperado": "Servicio Nacional de Aprendizaje - SENA"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "MYG LINARES S.A.S."
+    ],
+    "esperado": "MYG Linares S.A.S."
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "EL CARMEN DE VIBORAL"
+    ],
+    "esperado": "El Carmen de Viboral"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "INSTITUTO DE INFRAESTRUCTURA Y CONCESIONES DE CUNDINAMARCA - ICCU"
+    ],
+    "esperado": "Instituto de Infraestructura y Concesiones de Cundinamarca - ICCU"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "AGENCIA NACIONAL DE INFRAESTRUCTURA - ANI"
+    ],
+    "esperado": "Agencia Nacional de Infraestructura - ANI"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "INVIAS"
+    ],
+    "esperado": "INVIAS"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "FASE III DEL PROYECTO VIAL"
+    ],
+    "esperado": "Fase III del Proyecto Vial"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "LOTE IV"
+    ],
+    "esperado": "Lote IV"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "CONSORCIO VIAS DEL SUR"
+    ],
+    "esperado": "Consorcio Vias del Sur"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      ""
+    ],
+    "esperado": ""
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      null
+    ],
+    "esperado": ""
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "UNION TEMPORAL PROGRESO 2024"
+    ],
+    "esperado": "Union Temporal Progreso 2024"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "BOGOTA D.C."
+    ],
+    "esperado": "Bogota D.C."
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "ALCALDIA MUNICIPAL DE PUERTO GAITAN"
+    ],
+    "esperado": "Alcaldia Municipal de Puerto Gaitan"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "EMPRESA DE ACUEDUCTO Y ALCANTARILLADO E.S.P."
+    ],
+    "esperado": "Empresa de Acueducto y Alcantarillado E.S.P."
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "JUNTA DE ACCION COMUNAL VEREDA LA ESPERANZA"
+    ],
+    "esperado": "Junta de Accion Comunal Vereda la Esperanza"
+  },
+  {
+    "fn": "titulo",
+    "args": [
+      "UNIDAD ADMINISTRATIVA ESPECIAL - UAE"
+    ],
+    "esperado": "Unidad Administrativa Especial - UAE"
+  },
+  {
+    "fn": "sin_tildes",
+    "args": [
+      "Bogotá"
+    ],
+    "esperado": "BOGOTA"
+  },
+  {
+    "fn": "sin_tildes",
+    "args": [
+      "Ñuñoa"
+    ],
+    "esperado": "NUNOA"
+  },
+  {
+    "fn": "sin_tildes",
+    "args": [
+      null
+    ],
+    "esperado": ""
+  },
+  {
+    "fn": "sin_tildes",
+    "args": [
+      ""
+    ],
+    "esperado": ""
+  },
+  {
+    "fn": "sin_tildes",
+    "args": [
+      "  espacios  "
+    ],
+    "esperado": "ESPACIOS"
+  },
+  {
+    "fn": "sin_tildes",
+    "args": [
+      "Múltiples Tíldes Áéíóú"
+    ],
+    "esperado": "MULTIPLES TILDES AEIOU"
+  },
+  {
+    "fn": "slug",
+    "args": [
+      "Antioquia",
+      "El Bagre"
+    ],
+    "esperado": "antioquia-el-bagre"
+  },
+  {
+    "fn": "slug",
+    "args": [
+      "Bogotá D.C.",
+      "Bogotá D.C."
+    ],
+    "esperado": "bogota-d-c-bogota-d-c"
+  },
+  {
+    "fn": "slug",
+    "args": [
+      "",
+      "Choco"
+    ],
+    "esperado": "choco"
+  },
+  {
+    "fn": "slug",
+    "args": [
+      "Ñuñoa"
+    ],
+    "esperado": "nunoa"
+  },
+  {
+    "fn": "slug",
+    "args": [
+      "Norte de Santander",
+      "Cúcuta"
+    ],
+    "esperado": "norte-de-santander-cucuta"
+  }
+]

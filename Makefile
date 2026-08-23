@@ -1,6 +1,6 @@
 # El entorno local del lider (Windows) no tiene make. Los comandos son
 # one-liners a proposito: si no tienes make, copia la linea de la receta.
-.PHONY: help ingest build graph test report load up down lint
+.PHONY: help ingest build graph test report load up down lint front sitio
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/'
 
@@ -35,6 +35,14 @@ lint:
 
 load:     ## Carga el warehouse a Postgres para el API
 	python pipeline/load_postgres.py
+
+front:    ## Compila las islas de Vue (docs/PLAN_VUE.md). Solo hace falta si tocaste frontend/
+	npm --prefix frontend install
+	npm --prefix frontend run build
+
+sitio:    ## Compone el CSS y genera plomada/site/ (no hace falta Node: el bundle ya esta commiteado)
+	python3 design/construir.py
+	python3 plomada/build.py
 
 up:
 	docker compose up --build

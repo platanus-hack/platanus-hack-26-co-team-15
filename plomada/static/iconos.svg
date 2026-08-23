@@ -1,0 +1,17 @@
+<!-- Sprite de iconos Lucide (design/VENDOR.md, desviacion 3). Local, sin CDN.
+     Cada icono es un <symbol>; se usa con <svg><use href="/static/iconos.svg#nombre"/></svg>.
+
+     Hoy ningun template de Plomada usa un icono todavia (grep confirma que
+     ni build.py ni web/index.html referencian ninguno): este sprite trae
+     SOLO un icono de ejemplo ("info", de lucide-static, licencia ISC) para
+     dejar el mecanismo listo. No se inventa iconografia que nadie pidio
+     todavia -- cuando un template necesite un icono real, se agrega aqui y
+     solo entonces.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M12 16v-4"/>
+    <path d="M12 8h.01"/>
+  </symbol>
+</svg>
