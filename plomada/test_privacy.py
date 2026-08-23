@@ -254,11 +254,18 @@ def test_tasa_ajustada():
               f"{m['ciudad']}: la tasa ajustada no contrajo la cruda")
         check(m is not lider_ajustada,
               f"{m['ciudad']} encabeza el ranking con solo {m['n_contratos']} contratos")
+    # El orden se comprueba contra la PROPIA pagina, no contra D.municipios().
+    # La portada se arma con los municipios del API y D.municipios() lee
+    # out/ (o las fixtures, en un build limpio como el de Render): son dos
+    # fuentes distintas y compararlas hacia fallar el build por un desacuerdo
+    # entre datasets, no por un ranking mal ordenado. Lo que importa es que lo
+    # PUBLICADO este ordenado por tasa ajustada, y eso se lee del HTML.
     portada = (SITE / "index.html").read_text(encoding="utf-8")
-    orden = re.findall(r'href="(/municipio/[^"]+)"', portada)
-    esperado = [f"/municipio/{D.slug(m['departamento'], m['ciudad'])}/"
-                for m in sorted(muns, key=lambda m: -m["tasa_ajustada"])[:10]]
-    check(orden[:10] == esperado, "la portada no ordena los municipios por tasa ajustada")
+    tasas = [float(x.replace(".", "").replace(",", "."))
+             for x in re.findall(r'class="num destacado">([\d.,]+)%<', portada)]
+    check(tasas, "la portada no publica ninguna tasa ajustada")
+    check(tasas == sorted(tasas, reverse=True),
+          f"la portada no ordena los municipios por tasa ajustada: {tasas[:12]}")
     for pag in (SITE / "index.html", SITE / "mapa" / "index.html"):
         t = pag.read_text(encoding="utf-8")
         check("Tasa cruda" in t and "Tasa ajustada" in t,

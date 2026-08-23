@@ -228,9 +228,12 @@ async function cargar() {
     });
     pintar(datos, await geocache);
   } catch (e) {
-    if (e && e.codigo === '404') {
-      estado.innerHTML = 'Este contrato no está disponible. ' +
-        '<a href="/buscar/">Buscar otro contrato</a>.';
+    // El API responde 404 CON cuerpo {error:{codigo:'no_encontrado'}}, y
+    // pedir() mira el cuerpo antes que el status: el codigo que llega aqui es
+    // 'no_encontrado', no '404'. Se aceptan los dos por si eso cambia.
+    if (e && (e.codigo === 'no_encontrado' || e.codigo === '404')) {
+      estado.innerHTML = 'Este contrato no está disponible: no aparece en el universo ' +
+        'de obra pública analizado. <a href="/buscar/">Buscar otro contrato</a>.';
       return;
     }
     estado.innerHTML = (e instanceof SinDatos

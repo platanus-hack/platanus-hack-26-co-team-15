@@ -1,0 +1,10 @@
+# Dependencias del SITIO (plomada/build.py), no del pipeline analitico.
+#
+# Es una sola: el build ya no toca el warehouse. Los datos del tablero y las
+# cifras salen del API por HTTP (pipeline/api_cliente.py), y las fichas, el
+# buscador y los municipios se hidratan en el navegador.
+#
+# duckdb NO hace falta: pipeline/export_web.py lo importa dentro de main(), a
+# proposito, para que sanear_red() se pueda importar sin el (ver el docstring
+# de ese modulo). api_tablero.py solo usa esa funcion pura.
+requests>=2.32,<3
