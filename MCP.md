@@ -6,10 +6,12 @@ tablero**, en vez de solo mirando gráficos y tablas. Este documento es para
 el equipo y para quien trabaje el front — no requiere leer el resto del
 código para entender qué construir y en qué orden.
 
-**Estado: servidor MCP y proxy de chat construidos y probados localmente
-(`api/app/mcp/server.py`, `api/app/main.py`). Falta el último tramo — probar
-contra una URL pública real (túnel o deploy) — antes de conectar el front.**
-Ver "Qué se probó" más abajo para el detalle exacto.
+**Estado: servidor MCP, proxy de chat y carga a Postgres construidos
+(`api/app/mcp/server.py`, `api/app/main.py`, `pipeline/load_postgres.py`).
+Falta desplegar Postgres + `api/` en Render (no hay Postgres disponible en
+este entorno de prueba para verificar el flujo completo) y probar contra una
+URL pública real — antes de conectar el front.** Ver "Orden de trabajo" más
+abajo para el detalle exacto.
 
 ## Por qué esta arquitectura
 
@@ -26,11 +28,11 @@ Tres decisiones de diseño para no sobreconstruir:
    ya existe y está vacío — el proxy de chat y el servidor MCP viven ahí
    mismo, como dos rutas de la misma app. No hace falta un servicio nuevo en
    Render por cada pieza.
-2. **Lee de lo que ya existe, no espera a Postgres.** Las tools consultan
-   `data/exports/base.parquet` y los JSON que `pipeline/export_web.py` ya
-   genera en `web/data/`. `pipeline/load_postgres.py` (item 5 de "Pendiente"
-   en el README) sigue sin construirse, y no es un bloqueo: el día que exista,
-   se cambia de dónde leen las tools sin tocar su contrato ni el front.
+2. **Postgres como fuente, no archivos locales.** `data/exports/*.parquet` y
+   `web/data/*.json` están en `.gitignore` y no viajan con la imagen de
+   Docker que se despliega — un contenedor recién construido no los tiene.
+   `pipeline/load_postgres.py` los carga a Postgres, y las tools del MCP
+   leen de ahí. Esto ya cierra el ítem 5 de "Pendiente" del README.
 3. **Solo lectura por construcción.** La conexión DuckDB que usan las tools
    es read-only. No hay superficie de escritura que asegurar.
 
@@ -38,7 +40,7 @@ Tres decisiones de diseño para no sobreconstruir:
 
 ```
 ┌─────────────┐        POST /chat         ┌───────────────────────────────┐
-│  web/ (front)│ ────────────────────────▶ │  api/ (Render)                │
+│  web/ (front)│ ────────────────────────▶ │  api/ (Render, servicio web)  │
 │  chat widget │ ◀──────────────────────── │  ┌─────────────────────────┐  │
 └─────────────┘   streaming (SSE)          │  │ proxy de chat            │  │
                                             │  │ POST /chat               │  │
@@ -53,9 +55,15 @@ Tres decisiones de diseño para no sobreconstruir:
                                             │  │ tools de solo lectura    │  │
                                             │  └───────────┬─────────────┘  │
                                             └──────────────┼────────────────┘
-                                                            │
-                                                data/exports/base.parquet
-                                                web/data/*.json
+                                                            │ DATABASE_URL
+                                                            │ (red interna Render,
+                                                            │  puerto no expuesto)
+                                            ┌───────────────▼────────────────┐
+                                            │  Postgres (Render, otro servicio)│
+                                            │  tablas: puntajes, titulares,    │
+                                            │  meta -- cargadas por            │
+                                            │  pipeline/load_postgres.py       │
+                                            └───────────────────────────────┘
 ```
 
 El front **nunca** habla directo con Claude ni con el servidor MCP — solo con
@@ -71,29 +79,45 @@ pipeline sigue fijado a 3.9, por eso `api/` tiene su propio entorno y sus
 propias dependencias en `api/requirements.txt`, igual que ya hacía con
 FastAPI/Postgres).
 
-Tools implementadas hoy (cada una una consulta DuckDB acotada a `LIMIT_DURO
-= 50` filas, para no volcar tablas completas al contexto del modelo):
+Tools implementadas hoy (cada una una consulta a Postgres acotada a
+`LIMIT_DURO = 50` filas, para no volcar tablas completas al contexto del
+modelo). Leen de Postgres vía `DATABASE_URL` — **no** de archivos locales:
 
-| Tool | Qué responde | Fuente |
+| Tool | Qué responde | Tabla en Postgres |
 |---|---|---|
-| `resumen_indicios` | Cifras titulares (contratos atípicos, plata en riesgo) | `web/data/titulares.json`, `meta.json` |
-| `buscar_contratos_atipicos(entidad?, departamento?, tipo_contrato?, valor_minimo?, limite=20)` | Lista de contratos marcados, con sus banderas | `data/exports/puntajes.parquet` |
-| `perfil_entidad(nombre_o_nit)` | Resumen de una entidad: contratos, valor, atípicos | `data/exports/puntajes.parquet` |
+| `resumen_indicios` | Cifras titulares (contratos atípicos, plata en riesgo) | `titulares`, `meta` |
+| `buscar_contratos_atipicos(entidad?, departamento?, tipo_contrato?, valor_minimo?, limite=20)` | Lista de contratos marcados, con sus banderas | `puntajes` |
+| `perfil_entidad(nombre_o_nit)` | Resumen de una entidad: contratos, valor, atípicos | `puntajes` |
 
-Pendientes de agregar (mismo patrón, solo falta escribir la tool): `buscar_proveedor`
-(red, `web/data/red.json`) y `alertas_preadjudicacion` (`web/data/alertas.json`).
-Repártanlas entre los dueños de cada pilar — quien escribió `06_banderas_grafo.sql`
-sabe mejor qué exponer en `buscar_proveedor`, quien escribió `alertas.py` sabe
-qué exponer en `alertas_preadjudicacion`.
+Esas tres tablas las carga `pipeline/load_postgres.py` desde
+`data/exports/puntajes.parquet` y `web/data/{titulares,meta}.json` (`make
+load`, o `python pipeline/load_postgres.py` con `DATABASE_URL` en el
+entorno). Agregar una tool nueva es: (1) una línea más en `load_postgres.py`
+si necesita una tabla que todavía no está cargada, (2) la función `@mcp.tool()`
+correspondiente. Pendientes con este patrón: `buscar_proveedor` (necesitaría
+cargar algo como `web/data/red.json`) y `alertas_preadjudicacion`
+(`web/data/alertas.json`). Repártanlas entre los dueños de cada pilar — quien
+escribió `06_banderas_grafo.sql` sabe mejor qué exponer en `buscar_proveedor`,
+quien escribió `alertas.py` sabe qué exponer en `alertas_preadjudicacion`.
 
-Correr en local:
+Correr en local (necesita un Postgres — `docker compose up db` levanta el
+que ya está definido en `docker-compose.yml`):
 ```
+docker compose up db                                          # postgres:16-alpine en :5432
+export DATABASE_URL=postgresql://plomada:plomada@localhost:5432/plomada
+python pipeline/load_postgres.py                              # carga puntajes/titulares/meta
+
 python -m venv .venv-mcp
 .venv-mcp/Scripts/pip install -r api/requirements.txt
-.venv-mcp/Scripts/python api/app/mcp/test_smoke.py           # via stdio, sin nada mas corriendo
+.venv-mcp/Scripts/python api/app/mcp/test_smoke.py           # via stdio
 .venv-mcp/Scripts/python api/app/mcp/server.py --http &      # via http, puerto 8765
 .venv-mcp/Scripts/python api/app/mcp/test_smoke.py --http
 ```
+
+**Sin `DATABASE_URL`, las tools fallan con un error de tool claro (no tumban
+el servidor)** — probado: cada tool valida esto con una excepción normal, no
+`sys.exit()`, precisamente porque este es un servidor de larga duración y no
+un script de una sola corrida.
 
 ### 2. Proxy de chat — `api/app/main.py` (construido)
 
@@ -130,7 +154,32 @@ una suposición.
 Esto de paso le da un uso real al esqueleto `api/` que llevaba vacío desde
 antes (ver ítem 5 de "Pendiente" en el README).
 
-### 3. Widget de chat en el front — para quien trabaje `web/` (o el proyecto Vercel nuevo)
+### 3. Postgres en Render
+
+Desplegar `postgres:16-alpine` (la misma imagen que ya usa
+`docker-compose.yml`) como **su propio servicio** en Render, separado del
+servicio `api/`:
+
+- **Disco persistente obligatorio.** A diferencia de `api/` (sin estado —
+  puede perder su filesystem en cada redeploy sin problema), Postgres
+  necesita un Disk de Render adjunto o pierde los datos en cada reinicio del
+  contenedor.
+- **No exponer el puerto de Postgres a internet.** Los *datos* son públicos
+  (SECOP II, ya están en el tablero), pero la base en sí solo necesita ser
+  alcanzable por el servicio `api/` — conéctense por la red interna de
+  Render, no publiquen el puerto 5432 al público.
+- `DATABASE_URL` (formato `postgresql://usuario:clave@host:puerto/db`) va
+  como variable de entorno en **dos lugares**: en el servicio `api/` (lectura,
+  las tools del MCP) y en donde se corra `pipeline/load_postgres.py`
+  (escritura — puede ser a mano desde una laptop apuntando al host público
+  de Render mientras no haya CI para esto, o un job aparte más adelante).
+  Puede ser el mismo valor en ambos si usan un solo usuario, o separar
+  lectura/escritura con dos usuarios de Postgres si quieren ser más
+  estrictos — no es necesario para arrancar.
+- `any_value()` (usado en la tool `perfil_entidad`) requiere **Postgres ≥16**
+  — no bajen la versión de la imagen sin ajustar esa query.
+
+### 4. Widget de chat en el front — para quien trabaje `web/` (o el proyecto Vercel nuevo)
 
 Todo lo que necesita saber, sin tocar nada de lo de arriba:
 
@@ -167,21 +216,30 @@ Todo lo que necesita saber, sin tocar nada de lo de arriba:
    completo sin una URL pública** (ni siquiera ejecutando todo en la misma
    máquina).
 
+4. ✅ `pipeline/load_postgres.py` construido, y `api/app/mcp/server.py`
+   reescrito para leer de Postgres (`psycopg`) en vez de archivos locales.
+   Sin Postgres disponible en este entorno no pude correr el flujo real
+   contra una base viva — verificado que el servidor arranca, responde
+   `initialize`/`list_tools`, y que sin `DATABASE_URL` cada tool falla con un
+   error normal (no tumba el proceso). La prueba con datos reales de Postgres
+   queda a cargo del equipo (ver comandos en la sección 1 de arriba).
+
 ## Lo que falta — bloqueado en infraestructura, no en código
 
-4. **Conseguir una URL pública** para `api/` — un túnel (ngrok, Cloudflare
+5. **Desplegar Postgres en Render** (ver sección 3 de arriba: disco
+   persistente, sin exponer el puerto) y correr `pipeline/load_postgres.py`
+   contra ese `DATABASE_URL` una vez.
+6. **Conseguir una URL pública** para `api/` — un túnel (ngrok, Cloudflare
    Tunnel) para probar rápido, o ya el deploy real a Render. Ninguna
    herramienta de túnel estaba disponible en este entorno de prueba (no hay
    `ngrok`/`cloudflared`/`npx` instalados), así que alguien del equipo con
    acceso a instalar herramientas o a la cuenta de Render tiene que dar este
    paso.
-5. Con la URL pública, poner `SELF_URL=https://<esa-url>` como variable de
-   entorno del servicio y repetir la prueba de `/chat` — ahí sí se prueba el
-   round-trip completo (front → proxy → Claude → MCP → datos → respuesta).
-6. Widget de chat en el front, apuntando a esa URL ya desplegada.
-7. (Futuro, no bloqueante) migrar la fuente de datos del MCP de
-   parquet/JSON a Postgres, si `pipeline/load_postgres.py` llega a
-   construirse.
+7. Con la URL pública, poner `SELF_URL=https://<esa-url>` y `DATABASE_URL`
+   como variables de entorno del servicio `api/` y repetir la prueba de
+   `/chat` — ahí sí se prueba el round-trip completo (front → proxy → Claude
+   → MCP → Postgres → respuesta).
+8. Widget de chat en el front, apuntando a esa URL ya desplegada.
 
 ## Decisiones que faltan por tomar en equipo
 

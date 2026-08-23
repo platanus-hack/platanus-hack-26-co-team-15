@@ -39,6 +39,8 @@ jobs:
         if: steps.cache-nucleo.outputs.cache-hit != 'true'
         run: |
           python pipeline/ingest.py
+          python pipeline/build.py --steps 01 02 03 04 05 --no-export
+          python pipeline/grafo.py
           python pipeline/build.py --all
 
       # Los snapshots de abiertos se acumulan para siempre (nunca se borran:

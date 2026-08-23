@@ -464,13 +464,13 @@ todos.
    `platanus-hack-project.jsonc` sigue vacío) y conectar ahí el `alertas.json`
    diario que ya genera `.github/workflows/alertas-diarias.yml`, en vez de
    dejarlo como artefacto descargable.
-5. Capa de serving (`api/`, Postgres): el esqueleto de FastAPI y
-   `docker-compose` ya existen, pero `api/app/` está vacío y
-   `pipeline/load_postgres.py` (referenciado por `make load`) no existe
-   todavía.
-6. Tablero conversacional (MCP + Claude): plan de implementación en
-   [`MCP.md`](MCP.md). Reutiliza el esqueleto de `api/` del ítem 5 en vez de
-   crear un cuarto servicio.
+5. Capa de serving (`api/`, Postgres): `pipeline/load_postgres.py` ya carga
+   `puntajes`/`titulares`/`meta` a Postgres (`make load`), y `api/app/mcp/
+   server.py` ya lee de ahí. Falta desplegar Postgres de verdad en Render
+   (disco persistente, sin exponer el puerto) — ver `MCP.md`.
+6. Tablero conversacional (MCP + Claude): servidor MCP y proxy de chat ya
+   construidos (`api/app/mcp/server.py`, `api/app/main.py`), documentados en
+   [`MCP.md`](MCP.md). Falta el deploy a Render y conectar el front.
 
 ## Fuentes
 

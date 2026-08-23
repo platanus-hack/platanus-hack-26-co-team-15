@@ -3,18 +3,18 @@ publicados, para que Claude (u otra IA con soporte de MCP) pueda responder
 preguntas conversacionales desde el tablero. Ver MCP.md en la raiz del repo
 para el plan completo.
 
-Lee directo de `data/exports/base.parquet`/`puntajes.parquet` (el contrato
-de datos de solo lectura entre frentes, ver pipeline/build.py) y de los JSON
-en `web/data/` que ya genera `pipeline/export_web.py`. No toca Postgres ni
-`pipeline/load_postgres.py`: eso es una migracion futura de donde leen las
-tools, no del contrato de las tools en si.
+Lee de Postgres (`DATABASE_URL`), cargado por `pipeline/load_postgres.py`
+desde `data/exports/puntajes.parquet` y `web/data/*.json`. No lee archivos
+locales: esos estan en .gitignore y no viajan con la imagen de Docker que se
+despliega en Render, asi que la fuente de datos en produccion tiene que ser
+una base de datos, no el filesystem del contenedor.
 
 Requiere Python >=3.10 (el SDK oficial de `mcp` lo exige). El resto del
 pipeline esta fijado a Python 3.9 en el entorno local, por eso este servidor
 vive con su propio entorno (ver api/requirements.txt).
 
 Correr en local (stdio, para probar con un cliente MCP o el inspector):
-    python -m api.app.mcp.server
+    DATABASE_URL=postgresql://plomada:plomada@localhost:5432/plomada python -m api.app.mcp.server
 
 Correr como servidor HTTP (lo que necesita el connector remoto de Claude):
     python -m api.app.mcp.server --http --port 8765
@@ -25,16 +25,25 @@ import json
 import os
 import sys
 
-import duckdb
+import psycopg
 from mcp.server import MCPServer
-
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-EXPORTS = os.path.join(ROOT, "data", "exports")
-WEB_DATA = os.path.join(ROOT, "web", "data")
-BASE_PARQUET = os.path.join(EXPORTS, "base.parquet").replace("\\", "/")
-PUNTAJES_PARQUET = os.path.join(EXPORTS, "puntajes.parquet").replace("\\", "/")
+from psycopg.rows import dict_row
 
 LIMIT_DURO = 50  # ningun tool devuelve mas filas que esto, sin importar lo que pida el modelo
+
+
+def _database_url():
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        # RuntimeError, no sys.exit(): esto corre dentro de un tool handler de
+        # un servidor de larga duracion -- sys.exit() tumbaria el proceso
+        # entero en la primera pregunta sin DATABASE_URL, no solo esa llamada.
+        raise RuntimeError(
+            "falta DATABASE_URL en el entorno; corre 'python pipeline/load_postgres.py' "
+            "contra un Postgres y apunta esta variable ahi"
+        )
+    return url
+
 
 mcp = MCPServer(
     name="plomada",
@@ -49,16 +58,10 @@ mcp = MCPServer(
 
 
 def _consultar(sql, params=None):
-    con = duckdb.connect(":memory:", read_only=False)
-    try:
-        return con.execute(sql, params or []).fetchdf().to_dict(orient="records")
-    finally:
-        con.close()
-
-
-def _leer_json(nombre):
-    with open(os.path.join(WEB_DATA, nombre), "r", encoding="utf-8") as fh:
-        return json.load(fh)
+    with psycopg.connect(_database_url(), row_factory=dict_row) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, params or ())
+            return cur.fetchall()
 
 
 @mcp.tool()
@@ -67,8 +70,9 @@ def resumen_indicios() -> dict:
     por categoria de indicio, y las limitaciones que hay que decir en voz
     alta (cobertura de datos, que NO se puede afirmar). Usa esto primero
     para dar contexto antes de responder preguntas puntuales."""
-    titulares = _leer_json("titulares.json")
-    meta = _leer_json("meta.json")
+    titulares = _consultar("SELECT * FROM titulares")
+    meta_filas = _consultar("SELECT datos FROM meta WHERE id = 1")
+    meta = json.loads(meta_filas[0]["datos"]) if meta_filas else {}
     return {"titulares": titulares, "limitaciones": meta.get("limitaciones", [])}
 
 
@@ -89,27 +93,27 @@ def buscar_contratos_atipicos(
     condiciones = ["(n_banderas_fuertes >= 1 OR puntos_crudos >= 6)"]
     params = []
     if entidad:
-        condiciones.append("entidad ILIKE ?")
+        condiciones.append("entidad ILIKE %s")
         params.append("%%%s%%" % entidad)
     if departamento:
-        condiciones.append("departamento ILIKE ?")
+        condiciones.append("departamento ILIKE %s")
         params.append("%%%s%%" % departamento)
     if tipo_contrato:
-        condiciones.append("tipo_contrato = ?")
+        condiciones.append("tipo_contrato = %s")
         params.append(tipo_contrato.upper())
     if valor_minimo:
-        condiciones.append("valor_plausible >= ?")
+        condiciones.append("valor_plausible >= %s")
         params.append(valor_minimo)
     sql = """
         SELECT id_contrato, entidad, departamento, ciudad, tipo_contrato, modalidad,
                valor_plausible, n_banderas_fuertes, puntos_crudos, proveedor,
                anio, urlproceso
-        FROM read_parquet(?)
+        FROM puntajes
         WHERE %s
         ORDER BY n_banderas_fuertes DESC, puntos_crudos DESC, valor_plausible DESC
-        LIMIT ?
+        LIMIT %%s
     """ % " AND ".join(condiciones)
-    return _consultar(sql, [PUNTAJES_PARQUET] + params + [limite])
+    return _consultar(sql, params + [limite])
 
 
 @mcp.tool()
@@ -117,21 +121,22 @@ def perfil_entidad(nombre_o_nit: str) -> dict:
     """Resumen de una entidad contratante: cuantos contratos tiene, cuanto
     ha adjudicado, y cuantos de sus contratos estan marcados como atipicos.
     Recibe el nombre (coincidencia parcial) o el NIT exacto."""
+    # any_value() requiere Postgres >=16 (docker-compose.yml ya usa postgres:16-alpine)
     sql = """
         SELECT
           any_value(entidad)                                          AS entidad,
-          any_value(nit_entidad)                                      AS nit_entidad,
+          nit_entidad,
           any_value(departamento)                                     AS departamento,
           count(*)                                                    AS n_contratos,
           sum(valor_plausible)                                        AS valor_total,
           sum((n_banderas_fuertes >= 1 OR puntos_crudos >= 6)::INT)    AS n_atipicos
-        FROM read_parquet(?)
-        WHERE nit_entidad = ? OR entidad ILIKE ?
+        FROM puntajes
+        WHERE nit_entidad = %s OR entidad ILIKE %s
         GROUP BY nit_entidad
         ORDER BY n_contratos DESC
         LIMIT 5
     """
-    filas = _consultar(sql, [PUNTAJES_PARQUET, nombre_o_nit, "%%%s%%" % nombre_o_nit])
+    filas = _consultar(sql, [nombre_o_nit, "%%%s%%" % nombre_o_nit])
     if not filas:
         return {"encontrado": False, "mensaje": "Ninguna entidad coincide con '%s'" % nombre_o_nit}
     return {"encontrado": True, "coincidencias": filas}

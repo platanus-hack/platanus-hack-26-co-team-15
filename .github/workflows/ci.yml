@@ -16,6 +16,8 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           python pipeline/ingest.py
+          python pipeline/build.py --steps 01 02 03 04 05 --no-export
+          python pipeline/grafo.py
           python pipeline/build.py --all
           python -m pytest tests/ -v
       - name: puertas de calidad (sin warehouse, se saltan las que lo necesitan)
