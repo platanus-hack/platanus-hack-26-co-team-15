@@ -20,3 +20,6 @@ web/data/
 plomada/.venv/
 plomada/site/
 plomada/__pycache__/
+
+# Vinculo del proyecto en Vercel (IDs de cuenta y token OIDC): no va a git.
+.vercel/
