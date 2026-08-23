@@ -714,3 +714,23 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
+/* ─── A1 · Vertical: banda estructural ───────────────────────────────────
+   design/PLAN_A1_VERTICAL.md. Banda oscura fija (nav, cabecera de portada,
+   pie) presente en los dos tonos: ver design/plomada/tema.css para el
+   ambito compartido de tokens. */
+.banda-oscura { background: var(--color-bg); color: var(--color-text); }
+.banda-cab { display: flex; flex-direction: column; }
+/* bajo la banda, en tono claro, la transicion banda->pagina la hace el
+   contraste mismo; no agregar borde (en tono oscuro dibujaria una regla
+   fantasma en mitad de un fondo continuo) */
+
+.nav .nav-brand {
+  text-transform: uppercase; letter-spacing: 0.06em;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+}
+.nav .nav-cta { padding: var(--space-2) var(--space-3); font-size: var(--pl-text-sm); }
+
+.banda-pie .pie { border-top: 0; }
+/* la regla superior del pie la reemplaza el cambio de banda; conservarla
+   dibujaria un hairline duplicado en tono oscuro */

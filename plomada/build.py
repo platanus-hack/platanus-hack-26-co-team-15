@@ -125,7 +125,7 @@ def aviso_fijo(texto, enlace=("Qué significa esto", "/metodologia/")):
 
 
 # ----------------------------------------------------------------- plantilla
-def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase=""):
+def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase="", cabecera=""):
     canon = "/" + ruta if not ruta.startswith("/") else ruta
     return f"""<!doctype html>
 <html lang="es">
@@ -143,14 +143,19 @@ def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase=""):
 {head}
 <body class="{clase}">
 <a class="saltar" href="#principal">Saltar al contenido</a>
+<div class="banda-oscura banda-cab">
 {nav(canon)}
+{cabecera}
+</div>
 <main id="principal">
 {cuerpo}
 </main>
-<footer class="pie">
-  <p class="aviso">{C.AVISO}</p>
-  <p>Datos públicos del SECOP II. <a href="/metodologia/">Cómo se calcula</a> ·
-     <a href="/datos/">Descargar los datos</a></p>
+<footer class="banda-oscura banda-pie">
+  <div class="pie">
+    <p class="aviso">{C.AVISO}</p>
+    <p>Datos públicos del SECOP II. <a href="/metodologia/">Cómo se calcula</a> ·
+       <a href="/datos/">Descargar los datos</a></p>
+  </div>
 </footer>
 {TEMA_JS}
 {js}

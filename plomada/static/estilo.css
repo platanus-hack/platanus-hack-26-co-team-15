@@ -1167,6 +1167,26 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
       transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 
+/* ─── A1 · Vertical: banda estructural ───────────────────────────────────
+   design/PLAN_A1_VERTICAL.md. Banda oscura fija (nav, cabecera de portada,
+   pie) presente en los dos tonos: ver design/plomada/tema.css para el
+   ambito compartido de tokens. */
+.banda-oscura { background: var(--color-bg); color: var(--color-text); }
+.banda-cab { display: flex; flex-direction: column; }
+/* bajo la banda, en tono claro, la transicion banda->pagina la hace el
+   contraste mismo; no agregar borde (en tono oscuro dibujaria una regla
+   fantasma en mitad de un fondo continuo) */
+
+.nav .nav-brand {
+  text-transform: uppercase; letter-spacing: 0.06em;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+}
+.nav .nav-cta { padding: var(--space-2) var(--space-3); font-size: var(--pl-text-sm); }
+
+.banda-pie .pie { border-top: 0; }
+/* la regla superior del pie la reemplaza el cambio de banda; conservarla
+   dibujaria un hairline duplicado en tono oscuro */
+
 /* ═══════════════════════════════════════════════════════════════════════
    Banda oscura de Plomada. Se compone de ULTIMO (design/construir.py), asi
    que estas declaraciones ganan sobre Modernist y sobre sitio.css sin
@@ -1180,11 +1200,21 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
    El atributo lo pone el script anti-parpadeo del <head> (plomada/build.py,
    funcion pagina()) ANTES del primer pintado. Sin JS el sitio queda claro:
    es la degradacion deliberada, no un olvido.
+
+   Este bloque tiene DOS ambitos (design/PLAN_A1_VERTICAL.md §2):
+   `:root[data-tema="oscuro"]` sigue siendo el tono que el visitante elige
+   para todo el sitio, y `.banda-oscura` es la banda ESTRUCTURAL del nav,
+   la cabecera de portada y el pie -- presente en los DOS tonos, no un
+   tercer tema. Ambos ambitos comparten el mismo delta de tokens a
+   proposito: la banda estructural no es un tema nuevo, es el mismo tono
+   oscuro aplicado a una franja fija de la pagina. No duplicar este bloque
+   en un ambito aparte.
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root { color-scheme: light; }
 
-:root[data-tema="oscuro"] {
+:root[data-tema="oscuro"],
+.banda-oscura {
   color-scheme: dark;   /* scrollbars y controles nativos acompanan */
 
   /* fondo y superficies: negro calido, tenido al hue del acento */
