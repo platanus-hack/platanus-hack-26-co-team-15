@@ -751,19 +751,22 @@ def portada(muns, cifras, top_contratos):
         f'{h(D.ciudad_visible(c.get("ciudad")) or D.titulo(c.get("departamento")))} &middot; '
         f'{D.plata(c.get("valor_plausible"))}</span></a>' for c in top_contratos)
 
-    cuerpo = f"""
+    cabecera = f"""
 <header class="hero">
   <p class="kicker">Obra pública &middot; SECOP II &middot; datos abiertos</p>
-  <h1>La plomada revela lo que está torcido</h1>
+  <h1>La obra pública, medida contra la vertical.</h1>
   <p class="lema">Esta sigue <strong>personas</strong>, no empresas, en la contratación de
      obra pública del Estado colombiano.</p>
   <p class="bajada">Una empresa se disuelve y mañana aparece otra con otro NIT. Una cédula no.
      Por eso Plomada mira las cuatro personas que firman cada contrato: quién autorizó el
      gasto, quién debía supervisar, quién representa a la empresa y quién autorizó el pago.</p>
+  <p class="bajada">{C.AVISO_CORTO} <a href="/metodologia/">Cómo se calcula.</a></p>
   <p class="cta"><a class="btn btn-primary" href="/buscar/">Buscar un contrato</a>
      <a class="btn btn-secondary" href="/mapa/">Ver el mapa</a></p>
 </header>
+"""
 
+    cuerpo = f"""
 {isla("cifra-lider",
       '<p class="nota">Ver el desglose completo de indicios en el '
       '<a href="/tablero/">tablero</a>.</p>')}
@@ -802,7 +805,7 @@ def portada(muns, cifras, top_contratos):
     return pagina(LEMA, "Plomada detecta indicios de irregularidad en la contratación de obra "
                   "pública en Colombia siguiendo a las personas que firman, no a las empresas. "
                   "Datos públicos del SECOP II.", cuerpo, "/", clase="pg-portada",
-                  js=ISLAS_JS)
+                  js=ISLAS_JS, cabecera=cabecera)
 
 
 def pagina_tablero():

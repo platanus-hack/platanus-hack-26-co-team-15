@@ -734,3 +734,53 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
 .banda-pie .pie { border-top: 0; }
 /* la regla superior del pie la reemplaza el cambio de banda; conservarla
    dibujaria un hairline duplicado en tono oscuro */
+
+/* ─── hero en banda: medidas y linea de plomada ────────────────────────
+   El hero ya no vive dentro de main#principal, asi que carga su propio
+   contenedor de 1100px. El riel izquierdo original de .hero::before/::after
+   (que sigue sirviendo al .caja.hero del tablero) se anula aqui y la
+   plomada cuelga a la derecha, de arriba del todo hasta la base del hero,
+   rematada en pesa. */
+.banda-cab .hero {
+  max-width: 1100px; margin-inline: auto; width: 100%;
+  padding: var(--pl-space-12) var(--space-4) var(--pl-space-16);
+}
+@media (min-width: 768px) { .banda-cab .hero { padding-inline: var(--space-8); } }
+
+.banda-cab .hero h1 {
+  font-size: var(--pl-text-display); line-height: 1.02; max-width: 18ch;
+  letter-spacing: -0.02em;
+}
+.banda-cab .hero .lema, .banda-cab .hero .bajada { max-width: 52ch; }
+
+/* la plomada: linea que cae desde el borde superior de la banda */
+.banda-cab .hero { position: relative; padding-left: var(--space-4); }
+.banda-cab .hero::before {
+  left: auto; right: var(--space-8);
+  top: calc(-1 * var(--pl-space-12)); bottom: var(--space-4);
+}
+.banda-cab .hero::after {
+  left: auto; right: calc(var(--space-8) - 6px); bottom: calc(var(--space-4) - 18px);
+  width: 14px; height: 20px;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 50% 100%, 0 45%);
+}
+@media (max-width: 959px) {
+  .banda-cab .hero::before, .banda-cab .hero::after { display: none; }
+}
+@media (min-width: 768px) {
+  .banda-cab .hero { padding-left: var(--space-8); }
+}
+
+/* ─── franja de cifras: regla de 2px por columna ───────────────────────
+   Sustituye el borde de bloque de .cab-grid.cifras por una regla por
+   columna, y sube el numero sobre la etiqueta (solo presentacion; el DOM
+   dt/dd no cambia). Alcanza tambien a los tiles .cifras del tablero: es
+   la misma franja de cifras en todo el sitio, no dos tratamientos. */
+.cab-grid.cifras { border-block: 0; }
+.cab-grid.cifras .dato {
+  flex-direction: column-reverse; justify-content: flex-end;
+  border-top: var(--pl-regla) solid var(--color-text);
+  padding-top: var(--space-3);
+}
+.cab-grid.cifras .dato dd { font-size: var(--pl-text-2xl);
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
