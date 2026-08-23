@@ -19,6 +19,7 @@ instalado, sin que el modulo entero truene al importarlo.
 """
 from __future__ import annotations
 
+import datetime
 import json
 import os
 
@@ -35,10 +36,16 @@ def rows(con, sql, params=None):
     return [dict(zip(cols, r)) for r in cur.fetchall()]
 
 
+def _json_default(o):
+    if isinstance(o, (datetime.date, datetime.datetime)):
+        return o.isoformat()
+    raise TypeError("no serializable: %r" % (o,))
+
+
 def write(name, obj):
     path = os.path.join(OUT, name)
     with open(path, "w", encoding="utf-8") as fh:
-        json.dump(obj, fh, ensure_ascii=False, separators=(",", ":"))
+        json.dump(obj, fh, ensure_ascii=False, separators=(",", ":"), default=_json_default)
     print("   %-26s %7.1f KB" % (name, os.path.getsize(path) / 1024))
 
 
@@ -131,6 +138,10 @@ def construir_red(con):
     return red
 
 
+def tablas(con):
+    return {r[0] for r in con.execute("SELECT table_name FROM duckdb_tables()").fetchall()}
+
+
 def main():
     import duckdb  # perezoso a proposito, ver docstring del modulo
 
@@ -185,6 +196,29 @@ def main():
 
     write("red.json", construir_red(con))
 
+    # ---- Alertas pre-adjudicacion (Pilar 4), si ya se corrieron ----
+    if "alertas" in tablas(con):
+        resumen_universo = rows(con, """
+            SELECT universo, count(*) AS n FROM alertas GROUP BY 1""")
+        accionables = rows(con, """
+            SELECT id_del_proceso, entidad, departamento, ciudad, tipo_contrato,
+                   modalidad, coalesce(precio_base,0) AS precio_base,
+                   fecha_publicacion, fecha_cierre, dias_ventana, dias_restantes,
+                   n_invitados, n_manifestaron, ev_ventana_p10_modalidad,
+                   ev_tasa_historica_entidad, ev_n_historico_entidad,
+                   f_ventana_corta, f_al_tope_minima, f_historial_proponente_unico,
+                   f_sin_interes_a_tiempo, f_cierre_movido, n_banderas, urlproceso
+            FROM alertas
+            WHERE universo = 'accionable'
+            ORDER BY n_banderas DESC, dias_restantes ASC""")
+        write("alertas.json", {
+            "generado": datetime.date.today(),
+            "resumen_universo": resumen_universo,
+            "accionables": accionables,
+        })
+    else:
+        print("   (alertas.json omitido: corre pipeline/alertas.py primero)")
+
     # Metadatos: cobertura y limitaciones viajan CON los datos, para que el
     # tablero no pueda mostrar una cifra sin su salvedad al lado.
     cov = con.execute("""
@@ -219,6 +253,7 @@ def main():
             "No hay datos de oferentes perdedores, solo el numero de ofertas y el ganador.",
             "El sobrecosto por unidad fisica no es calculable: solo el 0,9% de las descripciones declara una cantidad con unidad.",
             "El ranking municipal no esta normalizado por poblacion.",
+            "De los procesos que la plataforma marca como abiertos, el 85,5% no tiene fecha de cierre publicada y el 12,9% tiene la fecha ya vencida: solo el 1,6% es realmente accionable hoy.",
         ],
     })
     con.close()

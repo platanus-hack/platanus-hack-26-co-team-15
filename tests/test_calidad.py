@@ -260,3 +260,134 @@ def test_autosupervision_separa_costumbre_de_anomalia(con):
         "%d contratos marcados en entidades donde autosupervisar es la norma; "
         "esos van a entidades_autosupervision, no a la bandera" % mal
     )
+
+
+# ---------------------------------------------------------------------------
+# 8. Alertas pre-adjudicacion (30 + pipeline/alertas.py).
+# ---------------------------------------------------------------------------
+def test_alertas_no_duplica_procesos(con):
+    if "alertas" not in tablas(con):
+        pytest.skip("alertas aun no se ha corrido")
+    n_raw = con.execute(
+        "SELECT count(DISTINCT id_del_proceso) FROM abiertos_raw"
+    ).fetchone()[0]
+    n_alertas = con.execute("SELECT count(*) FROM alertas").fetchone()[0]
+    assert n_alertas == n_raw, (
+        "alertas tiene %d filas y abiertos_raw %d ids distintos: el dedup "
+        "por id_del_proceso se rompio" % (n_alertas, n_raw)
+    )
+
+
+def test_universo_clasifica_todo(con):
+    """85,5% del snapshot no tiene fecha de cierre y 12,9% la tiene vencida.
+    Mezclar eso con lo accionable (1,6%) inflaria el titular de forma
+    enganosa. Todo registro debe caer en exactamente una categoria."""
+    if "alertas" not in tablas(con):
+        pytest.skip("alertas aun no se ha corrido")
+    sin_clasificar = con.execute(
+        "SELECT count(*) FROM alertas WHERE universo NOT IN "
+        "('accionable','zombie_vencido','sin_fecha_cierre')"
+    ).fetchone()[0]
+    assert sin_clasificar == 0, "%d procesos sin universo asignado" % sin_clasificar
+
+
+def test_solo_accionables_tienen_dias_restantes_positivos(con):
+    if "alertas" not in tablas(con):
+        pytest.skip("alertas aun no se ha corrido")
+    mal = con.execute(
+        "SELECT count(*) FROM alertas WHERE universo = 'zombie_vencido' "
+        "AND dias_restantes >= 0"
+    ).fetchone()[0]
+    assert mal == 0, "%d procesos marcados vencidos con dias_restantes >= 0" % mal
+
+
+def test_primera_corrida_no_inventa_addenda(con):
+    """Sin snapshot anterior, f_cierre_movido debe quedar NULL (no False):
+    NULL dice 'no hay con que comparar', False diria 'no cambio', que
+    seria una afirmacion falsa el primer dia."""
+    if "alertas" not in tablas(con):
+        pytest.skip("alertas aun no se ha corrido")
+    hay_ayer = con.execute("SELECT count(*) FROM abiertos_ayer").fetchone()[0]
+    if hay_ayer > 0:
+        pytest.skip("ya hay snapshot anterior; no es la primera corrida")
+    no_nulos = con.execute(
+        "SELECT count(*) FROM alertas WHERE f_cierre_movido IS NOT NULL"
+    ).fetchone()[0]
+    assert no_nulos == 0, (
+        "%d filas con f_cierre_movido distinto de NULL sin snapshot anterior" % no_nulos
+    )
+
+
+# ---------------------------------------------------------------------------
+# 9. urlproceso: Socrata lo publica como STRUCT(url VARCHAR), no como texto.
+# CAST(struct AS VARCHAR) produce la representacion "{'url': '...'}" en vez
+# de la URL, lo que rompe cualquier enlace clicable en reportes, CSVs y el
+# tablero. El bug estuvo presente desde el primer commit (afectaba a 'base'
+# y 'atipicos') sin romper el join, porque el regex de notice_uid encontraba
+# el patron igual dentro del texto mal formado.
+# ---------------------------------------------------------------------------
+def test_urlproceso_es_una_url_no_un_struct(con):
+    malformados = con.execute(
+        "SELECT count(*) FROM base WHERE urlproceso IS NOT NULL "
+        "AND urlproceso NOT LIKE 'http%'"
+    ).fetchone()[0]
+    assert malformados == 0, (
+        "%d urlproceso no empiezan por 'http': probablemente volvio el "
+        "CAST(urlproceso AS VARCHAR) sobre el STRUCT(url VARCHAR) crudo "
+        "en vez de usar urlproceso.url" % malformados
+    )
+
+
+# ---------------------------------------------------------------------------
+# 10. Emparejamiento obra<->interventoria por contrato (candidatos, A4).
+# Son candidatos automaticos SIN VALIDAR (ver pipeline/emparejamiento_
+# interventoria.py): estos tests solo cuidan la integridad estructural del
+# emparejamiento, no afirman que los matches sean correctos.
+# ---------------------------------------------------------------------------
+def test_emparejamiento_no_duplica_interventoria(con):
+    if "emparejamiento_interventoria" not in tablas(con):
+        pytest.skip("emparejamiento_interventoria aun no se ha corrido")
+    n_filas = con.execute("SELECT count(*) FROM emparejamiento_interventoria").fetchone()[0]
+    n_interv = con.execute(
+        "SELECT count(DISTINCT id_interventoria) FROM emparejamiento_interventoria"
+    ).fetchone()[0]
+    assert n_filas == n_interv, (
+        "%d filas pero %d interventorias distintas: se duplico alguna al "
+        "emparejar" % (n_filas, n_interv)
+    )
+
+
+def test_emparejamiento_mismo_entidad(con):
+    if "emparejamiento_interventoria" not in tablas(con):
+        pytest.skip("emparejamiento_interventoria aun no se ha corrido")
+    mal = con.execute(
+        """
+        SELECT count(*) FROM emparejamiento_interventoria e
+        JOIN base o ON o.id_contrato = e.id_obra
+        WHERE e.id_obra IS NOT NULL AND o.nit_entidad != e.nit_entidad
+        """
+    ).fetchone()[0]
+    assert mal == 0, (
+        "%d emparejamientos cruzan de entidad: el candidato de obra no "
+        "puede ser de una entidad distinta a la de la interventoria" % mal
+    )
+
+
+def test_emparejamiento_metodo_valido(con):
+    if "emparejamiento_interventoria" not in tablas(con):
+        pytest.skip("emparejamiento_interventoria aun no se ha corrido")
+    mal = con.execute(
+        "SELECT count(*) FROM emparejamiento_interventoria "
+        "WHERE metodo NOT IN ('citacion_explicita', 'similitud_texto')"
+    ).fetchone()[0]
+    assert mal == 0, "%d filas con metodo fuera de las dos categorias conocidas" % mal
+
+
+def test_emparejamiento_score_en_rango(con):
+    if "emparejamiento_interventoria" not in tablas(con):
+        pytest.skip("emparejamiento_interventoria aun no se ha corrido")
+    mal = con.execute(
+        "SELECT count(*) FROM emparejamiento_interventoria "
+        "WHERE score IS NOT NULL AND (score < 0 OR score > 1)"
+    ).fetchone()[0]
+    assert mal == 0, "%d filas con score de similitud fuera de [0,1]" % mal
