@@ -140,3 +140,97 @@ FUENTES = """
       identificadores personales.</li>
 </ul>
 """
+
+
+# ─────────────────────────────────────────────────────────────── vista /api/
+# Todo lo de aqui abajo esta verificado contra produccion (openapi.json en
+# vivo y curl real, 2026-08-23). Ni un endpoint ni un campo inventado.
+#
+# La base del API NO se escribe aqui: build.py la interpola desde API_URL
+# (configurable con PLOMADA_API_URL), porque render.yaml ya declara un host
+# futuro distinto del que esta vivo hoy. Por eso los ejemplos de esta seccion
+# llevan {base} y los formatea pagina_api().
+
+API_INTRO = """
+<p>Los mismos datos que mueven este sitio están disponibles como API pública.
+Es de <strong>solo lectura</strong>, no pide autenticación y no tiene cupo: todo lo
+que sirve son datos públicos del SECOP II, y no hay razón para ponerles una puerta.</p>
+<p>Lo que devuelve son <em>indicios</em>. Una bandera encendida quiere decir que un
+contrato merece que alguien lo mire, no que alguien haya obrado mal. Cada respuesta
+lleva esa salvedad en <code>meta.aviso</code>, y en los CSV viaja en la cabecera
+<code>X-Plomada-Aviso</code>. Si va a citar una cifra, lea antes
+<code>/v1/meta</code>: trae la cobertura real de cada campo y las limitaciones que
+hay que decir en voz alta.</p>
+"""
+
+API_CONVENCIONES = """
+<p>Toda respuesta viene en el mismo sobre: <code>datos</code> con el contenido y
+<code>meta</code> con la versión, la fuente, el aviso y la paginación.</p>
+<ul>
+  <li><b>Errores.</b> Un cuerpo <code>{"error": {"codigo", "mensaje", "detalle"}}</code>.
+      El <code>codigo</code> es estable y es por el que conviene ramificar;
+      el <code>mensaje</code> es para leer.</li>
+  <li><b>Paginación.</b> <code>limite</code> (tope <b>200</b>) y
+      <code>desplazamiento</code>. El total real viene en
+      <code>meta.paginacion.total</code>, que casi siempre es mayor que lo que
+      devolvió: sin mirarlo es fácil publicar «200 contratos» cuando eran miles.</li>
+  <li><b>CSV.</b> Los listados aceptan <code>?formato=csv</code>. Respeta el mismo
+      tope de 200, así que una descarga completa se arma paginando.</li>
+</ul>
+"""
+
+# (ruta, que responde). Los textos son los `summary` del openapi.json en vivo,
+# ajustados a la ortografia del sitio. Verificado: 20 rutas bajo /v1.
+API_ENDPOINTS = [
+    ("/v1", "Índice de la API: el catálogo de todo lo que sigue."),
+    ("/v1/meta", "Cobertura real de cada campo y las limitaciones. Léalo primero."),
+    ("/v1/titulares", "Las cifras de encabezado del proyecto."),
+    ("/v1/indicios", "Cuánta plata hay por categoría de indicio."),
+    ("/v1/banderas", "Glosario de las banderas, con su peso y su glosa."),
+    ("/v1/contratos", "Buscador de contratos, con filtros y orden."),
+    ("/v1/contratos/{id_contrato}", "Ficha completa de un contrato, bandera por bandera."),
+    ("/v1/entidades", "Buscador de entidades contratantes."),
+    ("/v1/entidades/{nit_entidad}", "Perfil de una entidad."),
+    ("/v1/proveedores", "Buscador de proveedores."),
+    ("/v1/proveedores/{doc}", "Perfil de un proveedor y su red."),
+    ("/v1/municipios", "Ranking municipal por tasa ajustada."),
+    ("/v1/departamentos", "Plata y tasas por departamento."),
+    ("/v1/tipos-obra", "Plata por tipo de obra."),
+    ("/v1/fuentes", "Plata por fuente de recursos."),
+    ("/v1/autosupervision", "Entidades donde autosupervisar es la norma."),
+    ("/v1/red/clusters", "Grupos económicos detectados."),
+    ("/v1/red/clusters/{cluster_id}", "El subgrafo de un grupo económico."),
+    ("/v1/alertas", "Licitaciones abiertas que ya presentan banderas."),
+    ("/v1/alertas/resumen", "Conteo por universo del snapshot de alertas."),
+]
+
+API_COLD_START = """
+<p>El API vive en un plan gratuito que <strong>duerme el servicio cuando nadie lo
+usa</strong>. La primera llamada después de un rato puede tardar entre 30 y 60
+segundos; las siguientes responden normal. No está caído: está despertando. Si
+escribe un cliente, déle a la primera petición un tiempo de espera generoso —
+este sitio usa 60 segundos para la primera y 15 para el resto.</p>
+"""
+
+# ──────────────────────────────────────────────────────── seccion MCP en /api/
+# Verificado con tools/list contra produccion (2026-08-23) y contra
+# api/app/mcp/server.py: son estas siete, con estos nombres.
+MCP_INTRO = """
+<p>Los mismos datos están publicados como <strong>servidor MCP</strong>, el protocolo
+con el que un asistente conversacional consulta herramientas externas. Sirve para
+preguntarle a los datos en lenguaje natural desde un cliente que ya use — Claude
+Desktop, Claude Code o cualquiera con soporte de MCP remoto — sin escribir código.</p>
+<p>Es el mismo trato que el API: solo lectura, sin autenticación, sobre datos
+públicos. Y la misma salvedad, que el servidor declara en sus propias instrucciones:
+lo que devuelve son indicios para priorizar una revisión, no prueba de nada.</p>
+"""
+
+MCP_TOOLS = [
+    ("resumen_indicios", "Las cifras titulares y las limitaciones que las acompañan."),
+    ("buscar_contratos_atipicos", "Contratos marcados, con filtros."),
+    ("detalle_contrato", "La ficha completa de un contrato, con cada bandera encendida."),
+    ("perfil_entidad", "El resumen de una entidad contratante."),
+    ("buscar_proveedor", "El perfil de un proveedor y su red."),
+    ("alertas_preadjudicacion", "Licitaciones que todavía aceptan ofertas."),
+    ("glosario_banderas", "Las 26 banderas con su peso."),
+]

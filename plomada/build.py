@@ -23,6 +23,8 @@ PIPELINE = RAIZ.parent / "pipeline"
 # todas las paginas para que static/api.js lo lea (window.PLOMADA_API_URL) y
 # ninguna vista tenga que hardcodearlo.
 API_URL = os.environ.get("PLOMADA_API_URL", "https://plumb-duy6.onrender.com")
+# Para enlazar API.md y MCP.md desde la vista /api/.
+REPO_URL = "https://github.com/camiloAndres11/Plumb"
 SITIO_NOMBRE = "Plomada"
 LEMA = "Indicios de irregularidad en la contratación de obra pública en Colombia"
 
@@ -79,9 +81,11 @@ BOTON_TEMA = (
 # gap de Modernist quede parejo entre ellos -- envolverlos en un <nav>
 # interior (como antes) les habria dejado sin espaciado, porque el gap de
 # Modernist solo aplica entre hijos DIRECTOS.
+# «API» va DESPUES de «Datos»: «Datos» son descargas para un lector, «API» es
+# acceso programatico. El orden va de mas general a mas tecnico.
 NAV_ENLACES = (
     ("/tablero/", "Tablero"), ("/mapa/", "Mapa"), ("/buscar/", "Buscador"),
-    ("/metodologia/", "Metodología"), ("/datos/", "Datos"),
+    ("/metodologia/", "Metodología"), ("/datos/", "Datos"), ("/api/", "API"),
 )
 
 
@@ -891,6 +895,136 @@ def pagina_tablero():
                   clase="pg-tablero")
 
 
+def bloque_codigo(lineas, etiqueta=None):
+    """Un <pre> copiable. Cada linea se escapa con h(): lo que va adentro son
+    comandos y respuestas del API, no markup."""
+    cuerpo = "\n".join(h(l) for l in lineas)
+    cab = f'<p class="codigo-etiqueta">{h(etiqueta)}</p>' if etiqueta else ""
+    return f'{cab}<pre class="codigo"><code>{cuerpo}</code></pre>'
+
+
+def pagina_api():
+    """La vista /api/: que es el API, como se empieza, que endpoints hay, y el
+    servidor MCP para quien prefiera preguntarle a los datos desde su propio
+    cliente.
+
+    La base del API se interpola desde API_URL en TODOS los ejemplos y enlaces
+    -- ni una URL escrita a mano. render.yaml ya declara un host futuro
+    distinto del que esta vivo hoy, asi que el dia que se mude el servicio
+    esta pagina se muda sola con una variable de entorno.
+    """
+    base = API_URL.rstrip("/")
+
+    endpoints = "".join(
+        f'<tr><td><code>{h(ruta)}</code></td><td>{h(desc)}</td></tr>'
+        for ruta, desc in C.API_ENDPOINTS)
+
+    tools = "".join(
+        f'<tr><td><code>{h(nombre)}</code></td><td>{h(desc)}</td></tr>'
+        for nombre, desc in C.MCP_TOOLS)
+
+    # Los tres corridos y verificados contra produccion antes de publicarlos.
+    empezar = bloque_codigo([
+        "# la cobertura y las limitaciones: lea esto antes de citar una cifra",
+        f"curl {base}/v1/meta",
+        "",
+        "# cinco contratos marcados en Santander",
+        f"curl '{base}/v1/contratos?departamento=SANTANDER&limite=5'",
+        "",
+        "# lo mismo, en CSV",
+        f"curl '{base}/v1/departamentos?formato=csv'",
+    ])
+
+    sobre = bloque_codigo([
+        '{',
+        '  "datos": [ ... ],',
+        '  "meta": {',
+        '    "version": "1.0.0",',
+        '    "fuente": "SECOP II - datos.gov.co",',
+        '    "aviso": "Riesgo no es fraude. Estas cifras son indicios ...",',
+        '    "paginacion": { "limite": 5, "desplazamiento": 0,',
+        '                    "total": 4794, "devueltas": 5 }',
+        '  }',
+        '}',
+    ], "El sobre de toda respuesta")
+
+    mcp_conexion = bloque_codigo([
+        f"URL       {base}/mcp/",
+        "Transporte  streamable-http",
+        "Auth        ninguna",
+    ])
+
+    cuerpo = f"""
+<header class="cab"><h1>API</h1>
+<p class="bajada">Todo lo que este sitio muestra sale de un API pública y abierta.
+   Si quiere construir encima, empezar toma menos de un minuto.</p></header>
+
+{aviso_fijo("Lo que devuelve el API son indicios calculados sobre datos públicos "
+            "para priorizar una revisión. Ninguna respuesta afirma que alguien "
+            "haya obrado de forma irregular.")}
+
+<section class="caja">
+  <h2>Qué es</h2>
+  {C.API_INTRO}
+  <p class="enlaces-api">
+    <a href="{h(base)}/docs" rel="noopener" class="externo">Explorador interactivo (Swagger)</a>
+    <a href="{h(base)}/redoc" rel="noopener" class="externo">Referencia (ReDoc)</a>
+    <a href="{h(base)}/openapi.json" rel="noopener" class="externo">openapi.json</a>
+    <a href="{h(base)}/v1" rel="noopener" class="externo">Índice en vivo</a>
+  </p>
+</section>
+
+<section class="caja">
+  <h2>Empezar</h2>
+  {empezar}
+  <p class="nota">Los tres se pueden copiar y pegar tal cual.</p>
+</section>
+
+<section class="caja">
+  <h2>Convenciones</h2>
+  {C.API_CONVENCIONES}
+  {sobre}
+</section>
+
+<section class="caja">
+  <h2>La primera llamada tarda</h2>
+  {C.API_COLD_START}
+</section>
+
+<section class="caja">
+  <h2>Los endpoints</h2>
+  <p>Veinte rutas bajo <code>/v1</code>, todas de solo lectura. El detalle de
+     parámetros y respuestas está en
+     <a href="{h(base)}/docs" rel="noopener" class="externo">el explorador interactivo</a>.</p>
+  <div class="tabla-scroll"><table class="table"><thead><tr>
+    <th>Ruta</th><th>Qué responde</th>
+  </tr></thead><tbody>{endpoints}</tbody></table></div>
+</section>
+
+<section class="caja" id="mcp">
+  <h2>Conecta tu propio cliente (MCP)</h2>
+  {C.MCP_INTRO}
+  {mcp_conexion}
+  <p class="nota"><b>La barra final importa.</b> <code>{h(base)}/mcp/</code> con
+     barra. Sin ella el servicio responde con una redirección 307, y hay clientes
+     que no la siguen en un POST y fallan sin decir por qué.</p>
+  <p>Cómo se declara un servidor MCP remoto cambia con cada cliente, así que la
+     forma exacta la manda la documentación del suyo. Lo que necesita darle es lo
+     de arriba: la URL con barra final y el transporte.</p>
+  <h3>Las herramientas</h3>
+  <div class="tabla-scroll"><table class="table"><thead><tr>
+    <th>Herramienta</th><th>Qué responde</th>
+  </tr></thead><tbody>{tools}</tbody></table></div>
+  <p class="nota">Para el detalle de arquitectura:
+     <a href="{h(REPO_URL)}/blob/main/API.md" rel="noopener" class="externo">API.md</a> y
+     <a href="{h(REPO_URL)}/blob/main/MCP.md" rel="noopener" class="externo">MCP.md</a>.</p>
+</section>
+"""
+    return pagina("API", "API pública y servidor MCP de Plomada: indicios de riesgo en "
+                  "la contratación de obra pública de Colombia, en JSON y CSV.",
+                  cuerpo, "/api/", clase="pg-texto")
+
+
 def pagina_datos(archivos):
     li = "".join(f'<li><a href="/datos/{h(n)}" download><code>{h(n)}</code></a> '
                  f'<span>{h(desc)}</span> <small>{k:,.0f} KB</small></li>'.replace(",", ".")
@@ -1138,10 +1272,13 @@ def main():
     # de una sola llamada: el buscador arma el CSV paginando (buscar.js).
     escribir("datos/index.html", pagina_datos([]))
 
+    escribir("api/index.html", pagina_api())
+
     # sitemap + robots. Las fichas se hidratan en el navegador, pero SIGUEN
     # teniendo URL propia y entrando al sitemap: es lo que las mantiene
     # compartibles y rastreables (restriccion 2.3 del plan).
-    urls = ["/", "/tablero/", "/mapa/", "/buscar/", "/metodologia/", "/datos/"] + \
+    urls = ["/", "/tablero/", "/mapa/", "/buscar/", "/metodologia/", "/datos/",
+            "/api/"] + \
            [f"/contrato/{D.slug(i)}/" for i in ids] + \
            [url_municipio(m["departamento"], m["ciudad"]) for m in muns]
     escribir("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n'
