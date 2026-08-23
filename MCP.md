@@ -209,9 +209,25 @@ servicio `api/`:
 - `any_value()` (usado en la tool `perfil_entidad`) requiere **Postgres ≥16**
   — no bajen la versión de la imagen sin ajustar esa query.
 
-### 4. Widget de chat en el front — para quien trabaje `web/` (o el proyecto Vercel nuevo)
+### 4. La cara en el sitio — **construida** (2026-08-23)
 
-Todo lo que necesita saber, sin tocar nada de lo de arriba:
+> **Esta sección quedó vieja y ya se ejecutó.** Decía «para quien trabaje
+> `web/` (o el proyecto Vercel nuevo)» y planteaba un *widget* flotante. Dos
+> correcciones, según `docs/PLAN_TEMA_API_MCP.md` §3 y F4:
+>
+> - **El front del proyecto es `plomada/`.** `web/index.html` es el tablero
+>   anterior y no se toca.
+> - **No es un widget: son dos vistas del sitio, con URL propia y en el
+>   sitemap.** `/api/` documenta el API y el servidor MCP (con la URL
+>   `{API_URL}/mcp/`, **barra final incluida**, y las 7 tools), y
+>   `/asistente/` es el chat. Un asistente que solo existe como burbuja no se
+>   puede enlazar ni compartir, que es justo la tesis del sitio.
+>
+> Dónde vive: `pagina_api()` y `pagina_asistente()` en `plomada/build.py`, el
+> texto en `plomada/contenido.py`, el cliente en `plomada/static/chat.js` y
+> los estilos en `design/plomada/sitio.css`.
+
+El contrato de abajo es el que `static/chat.js` implementa, y sigue vigente:
 
 - **Endpoint:** `POST {API_URL}/chat`
 - **Header obligatorio:** `X-Anthropic-Api-Key: <key del usuario>`.
@@ -234,6 +250,9 @@ Todo lo que necesita saber, sin tocar nada de lo de arriba:
   con un mensaje tipo "el asistente no está disponible ahora" — mismo patrón
   que ya usa el tablero con `alertas.json` cuando nadie corrió
   `pipeline/alertas.py` (ver `web/index.html`, función `drawAlertas`).
+- Cold start: Render duerme el servicio, así que si no llega el primer
+  `delta` a los ~3 s hay que avisar que está despertando. `chat.js` reusa el
+  umbral de `static/api.js` (`AVISO_DESPERTANDO`).
 
 ## Orden de trabajo — qué ya está hecho
 

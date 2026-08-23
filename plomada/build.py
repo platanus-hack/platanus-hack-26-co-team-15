@@ -888,6 +888,14 @@ def pagina_tablero():
   <h2>Limitaciones</h2>
   <ul class="lista-lim" id="t-limitaciones"></ul>
 </section>
+
+<section class="caja">
+  <h2>¿Le nace una pregunta?</h2>
+  <p>Estas cifras son el agregado. Si quiere bajar al caso concreto —qué contratos
+     hay detrás de una barra, qué pasa en su municipio, qué significa una bandera—
+     puede preguntárselo en español.</p>
+  <p><a class="btn btn-primary" href="/asistente/">Pregúntale a los datos</a></p>
+</section>
 """
     return pagina("Tablero", "Visión agregada de los indicios de riesgo en la contratación "
                   "de obra pública: por indicio, por territorio y por red de proveedores.",
@@ -1015,6 +1023,10 @@ def pagina_api():
   <div class="tabla-scroll"><table class="table"><thead><tr>
     <th>Herramienta</th><th>Qué responde</th>
   </tr></thead><tbody>{tools}</tbody></table></div>
+  <h3>O pregúntele aquí mismo</h3>
+  <p>Si no quiere configurar nada, <a href="/asistente/">el asistente de Plomada</a>
+     ya está conectado a estas mismas herramientas. Funciona con su propia API key
+     de Anthropic y corre en su navegador.</p>
   <p class="nota">Para el detalle de arquitectura:
      <a href="{h(REPO_URL)}/blob/main/API.md" rel="noopener" class="externo">API.md</a> y
      <a href="{h(REPO_URL)}/blob/main/MCP.md" rel="noopener" class="externo">MCP.md</a>.</p>
@@ -1023,6 +1035,90 @@ def pagina_api():
     return pagina("API", "API pública y servidor MCP de Plomada: indicios de riesgo en "
                   "la contratación de obra pública de Colombia, en JSON y CSV.",
                   cuerpo, "/api/", clase="pg-texto")
+
+
+def pagina_asistente():
+    """La vista /asistente/: chat con los datos, contra el proxy /chat del API.
+
+    Es una vista propia con URL propia, no un widget flotante. Tres razones:
+    la tesis del sitio es que todo tiene una URL compartible (una burbuja no
+    se puede enlazar ni entra al sitemap); el flujo BYOK necesita espacio
+    para pedir la key y explicar que Plomada no cobra nada; y como pasa por
+    pagina(), hereda nav, pie, aviso legal y tema sin trabajo extra.
+
+    NO va en el nav: con «API» ya son seis entradas. Se llega desde /api/ y
+    desde /tablero/, que es donde el lector tiene cifras delante y le nacen
+    las preguntas.
+
+    El cuerpo se pinta en JS (static/chat.js), pero el fallback sin JS va
+    pre-renderizado aqui: sin el, quien no tenga JS ve una pagina en blanco.
+    """
+    sugerencias = "".join(
+        f'<button type="button" class="sugerencia" data-pregunta="{h(q)}">{h(q)}</button>'
+        for q in C.ASISTENTE_SUGERENCIAS)
+
+    cuerpo = f"""
+<header class="cab"><h1>Pregúntale a los datos</h1>
+<p class="bajada">Un asistente conectado a los indicios de Plomada. Responde
+   consultando el API en vivo, no de memoria.</p></header>
+
+{aviso_fijo("Las respuestas del asistente son indicios calculados sobre datos "
+            "públicos para priorizar una revisión. Ninguna afirma que alguien "
+            "haya obrado de forma irregular.")}
+
+<noscript><section class="caja">{C.ASISTENTE_SIN_JS}</section></noscript>
+
+<section class="caja chat" id="chat" hidden>
+  <div class="chat-hilo" id="chat-hilo" role="log" aria-live="polite"
+       aria-label="Conversación con el asistente">
+    <div class="chat-intro">{C.ASISTENTE_INTRO}</div>
+    <div class="sugerencias" id="sugerencias">
+      <p class="codigo-etiqueta">Para empezar</p>
+      {sugerencias}
+    </div>
+  </div>
+
+  <form class="chat-forma" id="chat-forma">
+    <label for="chat-entrada">Su pregunta</label>
+    <textarea id="chat-entrada" name="pregunta" rows="2"
+              placeholder="¿Qué contratos atípicos hay en mi municipio?"
+              autocomplete="off"></textarea>
+    <div class="chat-acciones">
+      <button type="submit" class="btn btn-primary" id="chat-enviar">Preguntar</button>
+      <button type="button" class="btn" id="chat-detener" hidden>Detener</button>
+      <span class="nota" id="chat-estado" aria-live="polite"></span>
+    </div>
+    <p class="nota">Enter envía · Mayús+Enter hace un salto de línea</p>
+  </form>
+
+  <p class="nota chat-pie">
+    <span id="chat-key-quien"></span>
+    <button type="button" class="enlace" id="chat-olvidar" hidden>Olvidar mi API key</button>
+  </p>
+</section>
+
+<section class="caja" id="chat-key" hidden>
+  <h2>Necesita su API key de Anthropic</h2>
+  {C.ASISTENTE_KEY_AYUDA}
+  <form class="chat-forma-key" id="chat-forma-key">
+    <label for="chat-key-campo">API key de Anthropic</label>
+    <input type="password" id="chat-key-campo" autocomplete="off" spellcheck="false"
+           placeholder="sk-ant-…" aria-describedby="chat-key-error">
+    <p class="nota" id="chat-key-error" role="alert"></p>
+    <div class="chat-acciones">
+      <button type="submit" class="btn btn-primary">Guardar y empezar</button>
+      <a class="btn" href="https://console.anthropic.com/settings/keys"
+         rel="noopener" target="_blank">Conseguir una llave ↗</a>
+    </div>
+  </form>
+</section>
+"""
+    return pagina("Asistente", "Pregúntele en español a los indicios de riesgo en la "
+                  "contratación de obra pública de Colombia. Usa su propia API key de "
+                  "Anthropic.",
+                  cuerpo, "/asistente/",
+                  js='<script type="module" src="/static/chat.js"></script>',
+                  clase="pg-asistente")
 
 
 def pagina_datos(archivos):
@@ -1273,12 +1369,13 @@ def main():
     escribir("datos/index.html", pagina_datos([]))
 
     escribir("api/index.html", pagina_api())
+    escribir("asistente/index.html", pagina_asistente())
 
     # sitemap + robots. Las fichas se hidratan en el navegador, pero SIGUEN
     # teniendo URL propia y entrando al sitemap: es lo que las mantiene
     # compartibles y rastreables (restriccion 2.3 del plan).
     urls = ["/", "/tablero/", "/mapa/", "/buscar/", "/metodologia/", "/datos/",
-            "/api/"] + \
+            "/api/", "/asistente/"] + \
            [f"/contrato/{D.slug(i)}/" for i in ids] + \
            [url_municipio(m["departamento"], m["ciudad"]) for m in muns]
     escribir("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n'

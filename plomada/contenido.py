@@ -234,3 +234,49 @@ MCP_TOOLS = [
     ("alertas_preadjudicacion", "Licitaciones que todavía aceptan ofertas."),
     ("glosario_banderas", "Las 26 banderas con su peso."),
 ]
+
+
+# ───────────────────────────────────────────────────── vista /asistente/ (F4)
+# El asistente habla con el servidor MCP a traves del proxy /chat del API. La
+# key es del lector (BYOK): Plomada no tiene una, no la quiere y no la ve.
+
+ASISTENTE_INTRO = """
+<p>Pregúntele a los datos en español. Detrás hay un modelo de lenguaje conectado a
+las mismas herramientas que expone el servidor MCP: puede buscar contratos marcados,
+abrir la ficha de uno, perfilar una entidad o un proveedor, listar las licitaciones
+que todavía aceptan ofertas y explicar cualquiera de las 26 banderas.</p>
+<p>Lo que responda sale de los datos, no de su memoria: cada cifra que cite viene de
+una consulta al API en ese momento. Aun así, es un modelo de lenguaje y se puede
+equivocar al resumir. Todo lo que diga es verificable: pídale el enlace a la ficha
+del contrato y compruébelo.</p>
+"""
+
+ASISTENTE_KEY_AYUDA = """
+<p>El asistente funciona con <strong>su propia API key de Anthropic</strong>. Plomada
+no tiene una llave compartida, no cobra nada y no intermedia el pago: el consumo va
+directo a su cuenta y lo ve en su consola de Anthropic.</p>
+<p>La llave se guarda <strong>solo en este navegador</strong> y viaja únicamente a
+Plomada para reenviarla a Anthropic en cada pregunta. No se guarda en ningún
+servidor, no entra en la dirección de la página y no queda en ningún registro.
+Puede borrarla cuando quiera con el botón de abajo.</p>
+"""
+
+ASISTENTE_SIN_JS = """
+<p>El asistente necesita JavaScript para funcionar, y este navegador lo tiene
+desactivado. Los mismos datos siguen a su alcance sin él:</p>
+<ul>
+  <li><a href="/buscar/">El buscador de contratos</a>, con filtros y descarga en CSV.</li>
+  <li><a href="/api/">El API</a>, si prefiere consultarlo desde su propio programa.</li>
+  <li><a href="/api/#mcp">El servidor MCP</a>, para conectar el asistente que ya use.</li>
+</ul>
+"""
+
+# Escritas contra las tools que EXISTEN: cada una la puede responder alguna de
+# las siete (buscar_contratos_atipicos, glosario_banderas,
+# alertas_preadjudicacion, perfil_entidad). No sugerir nada que ninguna cubra.
+ASISTENTE_SUGERENCIAS = [
+    "¿Qué contratos atípicos hay en Santander?",
+    "¿Qué significa la bandera de cuenta compartida?",
+    "¿Qué licitaciones de obra siguen abiertas y ya tienen banderas?",
+    "Muéstrame el perfil de una entidad con mucha autosupervisión",
+]
