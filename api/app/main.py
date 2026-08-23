@@ -23,11 +23,13 @@ from __future__ import annotations
 import json
 import os
 from contextlib import AsyncExitStack, asynccontextmanager
+from urllib.parse import urlparse
 
 import anthropic
 from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import BaseModel
 
 from app.mcp.server import mcp
@@ -41,6 +43,7 @@ MCP_SERVER_NAME = "plomada"
 # (ngrok/Cloudflare Tunnel), Claude no puede alcanzarla -- ver MCP.md.
 SELF_URL = os.environ.get("SELF_URL", "http://127.0.0.1:8000")
 MCP_SERVER_URL = SELF_URL.rstrip("/") + "/mcp"
+SELF_HOST = urlparse(SELF_URL).netloc
 
 CORS_ORIGINS = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
 
@@ -53,7 +56,15 @@ SYSTEM_PROMPT = (
     "encuentra nada, dilo -- no inventes cifras ni nombres."
 )
 
-mcp_app = mcp.streamable_http_app(streamable_http_path="/")
+# Proteccion anti DNS-rebinding del transporte MCP: por defecto rechaza
+# cualquier Host que no este en la lista blanca (vacia por defecto), con
+# 421 "Invalid Host header" -- probado contra el deploy real en Render antes
+# de agregar esto. SELF_HOST cubre tanto el host publico (Render) como
+# localhost:8000 en desarrollo, segun de donde salga SELF_URL.
+mcp_app = mcp.streamable_http_app(
+    streamable_http_path="/",
+    transport_security=TransportSecuritySettings(allowed_hosts=[SELF_HOST]),
+)
 
 
 @asynccontextmanager
