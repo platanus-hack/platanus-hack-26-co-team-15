@@ -791,6 +791,22 @@ def portada(muns, cifras, top_contratos):
 <section class="caja"><h2>Contratos con más señales fuertes</h2>
   <div class="tarjetas">{tarjetas}</div>
 </section>
+<section class="caja"><h2>Cómo explorar Plomada</h2>
+  <div class="vistas">
+    <a class="card elev-sm" href="/tablero/"><span class="card-kicker">Vista</span>
+      <b class="card-title">Tablero</b>
+      <span class="card-meta">Los indicios agregados, por grupo y por departamento.</span></a>
+    <a class="card elev-sm" href="/mapa/"><span class="card-kicker">Vista</span>
+      <b class="card-title">Mapa</b>
+      <span class="card-meta">Cada obra sobre el territorio, hasta el municipio.</span></a>
+    <a class="card elev-sm" href="/buscar/"><span class="card-kicker">Vista</span>
+      <b class="card-title">Buscador</b>
+      <span class="card-meta">Por entidad, contratista o proceso, con su evidencia.</span></a>
+    <a class="card elev-sm" href="/asistente/"><span class="card-kicker">Nuevo</span>
+      <b class="card-title">Asistente</b>
+      <span class="card-meta">Pregúntele a los datos en lenguaje natural, vía MCP.</span></a>
+  </div>
+</section>
 
 <div class="cierre">
   <div class="cierre-inner">

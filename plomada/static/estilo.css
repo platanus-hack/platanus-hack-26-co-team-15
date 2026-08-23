@@ -1237,6 +1237,15 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
 .cab-grid.cifras .dato dd { font-size: var(--pl-text-2xl);
   font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
 
+/* ─── reticula de vistas ("Cómo explorar Plomada") ─────────────────── */
+.vistas { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+@media (min-width: 640px) { .vistas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .vistas { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.vistas .card { text-decoration: none; color: inherit;
+  transition: box-shadow var(--pl-dur) var(--pl-ease); }
+.vistas .card:hover { box-shadow: var(--shadow-md); }
+.vistas .card:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
 /* ═══════════════════════════════════════════════════════════════════════
    Banda oscura de Plomada. Se compone de ULTIMO (design/construir.py), asi
    que estas declaraciones ganan sobre Modernist y sobre sitio.css sin
