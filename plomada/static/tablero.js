@@ -11,6 +11,7 @@
  * patron (D.OUT en data.py, escribir_datos_tablero() en build.py).
  */
 import { plata, pct, entero } from "./formato.js";
+import { ocultarTip } from "./graficos/comun.js";
 import * as Indicios from "./graficos/indicios.js";
 import * as Municipios from "./graficos/municipios.js";
 import * as Departamentos from "./graficos/departamentos.js";
@@ -90,13 +91,30 @@ function iniciar(D) {
     return li;
   }));
 
-  Indicios.dibujar(porId("t-indicios"), porId("t-tbl-indicios"), D.indicios, universo.valor);
+  dibujarIndicios(D);
 
   fillFiltrosTerritorio(D);
   dibujarTerritorio(D);
 
   fillFiltrosRed(D);
   dibujarRed(D);
+
+  // Cambio de banda (F1 -> F2): cada dibujar() vuelve a llamar tonosViz(),
+  // que lee los tokens --viz-* en vivo, asi que repintar es exactamente el
+  // mismo camino que un cambio de filtro y ningun modulo de grafico se
+  // entera de que existe un tema. El listener va AQUI dentro, no en el tope
+  // del modulo, porque D solo existe una vez que cargar() trajo los JSON.
+  document.addEventListener("plomada:tema", () => {
+    ocultarTip();
+    dibujarIndicios(D);
+    dibujarTerritorio(D);
+    dibujarRed(D);
+  });
+}
+
+function dibujarIndicios(D) {
+  const universo = T(D, "Obra publica analizada");
+  Indicios.dibujar(porId("t-indicios"), porId("t-tbl-indicios"), D.indicios, universo.valor);
 }
 
 /* ---------- territorio: municipios + departamentos comparten filtro ---------- */

@@ -13,6 +13,7 @@ en un paso de build separado, el artefacto que de verdad se sirve, cosiendo:
   2. design/modernist/styles.css  - SIN su linea de @import (se filtra aqui)
   3. design/plomada/dataviz.css   - extension de color/graficos del proyecto
   4. design/plomada/sitio.css     - layout y componentes de pagina del proyecto
+  5. design/plomada/tema.css      - delta de tokens de la banda oscura
 
 Asi modernist/ se puede volver a bajar completo el dia que el sistema cambie
 (paso 1 de VENDOR.md) sin que el sitio vuelva a pedirle nada a Google, y sin
@@ -20,7 +21,7 @@ tocar un solo caracter dentro de modernist/.
 
 Uso:  python3 design/construir.py
 Salida: plomada/static/estilo.css (se sobreescribe siempre; no se edita a
-mano — cualquier cambio de estilo entra por una de las cuatro piezas de arriba).
+mano — cualquier cambio de estilo entra por una de las cinco piezas de arriba).
 """
 import re
 import sys
@@ -32,6 +33,10 @@ FUENTES = DESIGN / "plomada" / "fuentes.css"
 MODERNIST = DESIGN / "modernist" / "styles.css"
 DATAVIZ = DESIGN / "plomada" / "dataviz.css"
 SITIO = DESIGN / "plomada" / "sitio.css"
+# tema.css va de ULTIMO: declara el delta de tokens de la banda oscura y tiene
+# que ganarle a Modernist y a sitio.css sin depender de especificidad
+# accidental (docs/PLAN_TEMA_API_MCP.md §4.1).
+TEMA = DESIGN / "plomada" / "tema.css"
 SALIDA = RAIZ / "plomada" / "static" / "estilo.css"
 
 # Cualquier @import (a una URL) se filtra: es exactamente lo que hay que
@@ -41,11 +46,12 @@ SALIDA = RAIZ / "plomada" / "static" / "estilo.css"
 _IMPORT_URL = re.compile(r"^\s*@import\s+url\(['\"]?https?://.*$", re.MULTILINE)
 
 CABECERA = """/* GENERADO por design/construir.py — NO EDITAR A MANO.
- * Cambios de estilo entran por una de estas cuatro piezas, nunca aqui:
+ * Cambios de estilo entran por una de estas cinco piezas, nunca aqui:
  *   1. design/plomada/fuentes.css   (Archivo auto-hospedada)
  *   2. design/modernist/styles.css  (vendor, ver design/VENDOR.md — no se parchea)
  *   3. design/plomada/dataviz.css   (extension de color/graficos del proyecto)
  *   4. design/plomada/sitio.css     (layout y componentes de pagina del proyecto)
+ *   5. design/plomada/tema.css      (delta de tokens de la banda oscura)
  * Para regenerar: python3 design/construir.py
  */
 """
@@ -62,6 +68,7 @@ def main():
     modernist = leer(MODERNIST)
     dataviz = leer(DATAVIZ)
     sitio = leer(SITIO)
+    tema = leer(TEMA)
 
     filtrado, n = _IMPORT_URL.subn("", modernist)
     if n == 0:
@@ -75,7 +82,8 @@ def main():
     if "fonts.googleapis.com" in filtrado or "fonts.gstatic.com" in filtrado:
         sys.exit("modernist/styles.css sigue mencionando un CDN de fuentes despues del filtro — revisa a mano")
 
-    piezas = [CABECERA, fuentes.strip(), filtrado.strip(), dataviz.strip(), sitio.strip(), ""]
+    piezas = [CABECERA, fuentes.strip(), filtrado.strip(), dataviz.strip(),
+              sitio.strip(), tema.strip(), ""]
     salida = "\n\n".join(piezas)
 
     if "https://" in salida or "http://" in salida:

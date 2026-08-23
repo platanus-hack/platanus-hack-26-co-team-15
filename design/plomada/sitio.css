@@ -79,6 +79,43 @@ main#principal { flex: 1; }
 .nav::-webkit-scrollbar { display: none; }
 .nav a { white-space: nowrap; }
 
+/* ─── conmutador de tono (F1) ───────────────────────────────────────────
+   Es un <button>, no un <a>: se enfoca con Tab y se activa con Enter y
+   Espacio sin una linea de JS. Por eso mismo `.nav a` no lo alcanza y hay
+   que repetir aqui lo que aquellos heredan de Modernist. */
+.nav-tema {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  background: none; border: 0; color: inherit; cursor: pointer;
+  font: inherit; font-size: var(--pl-text-sm);
+  white-space: nowrap;
+  /* alto de toque de 44px en movil con padding, nunca con `height` fija:
+     una altura fija recorta el texto cuando el lector agranda la fuente */
+  padding: var(--space-3) var(--space-2);
+  transition: color var(--pl-dur) var(--pl-ease);
+}
+.nav-tema:hover, .nav-tema:focus-visible { color: var(--color-accent); }
+.nav-tema:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+@media (min-width: 768px) { .nav-tema { padding-block: var(--space-2); } }
+
+/* El icono se dibuja en CSS: ni un SVG externo ni una fuente de iconos
+   (restriccion de cero dependencias externas). Circulo lleno = sol; el
+   box-shadow interior lo muerde y lo vuelve luna en banda oscura. */
+.nav-tema-icono {
+  width: 14px; height: 14px; border-radius: 50%; flex: none;
+  border: 2px solid currentColor;
+  transition: box-shadow var(--pl-dur) var(--pl-ease),
+              transform var(--pl-dur) var(--pl-ease);
+}
+:root[data-tema="oscuro"] .nav-tema-icono {
+  box-shadow: inset -4px 2px 0 0 currentColor;
+  transform: rotate(-20deg);
+}
+
+/* El cambio de banda no es un salto seco. El guard global de
+   prefers-reduced-motion (al final de este archivo) ya lo anula. */
+body { transition: background-color var(--pl-dur) var(--pl-ease),
+                   color var(--pl-dur) var(--pl-ease); }
+
 /* ─── contenedor de pagina ──────────────────────────────────────────────
    El hueco entre secciones mayores se declara en --pl-gap, no directo en
    `gap`, porque hay hijos de main que NO son secciones mayores (las migas,
@@ -484,6 +521,79 @@ main#principal:has(> .cierre:last-child) { padding-bottom: 0; }
    vista para un override futuro, ninguna existe todavia. `.table.banderas`
    (metodologia): modificador compuesto sobre `.table`, que ya lo cubre
    entero -- no necesita una regla `.banderas` aparte. */
+
+/* ─── leyenda del mapa coropletico ──────────────────────────────────────
+   mapa.js emite <i style="background:..."> como muestra de cada clase, pero
+   un <i> es inline y sin contenido: sin dimensiones aqui, mide 0x0 y la
+   leyenda queda en numeros pelados, sin la rampa que es justo lo que hay
+   que leer. Con 5 clases secuenciales el color ES la codificacion, asi que
+   la muestra no es decoracion (regla de "leyenda siempre visible"). */
+.leyenda {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface); color: var(--color-text);
+  font-size: var(--pl-text-xs); line-height: 1.6;
+  box-shadow: var(--shadow-sm);
+}
+.leyenda i {
+  display: inline-block; width: 12px; height: 12px;
+  margin-right: var(--space-2); vertical-align: -1px;
+  /* el "sin dato" sale de la rampa y ademas lleva contorno: la ausencia de
+     dato no es el escalon mas bajo de la magnitud */
+  outline: 1px solid var(--color-divider);
+}
+
+/* ─── Leaflet en banda oscura (F2) ──────────────────────────────────────
+   plomada/static/vendor/leaflet/leaflet.css es VENDOR y no se parchea
+   (VENDOR.md). Sus controles traen #fff y #333 fijos, asi que sobre negro
+   quedan como parches blancos. Se corrigen desde aqui, colgados del
+   atributo de tema y escritos con var(--color-*), nunca con hex: el mismo
+   mecanismo con el que el proyecto ya evita tocar modernist/.
+
+   El satelital de la ficha (mapa-satelital.js, tiles de Esri) NO entra: una
+   foto aerea no tiene banda. Lo que si acompana es el cromo de alrededor,
+   que es justo lo de aqui abajo. */
+:root[data-tema="oscuro"] .leaflet-bar a,
+:root[data-tema="oscuro"] .leaflet-control-layers,
+:root[data-tema="oscuro"] .leaflet-control-layers-expanded,
+:root[data-tema="oscuro"] .leaflet-popup-content-wrapper,
+:root[data-tema="oscuro"] .leaflet-popup-tip,
+:root[data-tema="oscuro"] .leaflet-tooltip,
+:root[data-tema="oscuro"] .leaflet-div-icon,
+:root[data-tema="oscuro"] .leaflet-container .leaflet-control-attribution,
+:root[data-tema="oscuro"] .leyenda {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+:root[data-tema="oscuro"] .leaflet-bar a,
+:root[data-tema="oscuro"] .leaflet-tooltip,
+:root[data-tema="oscuro"] .leaflet-div-icon {
+  border-color: var(--color-divider);
+}
+:root[data-tema="oscuro"] .leaflet-bar a:hover,
+:root[data-tema="oscuro"] .leaflet-bar a:focus {
+  background: var(--color-neutral-300);
+}
+:root[data-tema="oscuro"] .leaflet-bar a.leaflet-disabled {
+  background: var(--color-neutral-100); color: var(--color-neutral-500);
+}
+:root[data-tema="oscuro"] .leaflet-container a.leaflet-popup-close-button {
+  color: var(--color-neutral-700);
+}
+:root[data-tema="oscuro"] .leaflet-container a.leaflet-popup-close-button:hover,
+:root[data-tema="oscuro"] .leaflet-container a.leaflet-popup-close-button:focus {
+  color: var(--color-text);
+}
+:root[data-tema="oscuro"] .leaflet-container a { color: var(--color-accent); }
+/* La flechita del tooltip se dibuja con border-*-color, no con background:
+   hay que apuntarle a cada lado por separado o queda un pico blanco. */
+:root[data-tema="oscuro"] .leaflet-tooltip-top:before { border-top-color: var(--color-surface); }
+:root[data-tema="oscuro"] .leaflet-tooltip-bottom:before { border-bottom-color: var(--color-surface); }
+:root[data-tema="oscuro"] .leaflet-tooltip-left:before { border-left-color: var(--color-surface); }
+:root[data-tema="oscuro"] .leaflet-tooltip-right:before { border-right-color: var(--color-surface); }
+/* El text-shadow blanco de la escala es ilegible sobre superficie oscura. */
+:root[data-tema="oscuro"] .leaflet-control-scale-line {
+  background: var(--color-surface); color: var(--color-text); text-shadow: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;

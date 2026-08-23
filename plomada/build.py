@@ -36,6 +36,40 @@ def h(x):
     return html.escape(str(x if x is not None else ""), quote=True)
 
 
+# ---------------------------------------------------------------- tema (F1)
+# Script anti-parpadeo: fija data-tema ANTES del primer pintado. Inline y
+# sincrono a proposito -- un <script src> diferido dejaria un flash blanco
+# en cada recarga en modo oscuro. Va en pagina(), o sea en TODAS las vistas
+# a la vez, porque el shell es uno solo.
+#
+# Sin eleccion guardada manda prefers-color-scheme; con eleccion guardada
+# manda la eleccion, siempre. El try/catch no es decorativo: en modo privado
+# de algunos navegadores localStorage lanza al leer, y si lanza el sitio
+# queda claro y funciona igual. Sin JS no hay atributo y el sitio queda
+# claro: degradacion deliberada, no un olvido (por eso NO hay un
+# @media (prefers-color-scheme: dark) suelto que duplicaria los tokens).
+TEMA_INLINE = (
+    '<script>(function(){try{'
+    "var t=localStorage.getItem('plomada:tema');"
+    "if(t!=='claro'&&t!=='oscuro'){"
+    "t=window.matchMedia('(prefers-color-scheme: dark)').matches?'oscuro':'claro';}"
+    "document.documentElement.setAttribute('data-tema',t);"
+    '}catch(e){}})();</script>'
+)
+TEMA_JS = '<script type="module" src="/static/tema.js"></script>'
+
+# El texto y aria-pressed que emite el servidor son los del tono claro: el
+# servidor no sabe que tono lee el visitante. static/tema.js los corrige al
+# montar, antes de cualquier interaccion.
+BOTON_TEMA = (
+    '<button type="button" class="nav-tema" id="conmutar-tema" '
+    'aria-pressed="false" title="Cambiar entre tono claro y oscuro">'
+    '<span class="nav-tema-icono" aria-hidden="true"></span>'
+    '<span class="nav-tema-texto">Tono oscuro</span>'
+    '</button>'
+)
+
+
 # ------------------------------------------------------------- nav (B1)
 # Las ocho vistas (portada, tablero, mapa, buscador, metodologia, datos,
 # ficha de contrato, ficha de municipio) pasan TODAS por pagina(): un solo
@@ -55,7 +89,8 @@ def nav(ruta_actual):
     enlaces = "".join(
         f'<a href="{h(u)}"{" aria-current=\"page\"" if ruta_actual.rstrip("/") == u.rstrip("/") else ""}>{h(t)}</a>'
         for u, t in NAV_ENLACES)
-    return f'<header class="nav"><a class="nav-brand" href="/">Plomada</a>{enlaces}</header>'
+    return (f'<header class="nav"><a class="nav-brand" href="/">Plomada</a>'
+            f'{enlaces}{BOTON_TEMA}</header>')
 
 
 # --------------------------------------------------------- islas de Vue (T1)
@@ -99,6 +134,7 @@ def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase=""):
 <meta property="og:description" content="{h(descripcion)}">
 <meta property="og:type" content="article">
 <link rel="stylesheet" href="/static/estilo.css">
+{TEMA_INLINE}
 <script>window.PLOMADA_API_URL={json.dumps(API_URL)};</script>
 {head}
 <body class="{clase}">
@@ -112,6 +148,7 @@ def pagina(titulo, descripcion, cuerpo, ruta, head="", js="", clase=""):
   <p>Datos públicos del SECOP II. <a href="/metodologia/">Cómo se calcula</a> ·
      <a href="/datos/">Descargar los datos</a></p>
 </footer>
+{TEMA_JS}
 {js}
 """
 

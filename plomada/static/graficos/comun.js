@@ -103,6 +103,13 @@ export function hover(nodo, titulo, filas) {
   nodo.addEventListener("blur", () => { t.style.opacity = 0; });
 }
 
+/** Esconde el tooltip. Lo necesita el re-dibujo por cambio de tono (F2): el
+ * nodo que lo abrio se reemplaza, asi que su mouseleave nunca llega y el
+ * tooltip quedaria colgado sobre un grafico que ya no existe. */
+export function ocultarTip() {
+  if (tipEl) tipEl.style.opacity = 0;
+}
+
 /** Tabla gemela: cada grafico conserva la suya (regla transversal de B5),
  * armada con DOM/textContent, nunca con un string de HTML. */
 export function tabla(host, columnas, datos) {

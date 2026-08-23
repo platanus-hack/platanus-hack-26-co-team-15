@@ -21,10 +21,14 @@
    rojo con avaricia. Ningun grafico depende del color solo: leyenda siempre
    presente, etiqueta directa en las marcas destacadas, y gemelo en tabla.
 
-   MODO OSCURO: Modernist es un sistema de banda clara y no publica tokens
-   oscuros. El tablero anterior (web/index.html) si tenia modo oscuro; se pierde
-   en esta fase a proposito. Recuperarlo exige un set de tokens oscuros
-   *elegido* y re-validado contra la superficie oscura, no un volteo automatico.
+   MODO OSCURO: resuelto. El set de tokens oscuros existe, elegido y razonado,
+   en design/plomada/tema.css (docs/PLAN_TEMA_API_MCP.md §4.2), colgado de
+   :root[data-tema="oscuro"]. Este archivo NO lo duplica y no necesita saber
+   que existe: ni un solo --viz-* de aqui abajo lleva un hex, todos son
+   var(--color-*), asi que al re-tokenizar la banda los cinco graficos y la
+   coropleta se recolorean solos. Lo que el CSS no puede hacer solo es
+   repintar un SVG ya dibujado: de eso se encargan los modulos de graficos/
+   suscribiendose al evento 'plomada:tema' (static/tema.js).
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {

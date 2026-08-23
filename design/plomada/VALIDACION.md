@@ -68,14 +68,17 @@ Palette (light, surface #f3f2f2, ordinal ramp): 5 slots
 
 ## 3. Lo que queda pendiente y por que
 
-- **Modo oscuro: DECIDIDO, queda fuera de la fase 1.** Modernist es un sistema
-  de banda clara y no publica tokens oscuros. `web/index.html` si tenia modo
-  oscuro y se pierde. El usuario decidio (2026-08-22) tratarlo como bloque
-  aparte, posterior a la fase 1, no como parte de la fusion visual.
-  Cuando se retome: hay que ELEGIR un set de tokens oscuros y re-validar la
-  rampa secuencial contra la superficie oscura con
-  `validate_palette.js --mode dark --surface <hex>`. Un volteo automatico de
-  los pasos claros no sirve y no se acepta.
+- **Modo oscuro: HECHO** (2026-08-23, `docs/PLAN_TEMA_API_MCP.md` F1). Ya no
+  queda fuera de alcance: el set de tokens oscuros esta ELEGIDO y razonado en
+  `design/plomada/tema.css`, colgado de `:root[data-tema="oscuro"]`, y se
+  conmuta con un boton en el nav. La rampa neutra va invertida a proposito
+  (100 = mas oscuro, relleno; 900 = mas claro, texto sobre relleno): se
+  conserva el ROL de cada paso y cambia la direccion de la luz. La rampa de
+  acento NO se invierte, solo sube de luminosidad para respirar sobre
+  `#14100f`.
+  **Sigue pendiente** re-correr `validate_palette.js --mode dark --surface
+  #14100f` sobre la rampa secuencial y anotar aqui el resultado: el contraste
+  de la banda oscura se verifico a ojo, no con el validador.
 - **La leyenda no es opcional.** Con 2 o mas series va siempre, porque la
   identidad no puede depender del color solo.
 - **Cada grafico conserva su gemelo en tabla.** Ya era requisito del proyecto y

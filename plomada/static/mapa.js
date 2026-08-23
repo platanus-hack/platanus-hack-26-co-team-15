@@ -82,6 +82,26 @@
     history.replaceState(null, '', u);
   }
 
+  // La leyenda se re-dibuja al conmutar el tono: sus muestras llevan el
+  // color YA RESUELTO en un atributo style, asi que el CSS no puede
+  // recolorearlas solo. Se destruye y se rehace en vez de mutarla, que es
+  // lo que hace el resto del mapa con cada repintado.
+  var leyenda = null;
+  function pintarLeyenda() {
+    if (leyenda) mapa.removeControl(leyenda);
+    leyenda = L.control({ position: 'bottomright' });
+    leyenda.onAdd = function () {
+      var d = L.DomUtil.create('div', 'leyenda');
+      d.innerHTML = '<b>Tasa ajustada</b><br>' + CORTES.map(function (c, i) {
+        var sig = CORTES[i + 1];
+        return '<i style="background:' + TONO.seq[i] + '"></i>' +
+               (c * 100) + (sig ? '–' + (sig * 100) : '+') + '%';
+      }).join('<br>') + '<br><i style="background:' + TONO.sinDato + '"></i>sin datos';
+      return d;
+    };
+    leyenda.addTo(mapa);
+  }
+
   fetch('/datos/departamentos.geojson').then(function (r) { return r.json(); }).then(function (geo) {
     capa = L.geoJSON(geo, {
       style: estilo,
@@ -99,20 +119,33 @@
     }).addTo(mapa);
     mapa.fitBounds(capa.getBounds(), { padding: [10, 10] });
 
-    var leyenda = L.control({ position: 'bottomright' });
-    leyenda.onAdd = function () {
-      var d = L.DomUtil.create('div', 'leyenda');
-      d.innerHTML = '<b>Tasa ajustada</b><br>' + CORTES.map(function (c, i) {
-        var sig = CORTES[i + 1];
-        return '<i style="background:' + TONO.seq[i] + '"></i>' +
-               (c * 100) + (sig ? '–' + (sig * 100) : '+') + '%';
-      }).join('<br>') + '<br><i style="background:' + TONO.sinDato + '"></i>sin datos';
-      return d;
-    };
-    leyenda.addTo(mapa);
+    pintarLeyenda();
 
     var dep = new URL(location.href).searchParams.get('dep');
     if (dep) seleccionar(dep, true);
+
+    // Cambio de banda (F1 -> F2). TONO se cacheo al cargar el modulo con los
+    // valores de la banda anterior: hay que REASIGNARLO (no declarar una
+    // variable nueva) porque estilo(), color() y seleccionar() lo leen por
+    // closure. Con eso, setStyle() recolorea la coropleta entera.
+    //
+    // La coropleta no tiene tile layer: es GeoJSON sobre el fondo de la
+    // pagina, asi que el fondo se oscurece solo con el CSS. La leyenda si
+    // hay que rehacerla, porque sus muestras llevan el color resuelto en un
+    // atributo style.
+    document.addEventListener('plomada:tema', function () {
+      TONO = leerTonosViz();
+      capa.setStyle(estilo);
+      pintarLeyenda();
+      // el departamento seleccionado perdio su realce con el setStyle de
+      // arriba (resetStyle no distingue): se vuelve a aplicar.
+      var actual = new URL(location.href).searchParams.get('dep');
+      var lyr = actual && porSlug[actual];
+      if (lyr) {
+        lyr.setStyle({ weight: 3, color: TONO.tinta, fillOpacity: .9 });
+        lyr.bringToFront();
+      }
+    });
   });
 
   // filtro de la tabla de municipios

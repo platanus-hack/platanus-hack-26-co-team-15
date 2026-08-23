@@ -1,0 +1,79 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Banda oscura de Plomada. Se compone de ULTIMO (design/construir.py), asi
+   que estas declaraciones ganan sobre Modernist y sobre sitio.css sin
+   tocar design/modernist/ (VENDOR.md lo prohibe).
+
+   El tono claro NO se redefine aqui: Modernist ya es un sistema de banda
+   clara y su :root es la definicion. Este archivo solo describe el delta
+   oscuro. Un solo set de tokens cambia de valor; ni un componente, ni un
+   grafico, ni una linea de JS sabe que existe un tema.
+
+   El atributo lo pone el script anti-parpadeo del <head> (plomada/build.py,
+   funcion pagina()) ANTES del primer pintado. Sin JS el sitio queda claro:
+   es la degradacion deliberada, no un olvido.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root { color-scheme: light; }
+
+:root[data-tema="oscuro"] {
+  color-scheme: dark;   /* scrollbars y controles nativos acompanan */
+
+  /* fondo y superficies: negro calido, tenido al hue del acento */
+  --color-bg:      #14100f;
+  --color-surface: #1c1715;
+
+  /* tinta: blanco roto calido, NUNCA #fff puro (deslumbra sobre negro) */
+  --color-text:    #f2ebe8;
+
+  /* divisores: hairline claro sobre fondo oscuro */
+  --color-divider: color-mix(in srgb, #f2ebe8 14%, transparent);
+
+  /* rampa neutra INVERTIDA: 100 = mas oscuro (rellenos), 900 = mas claro
+     (texto sobre rellenos). El ROL de cada paso se conserva; lo que cambia
+     es la direccion de la luz. Sin invertirla, todo componente que usa
+     --color-neutral-200 como relleno pinta un bloque casi blanco. */
+  --color-neutral-100: #1a1513;
+  --color-neutral-200: #241d1a;
+  --color-neutral-300: #332a26;
+  --color-neutral-400: #493d38;
+  --color-neutral-500: #6b5c56;
+  --color-neutral-600: #8d7d76;
+  --color-neutral-700: #b0a099;
+  --color-neutral-800: #d2c5bf;
+  --color-neutral-900: #f2ebe8;
+
+  /* la rampa de acento NO se invierte: Modernist ya la disena para las dos
+     bandas (usa el paso 600 sobre claro y el 400 sobre oscuro). Solo suben
+     de luminosidad para respirar sobre #14100f. */
+  --color-accent: #ff5334;
+  --color-accent-100: #2b120c;
+  --color-accent-200: #3f1810;
+  --color-accent-300: #5c1f14;
+  --color-accent-400: #8a2a17;
+  --color-accent-500: #c23a1e;
+  --color-accent-600: #ff5334;
+  --color-accent-700: #ff7a60;
+  --color-accent-800: #ffa593;
+  --color-accent-900: #ffd0c6;
+
+  /* --color-accent-2-* es un relleno derivado a maquina en Modernist, no un
+     rol real. Se alinea con el acento para que no quede un hue huerfano. */
+  --color-accent-2:     #ff5334;
+  --color-accent-2-100: #2b120c;
+  --color-accent-2-200: #3f1810;
+  --color-accent-2-300: #5c1f14;
+  --color-accent-2-400: #8a2a17;
+  --color-accent-2-500: #c23a1e;
+  --color-accent-2-600: #ff5334;
+  --color-accent-2-700: #ff7a60;
+  --color-accent-2-800: #ffa593;
+  --color-accent-2-900: #ffd0c6;
+
+  /* sombras: las de Modernist son ink-tinted sobre fondo claro y sobre negro
+     son invisibles. En banda oscura el trabajo de separar lo hace el
+     hairline superior (simula luz cenital); la sombra queda como oscuridad
+     ambiental. */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.40), inset 0 1px 0 color-mix(in srgb, #f2ebe8 8%, transparent);
+  --shadow-md: 0 6px 18px rgb(0 0 0 / 0.50), inset 0 1px 0 color-mix(in srgb, #f2ebe8 8%, transparent);
+  --shadow-lg: 0 16px 44px rgb(0 0 0 / 0.60), inset 0 1px 0 color-mix(in srgb, #f2ebe8 8%, transparent);
+}

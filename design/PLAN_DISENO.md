@@ -48,8 +48,13 @@ Violarlas rompe tests o decisiones documentadas del proyecto:
    Google Fonts, sin npm. `construir.py` falla si queda una URL externa;
    `tests/test_privacidad_red.py` vigila el resto. La unica excepcion es Esri
    (tiles satelitales), que ya es click-to-load y asi se queda.
-4. **Banda clara. No hay modo oscuro en esta fase** (decision 2026-08-22,
-   registrada en VALIDACION.md §3). No agregar `prefers-color-scheme`.
+4. **Dos bandas con conmutador explicito** (revocado el 2026-08-23 por
+   `docs/PLAN_TEMA_API_MCP.md` §3, que supersede la decision del 2026-08-22).
+   El delta oscuro vive en `design/plomada/tema.css`, colgado de
+   `:root[data-tema="oscuro"]`. `prefers-color-scheme` se usa **solo** para
+   el tono inicial de quien nunca eligio; tras su primer clic manda su
+   eleccion. No agregar un `@media (prefers-color-scheme: dark)` suelto:
+   duplicaria el bloque de tokens y crearia dos fuentes de verdad.
 5. **Mono acento `#ec3013` usado con avaricia.** No introducir hues nuevos.
    La identidad de serie en graficos la lleva la FORMA (relleno vs aro),
    no el color — esta medido en VALIDACION.md. Si se toca un token de
@@ -78,6 +83,7 @@ registrarla en `design/construir.py` como pieza 4 de la composicion:
 2. design/modernist/styles.css   (vendor, sin su @import)
 3. design/plomada/dataviz.css    (extension de graficos)
 4. design/plomada/sitio.css      (NUEVO: layout y componentes de pagina)
+5. design/plomada/tema.css       (agregada despues: delta de la banda oscura)
 ```
 
 Primera linea de `sitio.css` (registro durable de este plan):
